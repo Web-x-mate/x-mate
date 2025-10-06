@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${form.id != null} ? 'Sửa đơn hàng' : 'Tạo đơn hàng'">Tạo đơn hàng</h1>
+
+    <form th:action="${form.id != null} ? @{'/admin/sales/orders/' + ${form.id} + '/edit'} : @{/admin/sales/orders/new}"
+          method="post" class="vstack gap-3">
+
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label>Customer</label>
+                <select class="form-select" name="customerId" required>
+                    <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"
+                            th:selected="${form.customerId != null and form.customerId == c.id}"></option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label>Code</label>
+                <input class="form-control" name="code" th:value="${form.code}" placeholder="Để trống sẽ tự sinh">
+            </div>
+        </div>
+
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label>Status</label>
+                <select class="form-select" name="status">
+                    <option th:each="s: ${orderStatuses}" th:value="${s}" th:text="${s}" th:selected="${form.status == s}"></option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label>Payment</label>
+                <select class="form-select" name="paymentStatus">
+                    <option th:each="s: ${paymentStatuses}" th:value="${s}" th:text="${s}" th:selected="${form.paymentStatus == s}"></option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label>Shipping</label>
+                <select class="form-select" name="shippingStatus">
+                    <option th:each="s: ${shippingStatuses}" th:value="${s}" th:text="${s}" th:selected="${form.shippingStatus == s}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label>Shipping address</label>
+            <input class="form-control" name="shippingAddress" th:value="${form.shippingAddress}">
+        </div>
+
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label>Discount</label>
+                <input class="form-control" type="number" step="0.01" name="discountAmount" th:value="${form.discountAmount}">
+            </div>
+            <div class="flex-1">
+                <label>Shipping fee</label>
+                <input class="form-control" type="number" step="0.01" name="shippingFee" th:value="${form.shippingFee}">
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h5>Items</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">+ Thêm dòng</button>
+            </div>
+            <table class="table table-sm align-middle mt-2" id="itemsTable">
+                <thead class="table-light">
+                <tr><th>Variant ID</th><th>Price</th><th>Qty</th><th></th></tr>
+                </thead>
+                <tbody>
+                <!-- Nếu chưa có item nào: render 1 dòng trống -->
+                <tr th:if="${form.variantIds == null or #lists.isEmpty(form.variantIds)}">
+                    <td><input class="form-control" name="variantIds"></td>
+                    <td><input class="form-control" type="number" step="0.01" name="prices"></td>
+                    <td><input class="form-control" type="number" name="qtys" value="1"></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>
+                </tr>
+
+                <!-- Nếu đã có item: lặp theo chỉ số 0..n-1 bằng #numbers.sequence -->
+                <tr th:if="${form.variantIds != null and !#lists.isEmpty(form.variantIds)}"
+                    th:each="i : ${#numbers.sequence(0, form.variantIds.size() - 1)}">
+                    <td><input class="form-control" name="variantIds" th:value="${form.variantIds[i]}"></td>
+                    <td><input class="form-control" type="number" step="0.01" name="prices" th:value="${form.prices[i]}"></td>
+                    <td><input class="form-control" type="number" name="qtys" th:value="${form.qtys[i]}"></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit" th:text="${form.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+            <a th:href="@{/admin/sales/orders}" class="btn btn-outline-secondary">Quay lại</a>
+        </div>
+    </form>
+
+    <script>
+        function addRow() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+        <td><input class="form-control" name="variantIds"></td>
+        <td><input class="form-control" type="number" step="0.01" name="prices"></td>
+        <td><input class="form-control" type="number" name="qtys" value="1"></td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>`;
+            tbody.appendChild(tr);
+        }
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+        }
+    </script>
+</section>
+</body>
+</html>

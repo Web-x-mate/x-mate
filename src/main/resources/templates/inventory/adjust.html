@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 class="page-title">Adjust Inventory</h1>
+
+    <!-- Thông tin variant & tồn kho hiện tại -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div><b>Variant:</b> <span th:text="${inv.variant?.sku}">SKU</span> — <span th:text="${inv.variant?.product?.name}">Product</span></div>
+            <div><b>Color/Size:</b> <span th:text="${inv.variant?.color}">-</span> / <span th:text="${inv.variant?.size}">-</span></div>
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+                <span class="badge bg-primary">On hand: <span th:text="${inv.qtyOnHand}">0</span></span>
+                <span class="badge bg-secondary">Reserved: <span th:text="${inv.qtyReserved}">0</span></span>
+                <span class="badge bg-success">Available: <span th:text="${inv.qtyOnHand - inv.qtyReserved}">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form điều chỉnh -->
+    <form method="post"
+          th:action="@{|/admin/inventory/adjust/${inv.variantId}|}"
+          th:object="${form}"
+          class="vstack gap-3">
+
+        <!-- CSRF (nếu dùng Spring Security) -->
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+        <!-- Giữ lại variantId nếu muốn server lấy qua request param trong trường hợp bạn chuyển sang POST /adjust -->
+        <input type="hidden" name="variantId" th:value="${inv.variantId}"/>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Delta (±)</label>
+                <input class="form-control" type="number" th:field="*{delta}" placeholder="+10 nhập kho, -5 hủy hàng" required>
+                <div class="form-text">Nhập số dương để cộng, âm để trừ.</div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Ref type</label>
+                <select class="form-select" th:field="*{refType}" required>
+                    <!-- bind theo name() để Spring EnumConverter map chắc chắn -->
+                    <option value="" disabled th:selected="${form.refType} == null">-- Chọn --</option>
+                    <option th:each="rt : ${refTypes}"
+                            th:value="${rt.name()}"
+                            th:text="${rt}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Ref ID</label>
+                <input class="form-control" type="number" th:field="*{refId}" placeholder="VD: ID phiếu nhập, phiếu xuất">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">User ID</label>
+                <input class="form-control" type="number" th:field="*{userId}" placeholder="Người thao tác (optional)">
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Note</label>
+            <input class="form-control" th:field="*{note}" placeholder="Lý do điều chỉnh (ví dụ: kiểm kê, hủy hàng, nhập kho)">
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Apply</button>
+            <a class="btn btn-secondary" th:href="@{/admin/inventory}">Back</a>
+        </div>
+    </form>
+
+    <!-- Xem trước Available sau khi áp dụng (client-side) -->
+    <div class="mt-3 text-muted">
+        <small>
+            Dự kiến Available sau điều chỉnh:
+            <span id="previewAvail"
+                  th:data-onhand="${inv.qtyOnHand}"
+                  th:data-reserved="${inv.qtyReserved}">—</span>
+        </small>
+    </div>
+
+    <script th:inline="javascript">
+        // Preview Available = (onHand + delta) - reserved
+        (function () {
+            const deltaInput = document.querySelector('[name="delta"]');
+            const prev = document.getElementById('previewAvail');
+            if (!deltaInput || !prev) return;
+
+            const onHand = Number(prev.dataset.onhand || 0);
+            const reserved = Number(prev.dataset.reserved || 0);
+
+            function render() {
+                const d = Number(deltaInput.value || 0);
+                const avail = (onHand + d) - reserved;
+                prev.textContent = isNaN(avail) ? '—' : String(avail);
+            }
+            deltaInput.addEventListener('input', render);
+            render();
+        })();
+    </script>
+</section>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+  <th:block layout:fragment="headExtras"></th:block>
+
+  <th:block layout:fragment="header">
+    <div class="topbar">
+      <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
+      <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
+      <div class="topbar-right">
+        <a th:href="@{/admin/settings/profile}">Profile</a>
+      </div>
+    </div>
+  </th:block>
+
+  <th:block layout:fragment="sidebar">
+      <nav class="sidebar">
+          <details class="mgroup" data-key="m_dashboard" open>
+              <summary>Dashboard</summary>
+              <a th:href="@{/admin}">Tổng quan</a>
+
+          </details>
+
+          <details class="mgroup" data-key="m_sales">
+              <summary>Sales</summary>
+              <a th:href="@{/admin/sales/orders}">Orders</a>
+              <a th:href="@{/admin/discounts}">Discounts</a>
+          </details>
+
+          <details class="mgroup" data-key="m_catalog">
+              <summary>Catalog</summary>
+              <a th:href="@{/admin/catalog/categories}">Categories</a>
+              <a th:href="@{/admin/catalog/products}">Products</a>
+
+          </details>
+
+          <details class="mgroup" data-key="m_inventory">
+              <summary>Inventory</summary>
+              <a th:href="@{/admin/inventory}">Stock</a>
+          </details>
+
+          <details class="mgroup" data-key="m_customers">
+              <summary>Customers</summary>
+              <a th:href="@{/admin/customers}">Customers</a>
+              <a th:href="@{/admin/customers/segments}">Segments</a>
+          </details>
+
+          <details class="mgroup" data-key="m_procurement">
+              <summary>Procurement</summary>
+              <a th:href="@{/admin/procurement/suppliers}">Suppliers</a>
+              <a th:href="@{/admin/procurement/po}">Purchase Orders</a>
+              <a th:href="@{/admin/procurement/batches(variantId=1)}">Batches</a>
+          </details>
+
+          <details class="mgroup" data-key="m_system">
+              <summary>System</summary>
+              <a th:href="@{/admin/system/users}">Users</a>
+              <a th:href="@{/admin/system/roles}">Roles</a>
+              <a th:href="@{/admin/system/permissions}">Permissions</a>
+              <a th:href="@{/admin/system/activity-logs}">Activity Logs</a>
+          </details>
+
+          <details class="mgroup" data-key="m_tools">
+              <summary>Tools</summary>
+              <a th:href="@{/admin/tools/import-export}">Import/Export</a>
+          </details>
+      </nav>
+  </th:block>
+
+
+  <th:block layout:fragment="footer">
+    <div class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> Xmate</div>
+  </th:block>
+
+  <th:block layout:fragment="bodyExtras"></th:block>
+</body>
+</html>

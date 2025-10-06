@@ -1,0 +1,40 @@
+<!-- src/main/resources/templates/system/roles/form.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${role.id != null} ? 'Sửa Role' : 'Tạo Role'">Role</h1>
+
+    <form th:action="${role.id != null} ? @{'/admin/system/roles/' + ${role.id} + '/edit'} : @{/admin/system/roles/new}"
+          th:object="${role}" method="post" class="vstack gap-3">
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Name</label>
+                <input th:field="*{name}" class="form-control" required>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Description</label>
+                <input th:field="*{description}" class="form-control">
+            </div>
+            <div class="col-12">
+                <label class="form-label">Permissions</label>
+                <select class="form-select" multiple name="permIds"
+                        th:with="selected=${currentPermIds}">
+                    <option th:each="p : ${allPerms}"
+                            th:value="${p.id}"
+                            th:text="${p.key}"
+                            th:selected="${selected != null and selected.contains(p.id)}"></option>
+                </select>
+                <div class="form-text">Giữ Ctrl/⌘ để chọn nhiều.</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a th:href="@{/admin/system/roles}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

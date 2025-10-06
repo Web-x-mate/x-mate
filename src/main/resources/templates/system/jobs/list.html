@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1>System Jobs</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" th:value="${q}" class="form-control me-2" placeholder="Search key/desc...">
+            <button class="btn btn-primary">Search</button>
+        </form>
+        <a th:href="@{/admin/system/jobs/new}" class="btn btn-success">+ New Job</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Key</th>
+                <th>Schedule</th>
+                <th>Enabled</th>
+                <th>Last Status</th>
+                <th>Last Run</th>
+                <th>Next Run</th>
+                <th style="width:260px">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="j : ${page?.content}">
+                <td th:text="${j.id}">1</td>
+                <td>
+                    <div th:text="${j.jobKey}">inventory.recount</div>
+                    <small class="text-muted" th:text="${j.description}">desc</small>
+                </td>
+                <td>
+                    <span th:text="${j.scheduleType}">CRON</span>
+                    <div>
+                        <small th:if="${j.scheduleType.name() == 'CRON'}" th:text="${j.cronExpr}">0 0 2 * * *</small>
+                        <small th:if="${j.scheduleType.name() == 'FIXED_DELAY'}" th:text="${j.fixedDelaySec + 's'}">3600s</small>
+                    </div>
+                </td>
+                <td>
+                    <span th:class="${j.enabled} ? 'badge bg-success' : 'badge bg-secondary'"
+                          th:text="${j.enabled} ? 'ON' : 'OFF'">ON</span>
+                </td>
+                <td th:text="${j.lastStatus}">PENDING</td>
+                <td th:text="${#temporals.format(j.lastRunAt, 'yyyy-MM-dd HH:mm')}">-</td>
+                <td th:text="${#temporals.format(j.nextRunAt, 'yyyy-MM-dd HH:mm')}">-</td>
+                <td class="d-flex gap-2">
+                    <a th:href="@{|/admin/system/jobs/${j.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
+                    <form th:action="@{|/admin/system/jobs/${j.id}/toggle|}" method="post" class="d-inline">
+                        <input type="hidden" name="enabled" th:value="${!j.enabled}">
+                        <button class="btn btn-sm" th:class="${j.enabled} ? 'btn-secondary' : 'btn-success'"
+                                th:text="${j.enabled} ? 'Disable' : 'Enable'"></button>
+                    </form>
+                    <form th:action="@{|/admin/system/jobs/${j.id}/run-now|}" method="post" class="d-inline"
+                          onsubmit="return confirm('Run now?');">
+                        <button class="btn btn-sm btn-info">Run now</button>
+                    </form>
+                    <a th:href="@{|/admin/system/jobs/${j.id}/delete|}"
+                       onclick="return confirm('Delete job?');"
+                       class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                <td colspan="8" class="text-center">No data</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/system/jobs', q=${q})}"></div>
+</section>
+</body>
+</html>

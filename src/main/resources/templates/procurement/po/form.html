@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content" class="vstack gap-3">
+
+    <h1 th:text="${form != null and form.id != null} ? 'Sửa PO' : 'Tạo PO'">Tạo PO</h1>
+
+    <form th:action="${form != null and form.id != null}
+                     ? @{'/admin/procurement/po/' + ${form.id} + '/edit'}
+                     : @{/admin/procurement/po/new}"
+          method="post"
+          class="vstack gap-3">
+
+        <!-- CSRF nếu có Spring Security -->
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+
+        <!-- Header: Supplier / Code / Status / Expected Date -->
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label>Nhà cung cấp</label>
+                <select class="form-select" name="supplierId" required>
+                    <option value="">-- Chọn nhà cung cấp --</option>
+                    <option th:each="s : ${suppliers}"
+                            th:value="${s.id}"
+                            th:text="${s.name}"
+                            th:selected="${form != null and form.supplierId != null and form.supplierId == s.id}"></option>
+                </select>
+            </div>
+
+            <div class="flex-1">
+                <label>Mã PO</label>
+                <input class="form-control" name="code" th:value="${form != null ? form.code : null}"
+                       placeholder="Để trống sẽ tự sinh">
+            </div>
+
+            <div class="flex-1">
+                <label>Trạng thái</label>
+                <select class="form-select" name="status">
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}"
+                            th:selected="${form != null and form.status == st}"></option>
+                </select>
+            </div>
+
+            <div class="flex-1">
+                <label>Ngày dự kiến</label>
+                <input class="form-control" type="date" name="expectedDate"
+                       th:value="${form != null ? form.expectedDate : null}">
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h5>Dòng hàng (Items)</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">+ Thêm dòng</button>
+            </div>
+
+            <table class="table table-sm align-middle mt-2" id="itemsTable">
+                <thead class="table-light">
+                <tr>
+                    <th style="width: 220px;">Variant ID</th>
+                    <th style="width: 160px;">Số lượng (qty)</th>
+                    <th style="width: 200px;">Đơn giá (cost)</th>
+                    <th style="width: 160px;">Đã nhận</th>
+                    <th style="width: 60px;"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Nếu chưa có item nào: render 1 dòng trống -->
+                <tr th:if="${form == null or form.variantIds == null or #lists.isEmpty(form.variantIds)}">
+                    <td><input class="form-control" name="variantIds" placeholder="VD: 101"></td>
+                    <td><input class="form-control" type="number" name="qtys" value="0" min="0" step="1"></td>
+                    <td><input class="form-control" type="number" name="costs" value="0" min="0" step="0.01"></td>
+                    <td><input class="form-control" type="number" name="receivedQtys" value="0" min="0" step="1"></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>
+                </tr>
+
+                <!-- Nếu đã có item: lặp theo chỉ số 0..n-1 -->
+                <tr th:if="${form != null and form.variantIds != null and !#lists.isEmpty(form.variantIds)}"
+                    th:each="i : ${#numbers.sequence(0, form.variantIds.size()-1)}">
+                    <td>
+                        <input class="form-control" name="variantIds"
+                               th:value="${form.variantIds[i]}" placeholder="VD: 101">
+                    </td>
+                    <td>
+                        <input class="form-control" type="number" name="qtys"
+                               th:value="${form.qtys != null and i < form.qtys.size() ? form.qtys[i] : 0}"
+                               min="0" step="1">
+                    </td>
+                    <td>
+                        <input class="form-control" type="number" name="costs"
+                               th:value="${form.costs != null and i < form.costs.size() ? form.costs[i] : 0}"
+                               min="0" step="0.01">
+                    </td>
+                    <td>
+                        <input class="form-control" type="number" name="receivedQtys"
+                               th:value="${form.receivedQtys != null and i < form.receivedQtys.size() ? form.receivedQtys[i] : 0}"
+                               min="0" step="1">
+                    </td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit"
+                    th:text="${form != null and form.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+            <a th:href="@{/admin/procurement/po}" class="btn btn-outline-secondary">Quay lại</a>
+        </div>
+    </form>
+
+    <script>
+        function addRow() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+        <td><input class="form-control" name="variantIds" placeholder="VD: 101"></td>
+        <td><input class="form-control" type="number" name="qtys" value="0" min="0" step="1"></td>
+        <td><input class="form-control" type="number" name="costs" value="0" min="0" step="0.01"></td>
+        <td><input class="form-control" type="number" name="receivedQtys" value="0" min="0" step="1"></td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">X</button></td>`;
+            tbody.appendChild(tr);
+        }
+        function removeRow(btn) { btn.closest('tr').remove(); }
+    </script>
+
+</section>
+</body>
+</html>

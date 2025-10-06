@@ -1,0 +1,54 @@
+<!-- src/main/resources/templates/system/users/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 class="page-title">Users</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="d-flex">
+            <input class="form-control me-2" type="text" name="q" th:value="${q}" placeholder="Search username/name/email/phone">
+            <button class="btn btn-primary">Search</button>
+        </form>
+        <a th:href="@{/admin/system/users/new}" class="btn btn-success">+ Thêm user</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th><th>Username</th><th>Full name</th><th>Email</th><th>Phone</th><th>Active</th><th style="width:220px;">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${page?.content}">
+                <td th:text="${u.id}">1</td>
+                <td th:text="${u.username}">admin</td>
+                <td th:text="${u.fullName}">Admin</td>
+                <td th:text="${u.email}">admin@xmate</td>
+                <td th:text="${u.phone}">0123</td>
+                <td>
+                    <span th:text="${u.active} ? 'Active' : 'Inactive'"
+                          th:class="${u.active} ? 'badge bg-success' : 'badge bg-secondary'">Active</span>
+                </td>
+                <td class="d-flex gap-2">
+                    <a th:href="@{|/admin/system/users/${u.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
+                    <a th:href="@{|/admin/system/users/${u.id}/delete|}" onclick="return confirm('Xóa user này?');" class="btn btn-sm btn-danger">Delete</a>
+                    <form th:action="@{|/admin/system/users/${u.id}/toggle|}" method="post" class="d-inline">
+                        <input type="hidden" name="active" th:value="${!u.active}">
+                        <button class="btn btn-sm" th:class="${u.active} ? 'btn-outline-secondary' : 'btn-outline-success'"
+                                th:text="${u.active} ? 'Deactivate' : 'Activate'"></button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                <td colspan="7" class="text-center">No data</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/system/users', q=${q})}"></div>
+</section>
+</body>
+</html>

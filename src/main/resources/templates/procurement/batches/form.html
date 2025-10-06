@@ -1,0 +1,47 @@
+<!-- templates/procurement/batches/form.html -->
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${batch.id != null} ? 'Sửa Batch' : 'Thêm Batch'"></h1>
+
+    <form th:action="${batch.id != null} ? @{'/admin/procurement/batches/' + ${batch.id} + '/edit'} : @{/admin/procurement/batches/new}"
+          method="post" class="vstack gap-2">
+
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Variant ID</label>
+                <input class="form-control" name="variant.id" th:value="${batch.variant != null ? batch.variant.id : null}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">PO Item ID</label>
+                <input class="form-control" name="purchaseOrderItem.id" th:value="${batch.purchaseOrderItem != null ? batch.purchaseOrderItem.id : null}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Unit Cost</label>
+                <input class="form-control" type="number" step="0.01" min="0" name="unitCost" th:value="${batch.unitCost}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Qty Received</label>
+                <input class="form-control" type="number" min="0" name="qtyReceived" th:value="${batch.qtyReceived}" required>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Received At</label>
+            <input class="form-control" type="datetime-local"
+                   name="receivedAt"
+                   th:value="${batch.receivedAt != null ? #temporals.format(batch.receivedAt, 'yyyy-MM-dd''T''HH:mm') : ''}">
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit" th:text="${batch.id != null} ? 'Cập nhật' : 'Tạo mới'"></button>
+            <a th:href="@{/admin/procurement/batches}" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

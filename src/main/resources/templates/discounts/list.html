@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 class="page-title">Discounts</h1>
+
+    <!-- Toolbar: Search + Add new -->
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+        <form method="get" th:action="@{/admin/discounts}" class="d-flex align-items-center gap-2">
+            <input class="form-control" type="text" name="q" th:value="${q}" placeholder="Search code or JSON...">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+        <a th:href="@{/admin/discounts/new}" class="btn btn-success">+ New discount</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle w-100">
+            <colgroup>
+                <col style="width: 70px;">
+                <col style="width: 90px;">
+                <col style="width: 120px;">
+                <col style="width: 110px;">
+                <col>
+                <col style="width: 120px;">
+                <col style="width: 170px;">
+                <col style="width: 170px;">
+                <col style="width: 110px;">
+                <col style="width: 110px;">
+                <col style="width: 110px;">
+                <col style="width: 160px;">
+            </colgroup>
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Code</th>
+                <th>Value Type</th>
+                <th>Value</th>
+                <th>Min order</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Limit</th>
+                <th>Used</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="d : ${page?.content}">
+                <td th:text="${d.id}">1</td>
+                <td th:text="${d.type}">CODE</td>
+                <td th:text="${d.code}">SAVE10</td>
+                <td th:text="${d.valueType}">PERCENT</td>
+                <td>
+                    <span th:if="${d.valueType?.name() == 'PERCENT'}"
+                          th:text="${#numbers.formatDecimal(d.valueAmount,1,2)} + ' %'">10 %</span>
+                    <span th:if="${d.valueType?.name() == 'FIXED'}"
+                          th:text="${#numbers.formatDecimal(d.valueAmount,1,2)}">50000</span>
+                </td>
+                <td th:text="${#numbers.formatDecimal(d.minOrder?:0,1,2)}">0</td>
+                <td th:text="${d.startAt != null ? #temporals.format(d.startAt,'yyyy-MM-dd HH:mm') : ''}"></td>
+                <td th:text="${d.endAt != null ? #temporals.format(d.endAt,'yyyy-MM-dd HH:mm') : ''}"></td>
+                <td th:text="${d.usageLimit}">100</td>
+                <td th:text="${d.usedCount}">5</td>
+                <td>
+                    <span th:class="'badge ' + (${d.status} == 'ACTIVE' ? 'bg-success' : 'bg-secondary')"
+                          th:text="${d.status}">ACTIVE</span>
+                </td>
+                <td class="d-flex gap-2">
+                    <a th:href="@{|/admin/discounts/${d.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
+                    <a th:href="@{|/admin/discounts/${d.id}/delete|}"
+                       onclick="return confirm('Xoá discount này?');"
+                       class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+
+            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                <td colspan="12" class="text-center">No data</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/discounts', q=${q})}"></div>
+</section>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!-- src/main/resources/templates/system/activity-logs/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1>Activity Logs</h1>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <input class="form-control" type="text" name="q" th:value="${q}" placeholder="Search type/action">
+        </div>
+        <div class="col-md-3">
+            <input class="form-control" type="text" name="entityType" th:value="${entityType}" placeholder="Entity type (ORDER/PRODUCT/...)">
+        </div>
+        <div class="col-md-3">
+            <input class="form-control" type="number" name="entityId" th:value="${entityId}" placeholder="Entity ID">
+        </div>
+        <div class="col-md-2 d-grid">
+            <button class="btn btn-primary">Filter</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th><th>Actor</th><th>Entity</th><th>Action</th><th>Created At</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${page?.content}">
+                <td th:text="${a.id}">1</td>
+                <td th:text="${a.actor != null ? a.actor.username : '—'}">admin</td>
+                <td>
+                    <span th:text="${a.entityType}">ORDER</span>
+                    <span>#</span><span th:text="${a.entityId}">10</span>
+                </td>
+                <td th:text="${a.action}">UPDATE</td>
+                <td th:text="${#temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm')}">...</td>
+            </tr>
+            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                <td colspan="5" class="text-center">No data</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/system/activity-logs', q=${q})}"></div>
+</section>
+</body>
+</html>

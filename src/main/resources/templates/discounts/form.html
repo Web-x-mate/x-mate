@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${discount.id != null} ? 'Edit discount' : 'Create discount'">Create discount</h1>
+
+    <form method="post"
+          th:object="${discount}"
+          th:action="${discount.id != null} ? @{'/admin/discounts/' + ${discount.id} + '/edit'} : @{/admin/discounts/new}"
+          class="vstack gap-3">
+
+        <!-- Row 1 -->
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Type</label>
+                <select class="form-select" th:field="*{type}" id="typeSelect">
+                    <option value="CODE">CODE</option>
+                    <option value="AUTO">AUTO</option>
+                </select>
+            </div>
+
+            <div class="col-md-3" id="codeWrap">
+                <label class="form-label">Code</label>
+                <input class="form-control" th:field="*{code}" placeholder="SAVE10"/>
+                <div class="form-text">Để trống nếu là AUTO.</div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Value type</label>
+                <select class="form-select" th:field="*{valueType}">
+                    <option value="PERCENT">PERCENT</option>
+                    <option value="FIXED">FIXED</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Value amount</label>
+                <input class="form-control" type="number" min="0" step="0.01"
+                       th:field="*{valueAmount}" placeholder="10 hoặc 50000"/>
+            </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Min order</label>
+                <input class="form-control" type="number" min="0" step="0.01"
+                       th:field="*{minOrder}" placeholder="0"/>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Usage limit</label>
+                <input class="form-control" type="number" min="0" step="1"
+                       th:field="*{usageLimit}" placeholder="Ví dụ 100 (để trống = không giới hạn)"/>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Start at</label>
+                <input class="form-control" type="datetime-local"
+                       th:value="${discount.startAt != null ? #temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm') : null}"
+                       name="startAt"/>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">End at</label>
+                <input class="form-control" type="datetime-local"
+                       th:value="${discount.endAt != null ? #temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm') : null}"
+                       name="endAt"/>
+            </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" th:field="*{status}">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                </select>
+            </div>
+
+            <!-- Conditions UI -->
+            <div class="col-md-9">
+                <!-- === Conditions (UI) === -->
+                <div class="card">
+                    <div class="card-body vstack gap-3">
+                        <h5 class="card-title mb-0">Conditions</h5>
+
+                        <!-- 1) Scope -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Scope type</label>
+                                <select class="form-select" id="c-scope-type">
+                                    <option value="">-- None (áp toàn bộ) --</option>
+                                    <option value="categoryIds">By Categories</option>
+                                    <option value="productIds">By Products</option>
+                                    <option value="variantIds">By Variants</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">IDs (phân tách dấu phẩy)</label>
+                                <input type="text" class="form-control" id="c-scope-ids" placeholder="vd: 3,5,12"/>
+                                <div class="form-text">Để trống nếu không lọc theo scope.</div>
+                            </div>
+                        </div>
+
+                        <!-- 2) Include mode -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Include mode</label>
+                                <select class="form-select" id="c-include-mode">
+                                    <option value="">(Mặc định: ANY)</option>
+                                    <option value="ANY">ANY</option>
+                                    <option value="ALL">ALL</option>
+                                </select>
+                                <div class="form-text">ANY: khớp bất kỳ ID nào; ALL: yêu cầu khớp tất cả ID.</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Min qty / item</label>
+                                <input type="number" min="0" step="1" class="form-control" id="c-min-qty"
+                                       placeholder="vd: 1"/>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Cap / item (FIXED)</label>
+                                <input type="number" min="0" step="0.01" class="form-control" id="c-cap-item"
+                                       placeholder="vd: 50000"/>
+                                <div class="form-text">Giới hạn giảm tối đa cho mỗi item (đơn vị tiền). Tuỳ chọn.</div>
+                            </div>
+                        </div>
+
+                        <!-- 3) Cap order -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Cap / order (FIXED)</label>
+                                <input type="number" min="0" step="0.01" class="form-control" id="c-cap-order"
+                                       placeholder="vd: 150000"/>
+                                <div class="form-text">Giới hạn giảm tối đa cho cả đơn hàng (đơn vị tiền). Tuỳ chọn.</div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Ghi chú</label>
+                                <div class="small text-muted">
+                                    • Nếu <b>valueType = PERCENT</b> thì cap rất hữu ích để “khống chế” mức giảm.<br/>
+                                    • Nếu không nhập gì, JSON sẽ để trống các trường tương ứng.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4) Hidden textarea bind với entity -->
+                        <textarea class="d-none" th:field="*{conditionsJson}" id="conditionsJson"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit"
+                    th:text="${discount.id != null} ? 'Update' : 'Create'">Create</button>
+            <a class="btn btn-secondary" th:href="@{/admin/discounts}">Cancel</a>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        // Ẩn/hiện ô Code theo Type
+        (function(){
+            const typeSel = document.getElementById('typeSelect');
+            const codeWrap = document.getElementById('codeWrap');
+            function toggleCode() {
+                if (!typeSel || !codeWrap) return;
+                codeWrap.style.display = (typeSel.value === 'AUTO') ? 'none' : '';
+            }
+            toggleCode();
+            typeSel && typeSel.addEventListener('change', toggleCode);
+        })();
+    </script>
+
+    <!-- Conditions JSON builder -->
+    <script th:inline="javascript">
+        (function(){
+            const ta = document.getElementById('conditionsJson');
+            const scopeType   = document.getElementById('c-scope-type');
+            const scopeIds    = document.getElementById('c-scope-ids');
+            const includeMode = document.getElementById('c-include-mode');
+            const minQty      = document.getElementById('c-min-qty');
+            const capItem     = document.getElementById('c-cap-item');
+            const capOrder    = document.getElementById('c-cap-order');
+
+            function safeParse(json) {
+                if (!json) return null;
+                try { return JSON.parse(json); } catch(e){ return null; }
+            }
+            function arrayToCsv(arr){ return Array.isArray(arr) ? arr.join(',') : ''; }
+            function csvToNumArray(csv){
+                if (!csv || !csv.trim()) return [];
+                return csv.split(',').map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n));
+            }
+
+            // Hydrate từ JSON có sẵn
+            (function(){
+                const data = safeParse(ta.value);
+                if (!data) return;
+                if (data.scope && typeof data.scope === 'object') {
+                    if (Array.isArray(data.scope.categoryIds)) {
+                        scopeType.value = 'categoryIds';
+                        scopeIds.value  = arrayToCsv(data.scope.categoryIds);
+                    } else if (Array.isArray(data.scope.productIds)) {
+                        scopeType.value = 'productIds';
+                        scopeIds.value  = arrayToCsv(data.scope.productIds);
+                    } else if (Array.isArray(data.scope.variantIds)) {
+                        scopeType.value = 'variantIds';
+                        scopeIds.value  = arrayToCsv(data.scope.variantIds);
+                    }
+                }
+                if (data.includeMode) includeMode.value = data.includeMode;
+                if (typeof data.minQtyPerItem === 'number') minQty.value = String(data.minQtyPerItem);
+                if (typeof data.capPerItem   === 'number') capItem.value = String(data.capPerItem);
+                if (typeof data.capPerOrder  === 'number') capOrder.value = String(data.capPerOrder);
+            })();
+
+            function buildJson(){
+                const obj = {};
+                const ids = csvToNumArray(scopeIds.value);
+                if (scopeType.value && ids.length) obj.scope = { [scopeType.value]: ids };
+                if (includeMode.value) obj.includeMode = includeMode.value;
+                const m = parseInt(minQty.value, 10);
+                if (!Number.isNaN(m) && m > 0) obj.minQtyPerItem = m;
+                const ci = parseFloat(capItem.value);
+                if (!Number.isNaN(ci) && ci >= 0) obj.capPerItem = ci;
+                const co = parseFloat(capOrder.value);
+                if (!Number.isNaN(co) && co >= 0) obj.capPerOrder = co;
+                ta.value = Object.keys(obj).length === 0 ? "" : JSON.stringify(obj);
+            }
+
+            const form = ta.closest('form');
+            if (form) {
+                form.addEventListener('submit', function(ev){
+                    buildJson();
+                    if (ta.value) {
+                        try { JSON.parse(ta.value); } catch (e) {
+                            ev.preventDefault();
+                            alert('Conditions JSON không hợp lệ: ' + e.message);
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+</section>
+</body>
+</html>

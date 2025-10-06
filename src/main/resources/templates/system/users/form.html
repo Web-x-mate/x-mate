@@ -1,0 +1,63 @@
+<!-- src/main/resources/templates/system/users/form.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${user.id != null} ? 'Sửa User' : 'Tạo User'">User</h1>
+
+    <form th:action="${user.id != null} ? @{'/admin/system/users/' + ${user.id} + '/edit'} : @{/admin/system/users/new}"
+          th:object="${user}" method="post" class="vstack gap-3">
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Username</label>
+                <input th:field="*{username}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Full name</label>
+                <input th:field="*{fullName}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Email</label>
+                <input th:field="*{email}" class="form-control" type="email">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Phone</label>
+                <input th:field="*{phone}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Salary</label>
+                <input th:field="*{salary}" class="form-control" type="number" step="0.01" min="0">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Active</label>
+                <select th:field="*{active}" class="form-select">
+                    <option th:value="true">Active</option>
+                    <option th:value="false">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Password</label>
+                <input th:field="*{password}" class="form-control" type="password" th:placeholder="${user.id != null} ? 'Để trống nếu không đổi' : ''">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Roles</label>
+                <select class="form-select" multiple name="roleIds"
+                        th:with="selected=${currentRoleIds}">
+                    <option th:each="r : ${allRoles}"
+                            th:value="${r.id}"
+                            th:text="${r.name}"
+                            th:selected="${selected != null and selected.contains(r.id)}"></option>
+                </select>
+                <div class="form-text">Giữ Ctrl/⌘ để chọn nhiều.</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a th:href="@{/admin/system/users}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

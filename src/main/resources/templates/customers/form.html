@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 th:text="${customer != null and customer.id != null} ? 'Sửa khách hàng' : 'Tạo khách hàng'">Tạo khách hàng</h1>
+
+    <form th:action="${customer != null and customer.id != null}
+                    ? @{'/admin/customers/' + ${customer.id} + '/edit'}
+                    : @{/admin/customers/new}"
+          method="post" class="vstack gap-3">
+
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div>
+            <label for="name">Name *</label>
+            <input id="name" name="name" class="form-control" th:value="${customer?.name}" required>
+        </div>
+
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" class="form-control" th:value="${customer?.email}">
+            </div>
+            <div class="flex-1">
+                <label for="phone">Phone</label>
+                <input id="phone" name="phone" class="form-control" th:value="${customer?.phone}">
+            </div>
+        </div>
+
+        <div>
+            <label for="address">Address</label>
+            <input id="address" name="address" class="form-control" th:value="${customer?.address}">
+        </div>
+
+        <!-- Loyalty -->
+        <div class="d-flex gap-3">
+            <div class="flex-1">
+                <label for="points">Loyalty Points</label>
+                <input id="points" name="points" type="number" min="0" class="form-control" th:value="${points}">
+            </div>
+            <div class="flex-1">
+                <label for="tier">Tier</label>
+                <input id="tier" name="tier" class="form-control" th:value="${tier}">
+            </div>
+        </div>
+
+        <!-- Segments multiselect -->
+        <div>
+            <label for="segmentIds">Segments</label>
+            <select id="segmentIds" name="segmentIds" class="form-select" multiple size="5">
+                <option th:each="s : ${segments}"
+                        th:value="${s.id}"
+                        th:text="${s.name}"
+                        th:selected="${selectedSegmentIds != null and selectedSegmentIds.contains(s.id)}">
+                </option>
+            </select>
+            <small class="text-muted">Giữ Ctrl/Cmd để chọn nhiều mục.</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit"
+                    th:text="${customer != null && customer.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+            <a th:href="@{/admin/customers}" class="btn btn-outline-secondary">Quay lại danh sách</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<body>
+<section layout:fragment="content">
+    <h1 class="page-title">Customers</h1>
+
+    <div class="d-flex align-items-center justify-content-between mb-3 gap-2">
+        <form th:action="@{/admin/customers}" method="get" class="d-flex gap-2">
+            <input class="form-control" type="text" name="q" th:value="${q}" placeholder="Search name/email/phone...">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+        <a th:href="@{/admin/customers/new}" class="btn btn-success">+ Thêm khách hàng</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle w-100">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Segments</th>
+                <th>Points</th>
+                <th>Tier</th>
+                <th style="width:260px">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${page?.content}">
+                <td th:text="${c.id}">1</td>
+                <td th:text="${c.name}">John Doe</td>
+                <td th:text="${c.email}">john@x.com</td>
+                <td th:text="${c.phone}">090...</td>
+                <td>
+                    <span th:each="s : ${c.segments}" class="badge bg-secondary me-1" th:text="${s.name}">VIP</span>
+                    <span th:if="${c.segments == null || #lists.isEmpty(c.segments)}">—</span>
+                </td>
+                <td th:text="${c.loyaltyAccount != null ? c.loyaltyAccount.points : 0}">0</td>
+                <td th:text="${c.loyaltyAccount != null ? c.loyaltyAccount.tier : ''}"></td>
+                <td class="d-flex flex-wrap gap-2">
+                    <a th:href="@{|/admin/customers/${c.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
+                    <a th:href="@{|/admin/customers/${c.id}/delete|}" class="btn btn-sm btn-danger" onclick="return confirm('Xóa khách hàng này?')">Delete</a>
+                </td>
+            </tr>
+            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                <td colspan="8" class="text-center">No data</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/customers', q=${q})}"></div>
+</section>
+</body>
+</html>

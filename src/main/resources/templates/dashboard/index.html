@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${title} ?: 'Dashboard'">Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+
+            /* Không dùng @apply vì đang xài CDN Tailwind → viết CSS thuần */
+        .card{
+            background:#fff;
+            border:1px solid #e5e7eb;           /* slate-200 */
+            border-radius:1rem;                  /* rounded-2xl */
+            box-shadow:0 1px 2px rgba(15,23,42,.06); /* shadow-sm */
+        }
+        .muted{ color:#64748b; font-size:.875rem; } /* text-slate-500 text-sm */
+
+        .kpi{
+            position:relative;                   /* QUAN TRỌNG: giữ sparkline bên trong */
+            overflow:hidden;
+            padding:1rem;
+            background:#fff;
+            border:1px solid #e5e7eb;
+            border-radius:1rem;
+            box-shadow:0 1px 2px rgba(15,23,42,.06);
+        }
+        .kval{ font-size:1.5rem; font-weight:700; line-height:1.2; } /* text-2xl font-bold */
+        .kcap{ font-size:.75rem; color:#64748b; }                     /* text-xs text-slate-500 */
+        .tag{
+            display:inline-flex; align-items:center; gap:.25rem;
+            border-radius:9999px; font-size:.75rem; padding:.25rem .5rem;
+            background:#f1f5f9; color:#475569;                          /* bg-slate-100 text-slate-600 */
+        }
+        .section-title{ font-size:1rem; font-weight:600; }
+        .btn{ padding:.375rem .75rem; border-radius:.5rem; border:1px solid #cbd5e1; font-size:.875rem; }
+        .seg{ padding:.25rem .5rem; border-radius:9999px; font-size:.75rem; background:#f1f5f9; }
+
+        canvas.small-pie { max-height:200px !important; }
+        canvas.spark{
+            height:48px !important;
+            position:absolute; left:.5rem; right:.5rem; bottom:.5rem;    /* neo trong .kpi */
+            pointer-events:none; z-index:0;                               /* không che text/hover */
+        }
+        .kval, .kcap{ position:relative; z-index:1; }                   /* đảm bảo nằm trên sparkline */
+
+
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- ✅ Section đặt đúng trong body và đóng trước </body> -->
+<section layout:fragment="content">
+    <div class="max-w-[1500px] mx-auto p-6 space-y-6">
+
+        <!-- Header & Filters -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h1 class="text-2xl font-bold">Tổng quan</h1>
+            </div>
+
+            <form class="flex items-center gap-2 card p-2" th:action="@{/admin/dashboard}" method="get">
+                <input name="from" type="date" class="px-2 py-1 rounded-lg border text-sm"
+                       th:value="${from} ?: ''"/>
+                <span class="text-slate-400">→</span>
+                <input name="to" type="date" class="px-2 py-1 rounded-lg border text-sm"
+                       th:value="${to} ?: ''"/>
+                <select name="gran" class="px-2 py-1 rounded-lg border text-sm" th:value="${gran} ?: 'D'">
+                    <option value="D">Ngày</option>
+                    <option value="W">Tuần</option>
+                    <option value="M">Tháng</option>
+                </select>
+                <button type="submit" class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-sm">Áp dụng</button>
+                <a class="btn" th:href="@{/admin/dashboard/reports}">Báo cáo nhanh</a>
+            </form>
+        </header>
+
+        <!-- Global KPIs -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4">
+            <div class="kpi"><div class="kval" id="k_rev">0</div><div class="kcap">Doanh thu (đã thanh toán)</div><canvas id="sp_rev" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_ord">0</div><div class="kcap">Số đơn</div><canvas id="sp_ord" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_aov">0</div><div class="kcap">AOV</div><canvas id="sp_aov" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_low">0</div><div class="kcap">SKU tồn thấp</div><canvas id="sp_low" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_users">0</div><div class="kcap">Người dùng / Vai trò</div><canvas id="sp_usr" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_logs">0</div><div class="kcap">Log hôm nay</div><canvas id="sp_log" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_disc">0</div><div class="kcap">ĐH dùng mã giảm</div><canvas id="sp_dis" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+            <div class="kpi"><div class="kval" id="k_po_open">0</div><div class="kcap">PO mở</div><canvas id="sp_po" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
+        </section>
+
+        <!-- Row 1: Sales -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Doanh thu theo thời gian</h3><span class="tag">VND</span></div>
+                <canvas id="c_rev"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Phễu trạng thái đơn</h3><span class="tag">Count</span></div>
+                <canvas id="c_funnel"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Top sản phẩm/biến thể (qty)</h3><span class="tag">Top 10</span></div>
+                <canvas id="c_top"></canvas>
+            </div>
+        </section>
+
+        <!-- Row 2: Catalog & RBAC & Activity -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Catalog snapshot</h3><span class="tag">categories/products/variants/media</span></div>
+                <canvas id="c_catalog"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">RBAC: Vai trò × Quyền</h3><span class="tag">roles/permissions</span></div>
+                <canvas id="c_rbac"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Activity logs (24h)</h3><span class="tag">CREATE/UPDATE/DELETE/STATUS</span></div>
+                <canvas id="c_logs" class="small-pie"></canvas>
+            </div>
+        </section>
+
+        <!-- Row 3: Inventory & Procurement -->
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Tồn kho: On-hand vs Reserved</h3><span class="tag">SKU</span></div>
+                <canvas id="c_stock"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">PO theo trạng thái</h3><span class="tag">PO</span></div>
+                <canvas id="c_po" class="small-pie"></canvas>
+            </div>
+        </section>
+
+        <!-- Row 4: Customers & Loyalty & Discounts -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Phân bố Segment khách</h3><span class="tag">segments</span></div>
+                <canvas id="c_seg" class="small-pie"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Loyalty: Điểm theo tier</h3><span class="tag">loyalty_accounts</span></div>
+                <canvas id="c_loy"></canvas>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Hiệu quả khuyến mãi</h3><span class="tag">discounts + usages</span></div>
+                <canvas id="c_disc"></canvas>
+            </div>
+        </section>
+
+        <!-- Row 5: Live tables -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="card overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">Đơn gần nhất</h3><a th:href="@{/admin/sales/orders}" class="muted hover:underline">Xem tất cả</a></div>
+                <div class="p-5 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left text-slate-500"><tr><th class="py-2">Mã</th><th class="py-2">Khách</th><th class="py-2">Tổng</th><th class="py-2">TT</th><th class="py-2">Ship</th><th class="py-2">Ngày</th></tr></thead>
+                        <tbody id="t_orders"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">SKU tồn thấp</h3><a th:href="@{/admin/inventory}" class="muted hover:underline">Tới Inventory</a></div>
+                <div class="p-5 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left text-slate-500"><tr><th class="py-2">SKU</th><th class="py-2">Tên</th><th class="py-2">On-hand</th><th class="py-2">Reserved</th></tr></thead>
+                        <tbody id="t_low"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">PO đang nhận</h3><a th:href="@{/admin/procurement/po}" class="muted hover:underline">Tới Procurement</a></div>
+                <div class="p-5 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left text-slate-500"><tr><th class="py-2">PO</th><th class="py-2">Nhà cung cấp</th><th class="py-2">Trạng thái</th><th class="py-2">Received/Qty</th></tr></thead>
+                        <tbody id="t_po"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Inject JSON from server -->
+    <script th:inline="javascript">
+        const DASHBOARD = /*[[${json}]]*/ '{}';
+    </script>
+
+    <script>
+        const data = (() => { try { return typeof DASHBOARD === 'string' ? JSON.parse(DASHBOARD||'{}') : (DASHBOARD||{}); } catch(e){ return {}; } })();
+
+        // Safe getters
+        const g = (obj, path, def) => {
+            try {
+                return path.split('.').reduce((o,k)=> (o && (k in o)) ? o[k] : undefined, obj) ?? def;
+            } catch { return def; }
+        };
+        const $ = (id)=>document.getElementById(id);
+        const money = (v)=> new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(Number(v||0));
+
+        // KPIs
+        const revPaid = g(data,'kpis.revenuePaid',0);
+        const orders = g(data,'kpis.orders',0);
+        const low    = g(data,'kpis.lowStock',0);
+        const usersRoles = g(data,'kpis.usersRoles','0 / 0');
+        const logsToday  = g(data,'kpis.logsToday',0);
+        const discOrders = g(data,'kpis.discountOrders',0);
+        const poOpen     = g(data,'kpis.poOpen',0);
+
+        $('k_rev').textContent = money(revPaid);
+        $('k_ord').textContent = orders;
+        $('k_aov').textContent = money(orders? (revPaid/orders) : 0);
+        $('k_low').textContent = low;
+        $('k_users').textContent = usersRoles;
+        $('k_logs').textContent = logsToday;
+        $('k_disc').textContent = discOrders;
+        $('k_po_open').textContent = poOpen;
+
+        // Sparklines
+        const mkSpark = (el, arr)=> new Chart(el, {
+            type:'line',
+            data:{ labels: (arr||[]).map((_,i)=>i+1), datasets:[{ data: arr||[], tension:.35, fill:true }] },
+            options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} }
+        });
+
+        mkSpark($('sp_rev'), g(data,'sparklines.revenue',[]));
+        mkSpark($('sp_ord'), g(data,'sparklines.orders',[]));
+        mkSpark($('sp_aov'), g(data,'sparklines.aov',[]));
+        mkSpark($('sp_low'), g(data,'sparklines.lowStock',[]));
+        mkSpark($('sp_usr'), g(data,'sparklines.users',[]));
+        mkSpark($('sp_log'), g(data,'sparklines.logs',[]));
+        mkSpark($('sp_dis'), g(data,'sparklines.discountOrders',[]));
+        mkSpark($('sp_po'),  g(data,'sparklines.poOpen',[]));
+
+        // Helper chart factory
+        const make = (el,type,labels,values,opts)=> new Chart(el,{type,
+            data:{ labels: labels||[], datasets: values }, options: opts||{} });
+
+        // Sales
+        const revLabels = g(data,'revenueSeries.labels',[]);
+        const revVals   = g(data,'revenueSeries.values',[]);
+        make($('c_rev'),'line', revLabels, [{ label:'Doanh thu', data:revVals, tension:.35, fill:true }],
+            { plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>money(v) } } } });
+
+        const funnelLabels = g(data,'orderFunnel.labels',[]);
+        const funnelVals   = g(data,'orderFunnel.values',[]);
+        make($('c_funnel'),'bar', funnelLabels, [{ label:'Đơn', data:funnelVals }],
+            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+
+        const topLabels = g(data,'topVariants.labels',[]);
+        const topVals   = g(data,'topVariants.values',[]);
+        make($('c_top'),'bar', topLabels, [{ label:'Qty', data:topVals }],
+            { indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{ beginAtZero:true } } });
+
+        // Catalog
+        const catLabels = g(data,'catalog.labels',[]);
+        const catVals   = g(data,'catalog.values',[]);
+        make($('c_catalog'),'bar', catLabels, [{ label:'Count', data:catVals }],
+            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+
+        // RBAC
+        const rbacLabels = g(data,'rbac.labels',[]);
+        const rbacVals   = g(data,'rbac.values',[]);
+        make($('c_rbac'),'bar', rbacLabels, [{ label:'Số quyền/role', data:rbacVals }],
+            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+
+        // Activity logs
+        const logLabels = g(data,'activity.labels',[]);
+        const logVals   = g(data,'activity.values',[]);
+        make($('c_logs'),'doughnut', logLabels, [{ data:logVals }],
+            { plugins:{legend:{ position:'bottom' } } });
+
+        // Inventory
+        const stkLabels = g(data,'stock.labels',[]);
+        const onVals    = g(data,'stock.onHand',[]);
+        const rsVals    = g(data,'stock.reserved',[]);
+        make($('c_stock'),'bar', stkLabels, [
+            { label:'On-hand', data:onVals },
+            { label:'Reserved', data:rsVals }
+        ], { scales:{ y:{ beginAtZero:true } } });
+
+        // PO status
+        const poLabels = g(data,'poStatus.labels',[]);
+        const poVals   = g(data,'poStatus.values',[]);
+        make($('c_po'),'pie', poLabels, [{ data:poVals }],
+            { plugins:{ legend:{ position:'bottom' } } });
+
+        // Customers & Loyalty & Discounts
+        const segLabels = g(data,'segments.labels',[]);
+        const segVals   = g(data,'segments.values',[]);
+        make($('c_seg'),'pie', segLabels, [{ data:segVals }],
+            { plugins:{ legend:{ position:'bottom' } } });
+
+        const loyLabels = g(data,'loyalty.labels',[]);
+        const loyVals   = g(data,'loyalty.values',[]);
+        make($('c_loy'),'bar', loyLabels, [{ label:'Points', data:loyVals }],
+            { scales:{ y:{ beginAtZero:true } } });
+
+        const disLabels = g(data,'discountEffect.labels',[]);
+        const disOrder  = g(data,'discountEffect.orders',[]);
+        const disRev    = g(data,'discountEffect.revenue',[]);
+        make($('c_disc'),'bar', disLabels, [
+            { label:'Số đơn', data:disOrder },
+            { label:'Doanh thu', data:disRev, yAxisID:'y1' }
+        ], { scales:{ y:{ beginAtZero:true }, y1:{ beginAtZero:true, position:'right', ticks:{ callback:v=>money(v) } } } });
+
+        // Tables
+        const recent = g(data,'recentOrders',[]);
+        $('t_orders').innerHTML = (recent||[]).map(r=>`
+    <tr class="border-t border-slate-200">
+      <td class="py-2 font-medium">${r.code??''}</td>
+      <td class="py-2">${r.customer??''}</td>
+      <td class="py-2">${money(r.total)}</td>
+      <td class="py-2"><span class="seg">${r.paymentStatus??''}</span></td>
+      <td class="py-2"><span class="seg">${r.shippingStatus??''}</span></td>
+      <td class="py-2 text-slate-500">${r.createdAt??''}</td>
+    </tr>
+  `).join('');
+
+        const lows = g(data,'lowSkus',[]);
+        $('t_low').innerHTML = (lows||[]).map(r=>`
+    <tr class="border-t border-slate-200">
+      <td class="py-2 font-mono">${r.sku??''}</td>
+      <td class="py-2">${r.name??''}</td>
+      <td class="py-2">${r.onHand??0}</td>
+      <td class="py-2">${r.reserved??0}</td>
+    </tr>
+  `).join('');
+
+        const receiving = g(data,'poReceiving',[]);
+        $('t_po').innerHTML = (receiving||[]).map(r=>`
+    <tr class="border-t border-slate-200">
+      <td class="py-2 font-mono">${r.code??''}</td>
+      <td class="py-2">${r.supplier??''}</td>
+      <td class="py-2"><span class="seg">${r.status??''}</span></td>
+      <td class="py-2">${(r.receivedQty??0) + '/' + (r.totalQty??0)}</td>
+    </tr>
+  `).join('');
+    </script>
+</section> <!-- ✅ Đóng section đúng chỗ -->
+
+</body>
+</html>

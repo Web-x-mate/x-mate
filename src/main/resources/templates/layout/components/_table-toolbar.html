@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<form class="toolbar" method="get">
+  <input type="text" name="q" th:if="${q != null}" th:value="${q}" placeholder="Search..."/>
+  <select name="status" th:if="${status != null}">
+    <option th:value="${status}" th:text="${status} ?: 'All'">All</option>
+    <option value="">All</option>
+    <option>PENDING</option><option>PAID</option><option>SHIPPING</option><option>COMPLETED</option><option>CANCELLED</option>
+  </select>
+  <div class="spacer"></div>
+  <div class="actions">
+    <a th:if="${createUrl != null}" th:href="${createUrl}" class="btn">Create</a>
+  </div>
+</form>
+</body>
+</html>

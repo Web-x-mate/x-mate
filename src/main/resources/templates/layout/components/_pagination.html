@@ -1,0 +1,33 @@
+<!-- src/main/resources/templates/layout/components/_pagination.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="body (page, baseUrl, q)">
+    <nav th:if="${page != null and page.totalPages > 1}" aria-label="pagination">
+        <ul class="pagination">
+
+            <!-- Prev -->
+            <li th:class="'page-item ' + (${page.first} ? 'disabled' : '')">
+                <a class="page-link"
+                   th:href="@{|${baseUrl}?page=${page.number - 1}&size=${page.size}&q=${q}|}">Prev</a>
+            </li>
+
+            <!-- Numbers -->
+            <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                th:class="'page-item ' + (${i} == ${page.number} ? 'active' : '')">
+                <a class="page-link"
+                   th:text="${i + 1}"
+                   th:href="@{|${baseUrl}?page=${i}&size=${page.size}&q=${q}|}">1</a>
+            </li>
+
+            <!-- Next -->
+            <li th:class="'page-item ' + (${page.last} ? 'disabled' : '')">
+                <a class="page-link"
+                   th:href="@{|${baseUrl}?page=${page.number + 1}&size=${page.size}&q=${q}|}">Next</a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
