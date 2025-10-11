@@ -1,0 +1,109 @@
+
+.title {
+    font-family: "Criteria CF", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+:root {
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .15);
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --text: #111;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.card {
+    width: min(560px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    padding: 28px;
+}
+
+.close {
+    position: absolute;
+    right: -14px;
+    top: -14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #000;
+    color: #fff;
+    font-size: 18px;
+    border: 4px solid #fff;
+    cursor: pointer;
+}
+
+.title {
+    margin: 0 0 22px;
+    text-align: center;
+    font-size: 34px;
+    line-height: 1.2;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.field {
+    position: relative;
+    margin: 0 0 16px
+}
+
+.input {
+    width: 100%;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid var(--gray-300);
+    padding: 0 18px;
+    font-size: 16px;
+    outline: none;
+    background: #fff;
+}
+
+.input::placeholder {
+    color: #a3a3a3
+}
+
+.input:focus {
+    border-color: #000
+}
+
+.btn {
+    width: 100%;
+    height: 54px;
+    border-radius: 999px;
+    border: 0;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: not-allowed;
+    background: #e5e5e5;
+    color: #9a9a9a; /* trạng thái disable giống ảnh */
+    transition: background .15s ease, color .15s ease;
+}
+
+.btn.enabled {
+    cursor: pointer;
+    background: #111;
+    color: #fff;
+}

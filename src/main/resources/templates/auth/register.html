@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký tài khoản</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+
+</head>
+<body>
+<div class="backdrop">
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+        <button class="close" onclick="window.location.href='/'" aria-label="Đóng"></button>
+
+        <div class="logo-row">
+            <img class="logo" src="/images/coolclub-logo.avif" alt="COOL CLUB">
+        </div>
+
+        <h1 class="title" id="dlg-title">Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn</h1>
+        <div class="muted">Quyền lợi dành riêng cho bạn khi tham gia Coolclub</div>
+
+        <div class="perks">
+            <div class="perk"><img src="/images/perk-voucher.avif" alt="Voucher ưu đãi"><div><strong>Voucher ưu đãi</strong></div></div>
+            <div class="perk"><img src="/images/perk-gift.avif" alt="Quà tặng độc quyền"><div><strong>Quà tặng độc quyền</strong></div></div>
+            <div class="perk"><img src="/images/perk-cash.avif" alt="Hoàn tiền CoolCash"><div><strong>Hoàn tiền CoolCash</strong></div></div>
+        </div>
+
+        <div class="section-label">Đăng ký tài khoản (miễn phí)</div>
+
+        <div class="socials">
+            <a class="social-btn" href="/oauth2/authorization/google" title="Đăng ký với Google">
+                <img src="/images/ic-google.png" alt="Google">
+            </a>
+            <a class="social-btn" href="#" title="Đăng ký với Facebook (mock)">
+                <img src="/images/ic-facebook.png" alt="Facebook">
+            </a>
+        </div>
+
+        <div class="or">Hoặc</div>
+
+        <!-- REGISTER FORM -->
+        <form th:action="@{/auth/register}" method="post" id="registerForm" novalidate>
+            <div class="float-field">
+                <input class="float-input" type="text" name="fullName" id="fullName" placeholder=" " required minlength="2" maxlength="100">
+                <label class="float-label" for="fullName">Họ và tên</label>
+            </div>
+
+            <div class="row-2">
+                <div class="float-field">
+                    <input class="float-input" type="tel" name="phone" id="phone" placeholder=" "
+                           pattern="^[0-9]{9,11}$" required>
+                    <label class="float-label" for="phone">Số điện thoại</label>
+                </div>
+                <div class="float-field">
+                    <input class="float-input" type="email" name="email" id="email" placeholder=" " required>
+                    <label class="float-label" for="email">Email</label>
+                </div>
+            </div>
+
+            <div class="float-field">
+                <input class="float-input" type="password" name="password" id="pwd" placeholder=" " required minlength="6">
+                <label class="float-label" for="pwd">Mật khẩu</label>
+                <span class="toggle-eye" data-target="pwd">👁</span>
+            </div>
+
+            <div class="float-field">
+                <input class="float-input" type="password" name="confirmPassword" id="pwd2" placeholder=" " required minlength="6">
+                <label class="float-label" for="pwd2">Xác nhận mật khẩu</label>
+                <span class="toggle-eye" data-target="pwd2">👁</span>
+            </div>
+
+            <label class="agree">
+                <input type="checkbox" name="agree" required>
+                <span>Tôi đồng ý với <a th:href="@{/terms}">Điều khoản</a> &amp; <a th:href="@{/privacy}">Chính sách</a>.</span>
+            </label>
+
+            <button class="btn btn-primary" type="submit">ĐĂNG KÝ TÀI KHOẢN</button>
+        </form>
+
+        <div class="links">
+            <span>Đã có tài khoản? <a th:href="@{/auth/login}">Đăng nhập</a></span>
+            <a th:href="@{/auth/forgot}">Quên mật khẩu</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // toggle eye for both password fields
+    document.querySelectorAll('.toggle-eye').forEach(el=>{
+        el.addEventListener('click', ()=>{
+            const id = el.getAttribute('data-target');
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+    });
+
+    // simple client check: confirm password
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', (e)=>{
+        const p1 = document.getElementById('pwd').value;
+        const p2 = document.getElementById('pwd2').value;
+        if(p1 !== p2){
+            e.preventDefault();
+            alert('Mật khẩu xác nhận không khớp.');
+        }
+    });
+</script>
+</body>
+</html>

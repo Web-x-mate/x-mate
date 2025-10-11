@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <style>
+        .error{color:#d00;text-align:center;margin:8px 0}
+    </style>
+</head>
+<body>
+<div class="backdrop">
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+        <button class="close" onclick="window.location.href='/'" aria-label="Đóng"></button>
+
+        <div class="logo-row">
+            <img class="logo" src="/images/coolclub-logo.avif" alt="COOL CLUB">
+        </div>
+
+        <h1 class="title" id="dlg-title">Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn</h1>
+        <div class="muted">Quyền lợi dành riêng cho bạn khi tham gia Coolclub</div>
+
+        <div class="perks">
+            <div class="perk"><img src="/images/perk-voucher.avif" alt="Voucher ưu đãi"><div><strong>Voucher ưu đãi</strong></div></div>
+            <div class="perk"><img src="/images/perk-gift.avif" alt="Quà tặng độc quyền"><div><strong>Quà tặng độc quyền</strong></div></div>
+            <div class="perk"><img src="/images/perk-cash.avif" alt="Hoàn tiền CoolCash"><div><strong>Hoàn tiền CoolCash</strong></div></div>
+        </div>
+
+        <div class="section-label">Đăng nhập hoặc đăng ký (miễn phí)</div>
+
+        <div class="socials">
+            <a class="social-btn" th:href="@{/oauth2/authorization/google}" title="Đăng nhập Google">
+                <img src="/images/ic-google.png" alt="Google">
+            </a>
+            <a class="social-btn" href="#" title="Đăng nhập Facebook (mock)">
+                <img src="/images/ic-facebook.png" alt="Facebook">
+            </a>
+        </div>
+
+        <div class="or">Hoặc</div>
+
+        <p class="error" th:if="${param.error}">Sai email hoặc mật khẩu.</p>
+        <p class="error" th:if="${param.oauth2Error}">Đăng nhập Google thất bại.</p>
+        <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập lại.</p>
+
+        <form th:action="@{/auth/login}" method="post" id="loginForm" novalidate>
+            <!-- Email/SDT (floating label) -->
+            <div class="float-field">
+                <input class="float-input" type="text" name="email" id="email" placeholder=" " required>
+                <label class="float-label" for="email">Email/SDT của bạn</label>
+            </div>
+
+            <!-- Mật khẩu (floating label + eye) -->
+            <div class="float-field" style="position:relative">
+                <input class="float-input" type="password" name="password" id="pwd" placeholder=" " required>
+                <label class="float-label" for="pwd">Mật khẩu</label>
+                <button type="button" id="toggleEye" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer">👁</button>
+            </div>
+
+            <!-- CSRF: chỉ render khi _csrf có mặt (tránh lỗi khi bạn disable CSRF) -->
+            <input type="hidden" th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <button class="btn btn-primary" type="submit">ĐĂNG NHẬP</button>
+        </form>
+
+        <div class="links">
+            <a th:href="@{/auth/register}">Đăng ký tài khoản mới</a>
+            <a th:href="@{/auth/forgot}">Quên mật khẩu</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const eye = document.getElementById('toggleEye');
+    const pwd = document.getElementById('pwd');
+    eye?.addEventListener('click', ()=> {
+        const t = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
+        pwd.setAttribute('type', t);
+    });
+</script>
+</body>
+</html>

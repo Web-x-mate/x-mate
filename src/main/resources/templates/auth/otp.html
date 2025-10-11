@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Xác thực OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/forgot.css}">
+    <style>
+        .otp-box{display:flex;gap:8px;justify-content:center;margin:16px 0}
+        .otp-box input{width:48px;height:48px;text-align:center;font-size:20px;border:1px solid #ccc;border-radius:8px}
+        .hint{color:#666;text-align:center;margin-top:8px}
+        .error{color:#d00;text-align:center;margin:8px 0}
+        .msg{color:#0a7a2a;text-align:center;margin:8px 0}
+
+        .btn{width:100%;padding:14px 18px;border:none;border-radius:28px;font-weight:700}
+        .btn[disabled]{opacity:.45;cursor:not-allowed}
+        .btn.enabled{opacity:1;cursor:pointer}
+
+        .btn-resend{
+            display:inline-block;margin-top:12px;padding:10px 14px;border:none;border-radius:8px;
+            background:#2563eb;color:#fff;font-weight:600;transition:opacity .2s ease, transform .02s ease
+        }
+        .btn-resend:active{transform:translateY(1px)}
+        .btn-resend[disabled]{opacity:.45;cursor:not-allowed}
+    </style>
+</head>
+<body>
+<div class="backdrop">
+    <div class="card" role="dialog" aria-modal="true">
+        <button class="close" onclick="window.location.href='/'" aria-label="Đóng">✕</button>
+        <h1 class="title">Xác thực OTP</h1>
+
+        <p class="hint">
+            Mã OTP đã gửi qua <b th:text="${channel}">EMAIL</b> tới
+            <b th:text="${destination}">you@example.com</b>. Nhập 6 số bên dưới.
+        </p>
+        <p class="msg" th:if="${msg}" th:text="${msg}"></p>
+        <p class="error" th:if="${error}" th:text="${error}"></p>
+
+        <form th:action="@{/auth/forgot/verify}" method="post" id="otpForm">
+            <input type="hidden" name="otpId" th:value="${otpId}">
+            <div class="otp-box" id="otpBox">
+                <input>
+                <input>
+                <input>
+                <input>
+                <input>
+                <input>
+            </div>
+
+            <!-- mã OTP gửi lên -->
+            <input type="hidden" name="code" id="otpCode">
+
+            <button class="btn" type="submit" id="verifyBtn" disabled>XÁC NHẬN</button>
+
+            <!-- Gửi lại OTP -->
+            <button class="btn-resend" type="submit"
+                    th:formaction="@{/auth/forgot/resend}"
+                    formmethod="post" id="resendBtn" disabled>Gửi lại OTP (60s)</button>
+
+            <div class="hint" id="resendHint">Vui lòng đợi 60 giây để gửi lại.</div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const box = document.getElementById('otpBox');
+        const inputs = [...box.querySelectorAll('input')];
+        const codeEl = document.getElementById('otpCode');
+        const btnOK  = document.getElementById('verifyBtn');
+        const btnResend = document.getElementById('resendBtn');
+        const hintResend = document.getElementById('resendHint');
+
+        // cấu hình input
+        inputs.forEach((ip,i)=>{
+            ip.setAttribute('inputmode','numeric');
+            ip.setAttribute('pattern','[0-9]');
+            ip.maxLength = 1;
+
+            ip.addEventListener('input', ()=>{
+                // chỉ giữ 1 chữ số
+                ip.value = (ip.value.match(/\d/) || [''])[0];
+                if (ip.value && i < inputs.length-1) inputs[i+1].focus();
+                update();
+            });
+            ip.addEventListener('keydown', (e)=>{
+                if (e.key === 'Backspace' && !ip.value && i>0) inputs[i-1].focus();
+            });
+            ip.addEventListener('paste', (e)=>{
+                e.preventDefault();
+                fill((e.clipboardData || window.clipboardData).getData('text') || '');
+            });
+        });
+
+        // dán 6 số vào container
+        box.addEventListener('paste', (e)=>{
+            e.preventDefault();
+            fill((e.clipboardData || window.clipboardData).getData('text') || '');
+        });
+
+        function fill(txt){
+            const d = txt.replace(/\D/g,'').slice(0,6).split('');
+            inputs.forEach((ip, idx) => ip.value = d[idx] || '');
+            update();
+            (inputs.find(ip => !ip.value) || inputs[inputs.length-1]).focus();
+        }
+
+        function update(){
+            // đủ 6 ô, mỗi ô đúng 1 số
+            const vals = inputs.map(i => (i.value.match(/^\d$/) ? i.value : ''));
+            const filled = vals.every(v => v.length === 1);
+            codeEl.value = vals.join('');
+
+            if (filled) {
+                btnOK.removeAttribute('disabled');
+                btnOK.classList.add('enabled');
+            } else {
+                btnOK.setAttribute('disabled','disabled');
+                btnOK.classList.remove('enabled');
+            }
+        }
+
+        // countdown resend
+        let t=60;
+        (function tick(){
+            if (t>0){
+                btnResend.textContent = `Gửi lại OTP (${t}s)`;
+                btnResend.setAttribute('disabled','disabled');
+                hintResend.textContent = `Vui lòng đợi ${t}s để gửi lại.`;
+                t--; setTimeout(tick,1000);
+            } else {
+                btnResend.textContent = 'Gửi lại OTP';
+                btnResend.removeAttribute('disabled');
+                hintResend.textContent = 'Bạn có thể gửi lại OTP bây giờ.';
+            }
+        })();
+
+        // Enter ở ô cuối = submit
+        inputs[inputs.length-1].addEventListener('keydown', e=>{
+            if (e.key === 'Enter' && !btnOK.hasAttribute('disabled')) {
+                document.getElementById('otpForm').submit();
+            }
+        });
+
+        // focus ô đầu và sync trạng thái
+        inputs[0].focus();
+        update();
+    })();
+</script>
+</body>
+</html>

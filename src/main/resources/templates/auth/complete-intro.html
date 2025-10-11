@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <!-- Cách 1: bọc if -->
+    <meta th:if="${_csrf != null}" th:name="_csrf"        th:content="${_csrf.token}">
+    <meta th:if="${_csrf != null}" th:name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Hoàn tất thông tin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" th:href="@{/css/complete-intro.css}">
+
+</head>
+<body>
+<div class="backdrop">
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+        <button class="close" onclick="location.href='/'" aria-label="Đóng"></button>
+
+        <img class="logo" src="/images/coolclub-logo.avif" alt="COOL CLUB"/>
+        <h1 id="dlg-title">Hi <span th:text="${name}">bạn</span>,</h1>
+        <p class="muted">Hãy cập nhật một vài thông tin của bạn để nhận các ưu đãi hấp dẫn dành riêng cho bạn nhé!</p>
+
+        <!-- Sinh nhật -->
+        <div class="group">
+            <div class="lbl">Sinh nhật của bạn là?</div>
+            <label class="pill">
+                <select id="dob-day" aria-label="Ngày"></select>
+            </label>
+            <label class="pill">
+                <select id="dob-month" aria-label="Tháng"></select>
+            </label>
+            <label class="pill">
+                <select id="dob-year" aria-label="Năm"></select>
+            </label>
+        </div>
+
+        <!-- Giới tính -->
+        <div class="radios">
+            <label class="radio"><input type="radio" name="gender" value="M"> Nam</label>
+            <label class="radio"><input type="radio" name="gender" value="F"> Nữ</label>
+            <label class="radio"><input type="radio" name="gender" value="O" checked> Khác</label>
+        </div>
+
+        <!-- Chiều cao -->
+        <div class="row">
+            <div class="name">Chiều cao</div>
+            <div class="value"><span id="heightVal" th:text="${hDefault}">174</span>cm</div>
+            <input id="height" class="range" type="range" min="140" max="190"
+                   th:value="${hDefault}" value="174" step="1">
+        </div>
+
+        <!-- Cân nặng -->
+        <div class="row">
+            <div class="name">Cân nặng</div>
+            <div class="value"><span id="weightVal" th:text="${wDefault}">62</span>kg</div>
+            <input id="weight" class="range" type="range" min="40" max="120"
+                   th:value="${wDefault}" value="62" step="1">
+        </div>
+
+        <button class="btn" type="button" id="doneBtn">HOÀN TẤT & NHẬN ƯU ĐÃI →</button>
+        <a class="skip" th:href="@{/auth/complete/intro/skip}" role="button">Bỏ qua bước này</a>
+    </div>
+</div>
+
+<script th:src="@{/js/complete-intro.js}"></script>
+
+
+</body>
+</html>

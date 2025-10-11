@@ -10,7 +10,8 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByUsername(String username);
+    Optional<User> findByUsernameIgnoreCase(String username);
+
 
     @Query("""
         SELECT u FROM User u
@@ -27,10 +28,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Query("""
-     select distinct u from User u
+         select distinct u from User u
+           left join fetch u.roles r
+           left join fetch r.permissions
+         where u.email = :email
+      """)
+    Optional<User> findByEmailWithRolesAndPermissions(@Param("email") String email);
+    Optional<User> findByEmailIgnoreCase(String email);
+
+    @Query("""
+       select distinct u from User u
        left join fetch u.roles r
        left join fetch r.permissions
-     where u.email = :email
-  """)
-    Optional<User> findByEmailWithRolesAndPermissions(@Param("email") String email);
+       where lower(u.username) = lower(:key) or lower(u.email) = lower(:key)
+    """)
+    Optional<User> findByLoginWithRoles(@Param("key") String key);
+
 }
