@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quên mật khẩu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/forgot.css}">
+
+</head>
+<body>
+<div class="backdrop">
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+        <button class="close" onclick="window.location.href='/'" aria-label="Đóng">✕</button>
+
+        <h1 class="title" id="dlg-title">Cấp lại mật khẩu</h1>
+
+        <form th:action="@{/auth/forgot}" method="post" id="forgotForm" novalidate>
+            <div class="field">
+                <input class="input" id="identity" name="identity" type="text"
+                       placeholder="Email/SDT của bạn" required>
+            </div>
+
+            <button class="btn" id="submitBtn" type="submit" disabled>Gửi yêu cầu</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Bật nút khi ô nhập có dữ liệu
+    const ip = document.getElementById('identity');
+    const btn = document.getElementById('submitBtn');
+    function toggle(){
+        const ok = ip.value.trim().length > 0;
+        btn.disabled = !ok;
+        btn.classList.toggle('enabled', ok);
+    }
+    ip.addEventListener('input', toggle);
+    toggle();
+</script>
+</body>
+</html>
