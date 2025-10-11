@@ -15,8 +15,8 @@ import xmate.com.entity.common.ShippingStatus;
 import xmate.com.entity.customer.Customer;
 import xmate.com.entity.sales.Order;
 import xmate.com.entity.sales.OrderItem;
-import xmate.com.repo.catalog.ProductVariantRepository;    // đổi sang .repository nếu dự án bạn dùng package đó
-import xmate.com.repo.customer.CustomerRepository;       // đổi sang .repository nếu dự án bạn dùng package đó
+import xmate.com.repo.catalog.ProductVariantRepository;
+import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.service.sales.OrderService;
 
 import java.math.BigDecimal;
@@ -26,25 +26,29 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin/sales/orders")
 @RequiredArgsConstructor
-public class OrderController {
+public class OrderAdminController {
 
     private final OrderService service;
     private final CustomerRepository customerRepo;
     private final ProductVariantRepository variantRepo;
 
-    /** Nếu price bị null ở form => tự lấy giá gốc từ Variant; đồng thời set lại total. */
+    /** Nếu price để 0 ở form → tự lấy giá gốc từ Variant; đồng thời set lại lineTotal. */
     private void ensureDefaultPriceIfNull(List<OrderItem> items) {
         if (items == null) return;
         for (OrderItem it : items) {
             if (it == null || it.getVariant() == null || it.getVariant().getId() == null) continue;
 
-            if (it.getPrice() == null) {
+            // Price trong OrderItem là long → coi 0 là "chưa nhập" để auto-fill
+            if (it.getPrice() == 0L) {
                 var v = variantRepo.findById(it.getVariant().getId())
                         .orElseThrow(() -> new IllegalArgumentException("Variant not found: " + it.getVariant().getId()));
-                it.setPrice(v.getPrice());
+                it.setPrice(priceToLong(v.getPrice())); // convert BigDecimal/Long → long
             }
-            if (it.getQty() == null) it.setQty(0);
-            it.setTotal(it.getPrice().multiply(BigDecimal.valueOf(it.getQty())));
+            // Qty là int (primitive) → không check null, đảm bảo không âm
+            if (it.getQty() < 0) it.setQty(0);
+
+            // lineTotal = price * qty (đều long)
+            it.setLineTotal(it.getPrice() * (long) it.getQty());
         }
     }
 
@@ -83,7 +87,7 @@ public class OrderController {
     public String create(@ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         Order order = form.toOrder();
         List<OrderItem> items = form.toItems();
-        ensureDefaultPriceIfNull(items);              // << auto fill giá gốc nếu để trống
+        ensureDefaultPriceIfNull(items);
         service.create(order, items);
         ra.addFlashAttribute("success", "Tạo đơn hàng thành công");
         return "redirect:/admin/sales/orders";
@@ -103,7 +107,7 @@ public class OrderController {
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id, @ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         List<OrderItem> items = form.toItems();
-        ensureDefaultPriceIfNull(items);              // << auto fill giá gốc nếu để trống
+        ensureDefaultPriceIfNull(items);
         service.update(id, form.toOrder(), items);
         ra.addFlashAttribute("success", "Cập nhật đơn hàng thành công");
         return "redirect:/admin/sales/orders";
@@ -117,11 +121,10 @@ public class OrderController {
     }
 
     private List<Customer> getAllCustomers() {
-        // Lấy 200 khách đầu tiên để hiển thị dropdown; tuỳ nhu cầu bạn chỉnh size
         return customerRepo.findAll(PageRequest.of(0, 200, Sort.by("id").descending())).getContent();
     }
 
-    // ===================== DTO FORM =====================
+    // ======= DTO FORM (đồng bộ long VND) =======
     @Data
     public static class OrderForm {
         private Long id;
@@ -134,12 +137,13 @@ public class OrderController {
         private OrderStatus status = OrderStatus.PENDING;
         private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
         private ShippingStatus shippingStatus = ShippingStatus.NOT_SHIPPED;
-        private BigDecimal discountAmount = BigDecimal.ZERO;
-        private BigDecimal shippingFee = BigDecimal.ZERO;
+
+        private long discountAmount = 0L;
+        private long shippingFee = 0L;
 
         // items (parallel arrays)
         private List<Long> variantIds = new ArrayList<>();
-        private List<BigDecimal> prices = new ArrayList<>();
+        private List<Long> prices = new ArrayList<>();   // ✅ long thay vì BigDecimal
         private List<Integer> qtys = new ArrayList<>();
 
         public Order toOrder() {
@@ -158,8 +162,9 @@ public class OrderController {
             o.setStatus(status);
             o.setPaymentStatus(paymentStatus);
             o.setShippingStatus(shippingStatus);
-            o.setDiscountAmount(discountAmount != null ? discountAmount : BigDecimal.ZERO);
-            o.setShippingFee(shippingFee != null ? shippingFee : BigDecimal.ZERO);
+            o.setDiscountAmount(discountAmount);
+            o.setShippingFee(shippingFee);
+            // subtotal/total sẽ được service tính lại từ items
             return o;
         }
 
@@ -169,17 +174,17 @@ public class OrderController {
                 Long vid = variantIds.get(i);
                 if (vid == null) continue;
 
-                BigDecimal price = (i < prices.size() && prices.get(i) != null) ? prices.get(i) : null; // cho phép null để auto-fill
-                Integer qty = (i < qtys.size() && qtys.get(i) != null) ? qtys.get(i) : 0;
+                long price = (i < prices.size() && prices.get(i) != null) ? prices.get(i) : 0L;
+                int qty = (i < qtys.size() && qtys.get(i) != null) ? qtys.get(i) : 0;
 
                 ProductVariant v = new ProductVariant();
                 v.setId(vid);
 
                 OrderItem it = new OrderItem();
                 it.setVariant(v);
-                it.setPrice(price); // có thể là null -> controller sẽ auto-fill
-                it.setQty(qty);
-                it.setTotal(price != null ? price.multiply(BigDecimal.valueOf(qty)) : BigDecimal.ZERO);
+                it.setPrice(price);              // long
+                it.setQty(qty);                  // int
+                it.setLineTotal(price * (long) qty);
                 list.add(it);
             }
             return list;
@@ -203,11 +208,23 @@ public class OrderController {
             if (o.getItems() != null) {
                 for (OrderItem it : o.getItems()) {
                     f.getVariantIds().add(it.getVariant() != null ? it.getVariant().getId() : null);
-                    f.getPrices().add(it.getPrice());
-                    f.getQtys().add(it.getQty());
+                    f.getPrices().add(it.getPrice());   // long
+                    f.getQtys().add(it.getQty());       // int
                 }
             }
             return f;
         }
+    }
+
+    // ===== Helper: convert giá variant sang long
+    private long priceToLong(Object priceObj) {
+        if (priceObj == null) return 0L;
+        if (priceObj instanceof Long l) return l;
+        if (priceObj instanceof Integer i) return i.longValue();
+        if (priceObj instanceof BigDecimal bd) return bd.longValue();
+        if (priceObj instanceof String s) {
+            try { return new BigDecimal(s).longValue(); } catch (Exception ignored) {}
+        }
+        return 0L;
     }
 }

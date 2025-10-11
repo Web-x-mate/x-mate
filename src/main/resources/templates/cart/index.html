@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Giỏ hàng</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/cart.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-title">Cart Page</h1>
+    <div class="row">
+        <div class="card">
+            <table>
+                <thead>
+                <tr>
+                    <th class="chk"><input id="chk-all" type="checkbox"/></th>
+                    <th>Sản phẩm</th>
+                    <th class="center">Đơn giá</th>
+                    <th class="center" style="width:180px;">Số lượng</th>
+                    <th class="right">Thành tiền</th>
+                    <th class="right" style="width:72px;"></th>
+                </tr>
+                </thead>
+                <tbody id="cart-body"></tbody>
+            </table>
+            <div id="empty" class="empty" style="display:none;">Giỏ hàng trống.</div>
+        </div>
+
+        <aside class="card right">
+            <div class="voucher-strip">
+                <button class="nav prev" type="button">‹</button>
+                <div id="coupon-list" class="tickets"></div>
+                <button class="nav next" type="button">›</button>
+            </div>
+
+            <div class="coupon">
+                <input id="coupon" type="text" placeholder="Nhập mã giảm giá">
+                <button id="btnCoupon" class="btn btn-primary" type="button">ÁP DỤNG</button>
+            </div>
+
+            <div class="rowline"><div class="muted">Tạm tính</div><div id="subtotal">0 đ</div></div>
+            <div class="rowline"><div class="muted">Giảm giá</div><div id="discount">0 đ</div></div>
+            <div class="rowline"><div class="muted">Phí vận chuyển</div><div id="shipping">0 đ</div></div>
+            <hr>
+            <div class="rowline total"><div>Tổng cộng</div><div id="total">0 đ</div></div>
+
+            <div class="actions actions-right">
+                <a class="btn" href="/">← Tiếp tục mua</a>
+                <a id="btnCheckout" class="btn btn-primary" href="/checkout">Thanh toán</a>
+            </div>
+        </aside>
+    </div>
+</div>
+<script defer th:src="@{/js/cart.js?v=12}"></script>
+</body>
+</html>

@@ -8,7 +8,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByEmail(String email);
     boolean existsByEmail(String email);
     // UserRepository
-    Optional<Customer> findByEmailIgnoreCase(String email);   // thêm dòng này
     boolean existsByEmailIgnoreCase(String email);
     Optional<Customer> findByPhone(String phone);
+    Optional<Customer> findByEmailIgnoreCase(String email);
+    Optional<Customer> findByOauthProviderAndOauthSubject(String provider, String subject);
+
 }

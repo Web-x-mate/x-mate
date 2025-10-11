@@ -13,9 +13,16 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
+    /** Redirect "/" về trang đăng nhập để tránh Thymeleaf đòi index.html */
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        // Nếu trước đây có: registry.addViewController("/").setViewName("index"); -> hãy xoá bỏ
+        registry.addRedirectViewController("/", "/auth/login");
+    }
+
+    /** Cho phép truy cập http://host/uploads/** tới thư mục ./uploads */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Cho phép truy cập http://host/uploads/** map tới thư mục thực tế ./uploads
         String location = Path.of(uploadDir).toAbsolutePath().toUri().toString();
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(location);

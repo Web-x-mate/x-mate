@@ -1,0 +1,122 @@
+<!-- templates/chat/admin.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Admin Chat</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/chat.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin-inbox.css}"/>
+
+    <!-- SockJS + StompJS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <!-- JS chính -->
+    <script defer th:src="@{/js/chat.js}"></script>
+    <script defer th:src="@{/js/admin-inbox-embed.js}"></script>
+</head>
+
+<body>
+
+<!-- ===== KHUNG TỔNG ===== -->
+<div class="chat-shell">
+    <!-- Sidebar danh sách hội thoại -->
+    <aside class="chat-sidebar">
+        <input id="inboxSearch" class="search" type="text" placeholder="Tìm theo email..." />
+        <div id="inboxTotal" class="total">Đang tải...</div>
+        <div id="inboxList" class="inbox"></div>
+    </aside>
+
+    <!-- Khung chat bên phải -->
+    <section class="chat-board">
+        <div class="chat-header">
+            <div><b>Phòng:</b> <span th:text="${room}">u-0</span></div>
+            <div>Đang chat với: <b class="peer" th:text="${peer}">user@example.com</b></div>
+        </div>
+
+        <!-- Nội dung chat -->
+        <div id="chatArea" class="chat-area"></div>
+
+        <!-- Ô nhập tin nhắn -->
+        <div class="chat-input">
+            <input id="msg" type="text" placeholder="Nhập tin nhắn..." />
+            <button id="sendBtn" type="button">Gửi</button>
+        </div>
+    </section>
+</div>
+<!-- ===== HẾT KHUNG ===== -->
+
+<!-- Biến cấu hình JS -->
+<script th:inline="javascript">
+    window.IS_ADMIN   = true;
+    window.CHAT_ROOM  = /*[[${room}]]*/ 'u-0';
+    window.CHAT_ME    = 'Admin';
+    window.CHAT_ME_ID = 0;
+    window.WS_URL     = /*[[@{/ws}]]*/ '/ws';
+</script>
+
+</body>
+</html>
+<!-- templates/chat/admin.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Admin Chat</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/chat.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin-inbox.css}"/>
+
+    <!-- SockJS + StompJS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <!-- JS chính -->
+    <script defer th:src="@{/js/chat.js}"></script>
+    <script defer th:src="@{/js/admin-inbox-embed.js}"></script>
+</head>
+
+<body>
+
+<!-- ===== KHUNG TỔNG ===== -->
+<div class="chat-shell">
+    <!-- Sidebar danh sách hội thoại -->
+    <aside class="chat-sidebar">
+        <input id="inboxSearch" class="search" type="text" placeholder="Tìm theo email..." />
+        <div id="inboxTotal" class="total">Đang tải...</div>
+        <div id="inboxList" class="inbox"></div>
+    </aside>
+
+    <!-- Khung chat bên phải -->
+    <section class="chat-board">
+        <div class="chat-header">
+            <div><b>Phòng:</b> <span th:text="${room}">u-0</span></div>
+            <div>Đang chat với: <b class="peer" th:text="${peer}">user@example.com</b></div>
+        </div>
+
+        <!-- Nội dung chat -->
+        <div id="chatArea" class="chat-area"></div>
+
+        <!-- Ô nhập tin nhắn -->
+        <div class="chat-input">
+            <input id="msg" type="text" placeholder="Nhập tin nhắn..." />
+            <button id="sendBtn" type="button">Gửi</button>
+        </div>
+    </section>
+</div>
+<!-- ===== HẾT KHUNG ===== -->
+
+<!-- Biến cấu hình JS -->
+<script th:inline="javascript">
+    window.IS_ADMIN   = true;
+    window.CHAT_ROOM  = /*[[${room}]]*/ 'u-0';
+    window.CHAT_ME    = 'Admin';
+    window.CHAT_ME_ID = 0;
+    window.WS_URL     = /*[[@{/ws}]]*/ '/ws';
+</script>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inbox</title>
+    <link rel="stylesheet" th:href="@{/css/admin-inbox.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+
+<body>
+<div class="sidebar">
+    <input id="inboxSearch" type="text" placeholder="Tìm theo email...">
+    <div id="inboxTotal" class="total"></div>
+    <div id="inboxList" class="inbox"></div>
+</div>
+
+<script th:src="@{/js/admin-inbox-embed.js}"></script>
+<script>
+    window.IS_ADMIN = true;
+    window.WS_URL = '/ws';
+</script>
+</body>
+</html>
