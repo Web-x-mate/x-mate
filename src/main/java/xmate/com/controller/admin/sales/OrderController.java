@@ -8,13 +8,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.catalog.ProductVariant;
-import xmate.com.domain.common.OrderStatus;
-import xmate.com.domain.common.PaymentStatus;
-import xmate.com.domain.common.ShippingStatus;
-import xmate.com.domain.customer.Customer;
-import xmate.com.domain.sales.Order;
-import xmate.com.domain.sales.OrderItem;
+import xmate.com.entity.catalog.ProductVariant;
+import xmate.com.entity.common.OrderStatus;
+import xmate.com.entity.common.PaymentStatus;
+import xmate.com.entity.common.ShippingStatus;
+import xmate.com.entity.customer.Customer;
+import xmate.com.entity.sales.Order;
+import xmate.com.entity.sales.OrderItem;
 import xmate.com.repo.catalog.ProductVariantRepository;    // đổi sang .repository nếu dự án bạn dùng package đó
 import xmate.com.repo.customer.CustomerRepository;       // đổi sang .repository nếu dự án bạn dùng package đó
 import xmate.com.service.sales.OrderService;

@@ -4,8 +4,8 @@ package xmate.com.repo.discount;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.discount.Discount;
-import xmate.com.domain.common.DiscountKind;
+import xmate.com.entity.discount.Discount;
+import xmate.com.entity.common.DiscountKind;
 
 import java.time.LocalDateTime;
 import java.util.*;

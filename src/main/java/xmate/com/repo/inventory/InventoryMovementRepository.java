@@ -4,7 +4,7 @@ package xmate.com.repo.inventory;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.inventory.InventoryMovement;
+import xmate.com.entity.inventory.InventoryMovement;
 
 public interface InventoryMovementRepository extends JpaRepository<InventoryMovement, Long> {
 

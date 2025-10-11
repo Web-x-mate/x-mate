@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import xmate.com.domain.procurement.Batch;
+import xmate.com.entity.procurement.Batch;
 import xmate.com.repo.procurement.BatchRepository;
 import xmate.com.service.procurement.BatchService;
 

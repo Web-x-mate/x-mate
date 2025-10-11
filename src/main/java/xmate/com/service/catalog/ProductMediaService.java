@@ -1,6 +1,6 @@
 package xmate.com.service.catalog;
 
-import xmate.com.domain.catalog.ProductMedia;
+import xmate.com.entity.catalog.ProductMedia;
 import org.springframework.data.domain.*;
 
 import java.util.List;

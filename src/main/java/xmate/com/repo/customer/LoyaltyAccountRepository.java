@@ -3,7 +3,7 @@ package xmate.com.repo.customer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import xmate.com.domain.customer.LoyaltyAccount;
+import xmate.com.entity.customer.LoyaltyAccount;
 
 import java.util.List;
 

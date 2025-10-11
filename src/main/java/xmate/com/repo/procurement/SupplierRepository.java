@@ -4,7 +4,7 @@ package xmate.com.repo.procurement;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.procurement.Supplier;
+import xmate.com.entity.procurement.Supplier;
 
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     @Query("""

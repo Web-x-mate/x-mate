@@ -1,9 +1,9 @@
 // src/main/java/xmate/com/service/discount/DiscountEngine.java
 package xmate.com.service.discount;
 
-import xmate.com.domain.sales.Order;
-import xmate.com.domain.sales.OrderItem;
-import xmate.com.domain.discount.Discount;
+import xmate.com.entity.sales.Order;
+import xmate.com.entity.sales.OrderItem;
+import xmate.com.entity.discount.Discount;
 
 import java.math.BigDecimal;
 import java.util.List;

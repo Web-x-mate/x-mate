@@ -2,7 +2,7 @@
 package xmate.com.service.system;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.system.User;
+import xmate.com.entity.system.User;
 
 import java.util.Set;
 

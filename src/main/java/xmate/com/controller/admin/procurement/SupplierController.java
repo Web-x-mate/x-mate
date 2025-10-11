@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.procurement.Supplier;
+import xmate.com.entity.procurement.Supplier;
 import xmate.com.service.procurement.SupplierService;
 
 @Controller

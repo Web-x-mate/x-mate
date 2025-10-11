@@ -2,8 +2,8 @@
 package xmate.com.service.sales;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.sales.Order;
-import xmate.com.domain.sales.OrderItem;
+import xmate.com.entity.sales.Order;
+import xmate.com.entity.sales.OrderItem;
 
 import java.util.List;
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.discount.Discount;
+import xmate.com.entity.discount.Discount;
 import xmate.com.service.discount.DiscountService;
 
 @Controller

@@ -3,7 +3,7 @@ package xmate.com.repo.discount;
 
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.discount.*;
+import xmate.com.entity.discount.*;
 
 import java.time.LocalDate;
 import java.util.List;

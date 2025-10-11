@@ -7,9 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.catalog.Product;
-import xmate.com.domain.catalog.ProductMedia;
-import xmate.com.domain.catalog.ProductVariant;
+import xmate.com.entity.catalog.Product;
+import xmate.com.entity.catalog.ProductMedia;
+import xmate.com.entity.catalog.ProductVariant;
 import xmate.com.service.catalog.ProductMediaService;
 import xmate.com.service.catalog.ProductService;
 import xmate.com.service.catalog.ProductVariantService;
@@ -71,7 +71,7 @@ public class ProductMediaController {
         m.setUrl(url);
         m.setPrimary(primary);
         m.setSortOrder(sortOrder);
-        m.setMediaType(xmate.com.domain.common.MediaType.valueOf(mediaType));
+        m.setMediaType(xmate.com.entity.common.MediaType.valueOf(mediaType));
         if (variantId != null) {
             ProductVariant v = variantService.get(variantId);
             m.setVariant(v);
@@ -99,7 +99,7 @@ public class ProductMediaController {
                          RedirectAttributes ra) {
 
         ProductMedia m = mediaService.get(id);
-        m.setMediaType(xmate.com.domain.common.MediaType.valueOf(mediaType));
+        m.setMediaType(xmate.com.entity.common.MediaType.valueOf(mediaType));
         m.setPrimary(primary);
         m.setSortOrder(sortOrder);
 

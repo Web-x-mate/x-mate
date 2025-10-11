@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import xmate.com.domain.common.DiscountKind;
-import xmate.com.domain.discount.*;
+import xmate.com.entity.common.DiscountKind;
+import xmate.com.entity.discount.*;
 import xmate.com.repo.discount.*;
 import xmate.com.service.discount.DiscountService;
 
@@ -124,8 +124,8 @@ public class DiscountServiceImpl implements DiscountService {
         DiscountUsage u = DiscountUsage.builder()
                 .id(id)
                 .discount(discount)
-                .order(xmate.com.domain.sales.Order.builder().id(orderId).build())
-                .customer(customerIdOrNull != null ? xmate.com.domain.customer.Customer.builder().id(customerIdOrNull).build() : null)
+                .order(xmate.com.entity.sales.Order.builder().id(orderId).build())
+                .customer(customerIdOrNull != null ? xmate.com.entity.customer.Customer.builder().id(customerIdOrNull).build() : null)
                 .usedAt(LocalDateTime.now())
                 .build();
         DiscountUsage saved = usageRepo.save(u);

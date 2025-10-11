@@ -2,8 +2,8 @@
 package xmate.com.service.discount;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.discount.Discount;
-import xmate.com.domain.discount.DiscountUsage;
+import xmate.com.entity.discount.Discount;
+import xmate.com.entity.discount.DiscountUsage;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

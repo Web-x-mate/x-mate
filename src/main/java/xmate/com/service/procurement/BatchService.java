@@ -1,7 +1,7 @@
 package xmate.com.service.procurement;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.procurement.Batch;
+import xmate.com.entity.procurement.Batch;
 
 import java.util.List;
 

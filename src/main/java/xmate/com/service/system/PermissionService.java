@@ -2,7 +2,7 @@
 package xmate.com.service.system;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.system.Permission;
+import xmate.com.entity.system.Permission;
 
 public interface PermissionService {
     Page<Permission> search(String q, Pageable pageable);

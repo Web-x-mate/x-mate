@@ -1,7 +1,7 @@
 package xmate.com.service.catalog;
 // src/main/java/xmate/com/service/CategoryService.java
 
-import xmate.com.domain.catalog.Category;
+import xmate.com.entity.catalog.Category;
 import org.springframework.data.domain.*;
 
 public interface CategoryService {

@@ -1,7 +1,7 @@
 package xmate.com.service.catalog;
 
 
-import xmate.com.domain.catalog.ProductVariant;
+import xmate.com.entity.catalog.ProductVariant;
 import org.springframework.data.domain.*;
 
 public interface ProductVariantService {

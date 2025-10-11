@@ -6,7 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import xmate.com.domain.system.ActivityLog;
+import xmate.com.entity.system.ActivityLog;
 import xmate.com.service.system.ActivityLogService;
 
 @Controller

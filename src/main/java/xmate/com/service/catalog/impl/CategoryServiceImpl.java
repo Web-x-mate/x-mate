@@ -7,7 +7,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import xmate.com.domain.catalog.Category;
+import xmate.com.entity.catalog.Category;
 import xmate.com.repo.catalog.CategoryRepository;
 import xmate.com.service.catalog.CategoryService;
 

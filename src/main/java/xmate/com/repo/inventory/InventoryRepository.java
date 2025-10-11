@@ -4,7 +4,7 @@ package xmate.com.repo.inventory;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.inventory.Inventory;
+import xmate.com.entity.inventory.Inventory;
 
 import java.util.List;
 

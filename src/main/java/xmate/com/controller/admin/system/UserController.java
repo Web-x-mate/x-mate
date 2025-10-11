@@ -7,8 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.system.Role;
-import xmate.com.domain.system.User;
+import xmate.com.entity.system.Role;
+import xmate.com.entity.system.User;
 import xmate.com.service.system.RoleService;
 import xmate.com.service.system.UserService;
 

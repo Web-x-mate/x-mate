@@ -7,9 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.customer.Customer;
-import xmate.com.domain.customer.LoyaltyAccount;
-import xmate.com.domain.customer.Segment;
+import xmate.com.entity.customer.Customer;
+import xmate.com.entity.customer.LoyaltyAccount;
+import xmate.com.entity.customer.Segment;
 import xmate.com.service.customer.CustomerService;
 import xmate.com.service.customer.SegmentService;
 
