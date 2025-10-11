@@ -4,6 +4,7 @@ package xmate.com.service.system.impl;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xmate.com.entity.system.Role;
@@ -22,6 +23,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
     private final RoleRepository roleRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Page<User> search(String q, Pageable pageable) {
@@ -32,10 +34,14 @@ public class UserServiceImpl implements UserService {
     public User get(Long id) {
         return userRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
+    private static boolean isBcrypt(String s){
+        return s!=null && (s.startsWith("{bcrypt}$2") || s.startsWith("$2a$") || s.startsWith("$2b$") || s.startsWith("$2y$"));
+    }
 
     @Override
     public User create(User u) {
-        // tùy bạn băm mật khẩu ở đây nếu cần
+        var raw = u.getPassword();
+        if (!isBcrypt(raw)) u.setPassword(passwordEncoder.encode(raw));
         return userRepo.save(u);
     }
 
@@ -48,7 +54,8 @@ public class UserServiceImpl implements UserService {
         db.setSalary(u.getSalary());
         db.setActive(u.getActive() != null ? u.getActive() : db.getActive());
         if (u.getPassword()!=null && !u.getPassword().isBlank()) {
-            db.setPassword(u.getPassword()); // nếu dùng BCrypt, encode tại đây
+//            db.setPassword(u.getPassword()); // nếu dùng BCrypt, encode tại đây
+            db.setPassword(passwordEncoder.encode(u.getPassword()));
         }
         return db;
     }
