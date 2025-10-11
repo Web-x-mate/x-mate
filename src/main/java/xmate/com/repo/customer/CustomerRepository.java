@@ -1,22 +1,14 @@
 package xmate.com.repo.customer;
 
-
-import org.springframework.data.domain.*;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import xmate.com.entity.customer.Customer;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-
+    Optional<Customer> findByEmail(String email);
     boolean existsByEmail(String email);
-
-    @Query("""
-       SELECT c FROM Customer c
-       WHERE (:q IS NULL OR :q='' OR
-              LOWER(c.name) LIKE LOWER(CONCAT('%',:q,'%')) OR
-              LOWER(c.email) LIKE LOWER(CONCAT('%',:q,'%')) OR
-              c.phone LIKE CONCAT('%',:q,'%'))
-       """)
-    Page<Customer> search(String q, Pageable pageable);
+    // UserRepository
+    Optional<Customer> findByEmailIgnoreCase(String email);   // thêm dòng này
+    boolean existsByEmailIgnoreCase(String email);
+    Optional<Customer> findByPhone(String phone);
 }
-

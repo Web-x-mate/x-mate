@@ -13,8 +13,7 @@ import xmate.com.repo.catalog.ProductRepository;   // 🔥 ADDED
 import xmate.com.repo.catalog.ProductVariantRepository; // 🔥 ADDED
 import xmate.com.repo.catalog.ProductMediaRepository;   // 🔥 ADDED
 
-import xmate.com.repo.customer.LoyaltyAccountRepository;
-import xmate.com.repo.customer.SegmentRepository;
+
 import xmate.com.repo.discount.DiscountUsageRepository;
 import xmate.com.repo.inventory.InventoryRepository;
 import xmate.com.repo.procurement.PurchaseOrderRepository;
@@ -41,8 +40,7 @@ public class DashboardService {
     private final UserRepository userRepo;
     private final RoleRepository roleRepo;
     private final ActivityLogRepository logRepo;
-    private final SegmentRepository segmentRepo;
-    private final LoyaltyAccountRepository loyaltyRepo;
+
     // 🔥 ADDED: catalog repos
     private final CategoryRepository catRepo;
     private final ProductRepository prodRepo;
@@ -243,25 +241,25 @@ public class DashboardService {
         put(root, "poStatus.labels", poLabels);
         put(root, "poStatus.values", poVals);
 
-        var seg = segmentRepo.distribution();
-        List<String> segLabels = new ArrayList<>();
-        List<Integer> segVals  = new ArrayList<>();
-        for (var r : seg) {
-            segLabels.add(r.getLabel());
-            segVals.add(r.getValue() == null ? 0 : r.getValue());
-        }
-        put(root, "segments.labels", segLabels);
-        put(root, "segments.values", segVals);
+//        var seg = segmentRepo.distribution();
+//        List<String> segLabels = new ArrayList<>();
+//        List<Integer> segVals  = new ArrayList<>();
+//        for (var r : seg) {
+//            segLabels.add(r.getLabel());
+//            segVals.add(r.getValue() == null ? 0 : r.getValue());
+//        }
+//        put(root, "segments.labels", segLabels);
+//        put(root, "segments.values", segVals);
 
-        var loy = loyaltyRepo.sumPointsByTier();
-        List<String> loyLabels = new ArrayList<>();
-        List<Integer> loyVals  = new ArrayList<>();
-        for (var r : loy) {
-            loyLabels.add(r.getLabel());
-            loyVals.add(r.getValue() == null ? 0 : r.getValue());
-        }
-        put(root, "loyalty.labels", loyLabels);
-        put(root, "loyalty.values", loyVals);
+//        var loy = loyaltyRepo.sumPointsByTier();
+//        List<String> loyLabels = new ArrayList<>();
+//        List<Integer> loyVals  = new ArrayList<>();
+//        for (var r : loy) {
+//            loyLabels.add(r.getLabel());
+//            loyVals.add(r.getValue() == null ? 0 : r.getValue());
+//        }
+//        put(root, "loyalty.labels", loyLabels);
+//        put(root, "loyalty.values", loyVals);
 
         int DISC_TOP = 10;
         var eff = discUsageRepo.effectiveness(from, to, DISC_TOP);

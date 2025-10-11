@@ -80,7 +80,7 @@ public class CustomerServiceImpl implements IUserService {
             u = new Customer();
             u.setEmail(key);
             u.setFullname(fullName);
-            String rnd = java.util.UUID.randomUUID().toString();
+            String rnd = UUID.randomUUID().toString();
             u.setPasswordHash(passwordEncoder.encode(rnd));
             u.setEnabled(true);
             userRepo.save(u);

@@ -29,7 +29,7 @@ public class User {
     @Column(name="sdt", unique = true, length = 10)
     private String phone;
 
-    @Column(name="lương", precision = 18, scale = 2) // cột có dấu như bạn định nghĩa
+    @Column(name="luong", precision = 18, scale = 2) // cột có dấu như bạn định nghĩa
     private BigDecimal salary;
 
     @Column(name="is_active", nullable = false)

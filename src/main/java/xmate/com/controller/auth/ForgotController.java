@@ -1,4 +1,4 @@
-package xmate.com.web;
+package xmate.com.controller.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

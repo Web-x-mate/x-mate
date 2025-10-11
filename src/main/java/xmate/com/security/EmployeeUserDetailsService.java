@@ -21,10 +21,10 @@ public class EmployeeUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Staff not found"));
 
         var authorities = u.getRoles().stream()
-                .map(r -> new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + r.getName().toUpperCase()))
+                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getName().toUpperCase()))
                 .toList();
 
-        return org.springframework.security.core.userdetails.User
+        return User
                 .withUsername(u.getUsername())
                 .password(u.getPassword())
                 .authorities(authorities)

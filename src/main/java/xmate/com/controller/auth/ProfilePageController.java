@@ -1,5 +1,5 @@
 // src/main/java/vn/hieesu/project/web/ProfilePageController.java
-package xmate.com.web;
+package xmate.com.controller.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

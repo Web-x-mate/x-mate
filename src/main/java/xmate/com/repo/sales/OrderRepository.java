@@ -21,7 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       LEFT JOIN o.customer c
       WHERE (:q IS NULL OR :q='' OR
             LOWER(o.code) LIKE LOWER(CONCAT('%',:q,'%')) OR
-            (c IS NOT NULL AND LOWER(c.name) LIKE LOWER(CONCAT('%',:q,'%'))))
+            (c IS NOT NULL AND LOWER(c.fullname) LIKE LOWER(CONCAT('%',:q,'%'))))
         AND (:status IS NULL OR CAST(o.status AS string)=:status)
         AND (:payment IS NULL OR CAST(o.paymentStatus AS string)=:payment)
         AND (:shipping IS NULL OR CAST(o.shippingStatus AS string)=:shipping)
@@ -120,7 +120,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /** Đơn gần nhất (bảng dưới) — customers.name & orders.total & DATE_FORMAT */
     @Query(value = """
         SELECT o.code AS code,
-               COALESCE(c.name, 'Khách lẻ') AS customer,
+               COALESCE(c.fullname, 'Khách lẻ') AS customer,
                o.total AS total,
                o.payment_status AS paymentStatus,
                o.shipping_status AS shippingStatus,
