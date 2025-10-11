@@ -2,7 +2,7 @@
 package xmate.com.service.customer;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.customer.Segment;
+import xmate.com.entity.customer.Segment;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@ package xmate.com.repo.system;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.system.ActivityLog;
+import xmate.com.entity.system.ActivityLog;
 
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
 

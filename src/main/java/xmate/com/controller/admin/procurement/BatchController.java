@@ -7,9 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.procurement.Batch;
-import xmate.com.domain.catalog.ProductVariant;
-import xmate.com.domain.procurement.PurchaseOrderItem;
+import xmate.com.entity.procurement.Batch;
 import xmate.com.service.procurement.BatchService;
 
 @Controller

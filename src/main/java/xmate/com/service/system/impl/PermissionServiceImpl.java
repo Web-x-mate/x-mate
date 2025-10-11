@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import xmate.com.domain.system.Permission;
+import xmate.com.entity.system.Permission;
 import xmate.com.repo.system.PermissionRepository;
 import xmate.com.service.system.PermissionService;
 

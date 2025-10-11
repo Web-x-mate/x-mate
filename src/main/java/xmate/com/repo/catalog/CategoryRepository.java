@@ -1,6 +1,6 @@
 package xmate.com.repo.catalog;
 
-import xmate.com.domain.catalog.Category;
+import xmate.com.entity.catalog.Category;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 

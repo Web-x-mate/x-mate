@@ -2,8 +2,7 @@ package xmate.com.service.catalog;
 import org.springframework.data.domain.Page; import org.springframework.data.domain.Pageable;
 
 
-import xmate.com.domain.catalog.Product;
-import org.springframework.data.domain.*;
+import xmate.com.entity.catalog.Product;
 
 public interface ProductService {
     Product create(Product p);

@@ -4,7 +4,7 @@ package xmate.com.repo.customer;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.customer.Segment;
+import xmate.com.entity.customer.Segment;
 import java.util.List;
 import java.util.Optional;
 

@@ -2,7 +2,7 @@
 package xmate.com.service.procurement;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.procurement.Supplier;
+import xmate.com.entity.procurement.Supplier;
 
 public interface SupplierService {
     Page<Supplier> search(String q, Pageable pageable);

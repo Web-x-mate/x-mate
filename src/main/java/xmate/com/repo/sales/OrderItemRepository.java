@@ -3,7 +3,7 @@ package xmate.com.repo.sales;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import xmate.com.domain.sales.OrderItem;
+import xmate.com.entity.sales.OrderItem;
 
 import java.time.LocalDate;
 import java.util.List;

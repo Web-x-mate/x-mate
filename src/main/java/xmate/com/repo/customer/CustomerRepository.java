@@ -4,7 +4,7 @@ package xmate.com.repo.customer;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import xmate.com.domain.customer.Customer;
+import xmate.com.entity.customer.Customer;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 

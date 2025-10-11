@@ -8,11 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.domain.common.POStatus;
-import xmate.com.domain.procurement.PurchaseOrder;
-import xmate.com.domain.procurement.PurchaseOrderItem;
-import xmate.com.domain.catalog.ProductVariant;
-import xmate.com.domain.procurement.Supplier;
+import xmate.com.entity.common.POStatus;
+import xmate.com.entity.procurement.PurchaseOrder;
+import xmate.com.entity.procurement.PurchaseOrderItem;
+import xmate.com.entity.catalog.ProductVariant;
+import xmate.com.entity.procurement.Supplier;
 import xmate.com.service.procurement.PurchaseOrderService;
 import xmate.com.service.procurement.SupplierService;
 

@@ -2,9 +2,9 @@
 package xmate.com.service.procurement;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.common.POStatus;
-import xmate.com.domain.procurement.PurchaseOrder;
-import xmate.com.domain.procurement.PurchaseOrderItem;
+import xmate.com.entity.common.POStatus;
+import xmate.com.entity.procurement.PurchaseOrder;
+import xmate.com.entity.procurement.PurchaseOrderItem;
 
 import java.util.List;
 

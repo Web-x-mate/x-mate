@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.sales.Order;
+import xmate.com.entity.sales.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

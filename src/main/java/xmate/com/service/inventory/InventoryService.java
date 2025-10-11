@@ -2,10 +2,9 @@
 package xmate.com.service.inventory;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.common.InventoryMovementType;
-import xmate.com.domain.common.InventoryRefType;
-import xmate.com.domain.inventory.Inventory;
-import xmate.com.domain.inventory.InventoryMovement;
+import xmate.com.entity.common.InventoryRefType;
+import xmate.com.entity.inventory.Inventory;
+import xmate.com.entity.inventory.InventoryMovement;
 
 public interface InventoryService {
 

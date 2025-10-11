@@ -4,8 +4,8 @@ package xmate.com.repo.procurement;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import xmate.com.domain.procurement.PurchaseOrder;
-import xmate.com.domain.common.POStatus;
+import xmate.com.entity.procurement.PurchaseOrder;
+import xmate.com.entity.common.POStatus;
 
 import java.util.List;
 import java.time.LocalDate;

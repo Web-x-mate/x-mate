@@ -1,7 +1,7 @@
 package xmate.com.service.customer;
 
 import org.springframework.data.domain.*;
-import xmate.com.domain.customer.Customer;
+import xmate.com.entity.customer.Customer;
 
 import java.util.Set;
 
