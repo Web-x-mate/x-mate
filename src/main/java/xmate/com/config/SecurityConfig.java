@@ -44,17 +44,15 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/error",
                                 "/auth/**", "/api/auth/**",
-                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico"
+                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/ws/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().permitAll()
                 )
 
-                // Provider xác thực chuẩn
                 .authenticationProvider(daoAuthProvider)
 
-                // Form login
                 .formLogin(form -> form
                         .loginPage("/auth/login")           // GET hiển thị form
                         .loginProcessingUrl("/auth/login")  // POST submit form
@@ -65,7 +63,6 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                // OAuth2 login
                 .oauth2Login(o -> o
                         .loginPage("/auth/login")
                         .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
@@ -73,7 +70,6 @@ public class SecurityConfig {
                         .failureHandler((rq, rs, ex) -> { ex.printStackTrace(); rs.sendRedirect("/auth/login?oauth2Error"); })
                 )
 
-                // Logout -> quay về trang login để tránh lỗi thiếu index.html
                 .logout(l -> l
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/auth/login")

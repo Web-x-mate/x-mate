@@ -1,4 +1,3 @@
-// src/main/java/xmate/com/controller/cart/DiscountController.java
 package xmate.com.controller.cart;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class DiscountController {
         NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
         DateTimeFormatter d8 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // Chỉ lấy các coupon đang ACTIVE, còn thời gian, chưa vượt usage limit
+        // Chỉ lấy coupon đang ACTIVE + hợp lệ thời gian + chưa vượt usage limit
         List<Discount> coupons = couponRepo.findActiveByKind(LocalDateTime.now(), DiscountKind.AUTO);
 
         return coupons.stream()
@@ -37,7 +36,6 @@ public class DiscountController {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("code", c.getCode());
 
-                    // Tiêu đề: Giảm X đ (FIXED) hoặc Giảm Y%
                     String title = (c.getValueType() == DiscountValueType.FIXED)
                             ? "Giảm " + nf.format(nz(c.getValue()).longValue()) + "đ"
                             : "Giảm " + nz(c.getValue()).intValue() + "%";
@@ -52,7 +50,7 @@ public class DiscountController {
 
                     Integer remaining = null;
                     if (c.getUsageLimit() != null) {
-                        int used = c.getUsed() ;
+                        int used = c.getUsed();
                         remaining = Math.max(0, c.getUsageLimit() - used);
                     }
                     m.put("remaining", remaining);

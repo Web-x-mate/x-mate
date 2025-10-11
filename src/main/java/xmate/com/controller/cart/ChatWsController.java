@@ -34,7 +34,7 @@ public class ChatWsController {
         // 2) Phát về phòng
         template.convertAndSend("/topic/room." + room, m);
 
-        // 3) Chỉ gửi notification cho admin nếu là user thật (senderId > 0)
+        // 3) Gửi notification cho admin nếu là user thật (senderId > 0)
         if (m.getSenderId() != null && m.getSenderId() > 0) {
             Long userId = parseUserId(room);
             template.convertAndSend("/topic/admin.inbox",
@@ -51,7 +51,8 @@ public class ChatWsController {
 
     private Long parseUserId(String room) {
         try {
-            return Long.valueOf(room.substring(room.indexOf('-') + 1));
+            int pos = room.indexOf('-');
+            return pos >= 0 ? Long.valueOf(room.substring(pos + 1)) : null;
         } catch (Exception ignored) {
             return null;
         }
