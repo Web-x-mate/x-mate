@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for(const it of items){
             const id=it.itemId;
             const tr=document.createElement('tr');
-            const imgUrl=esc(it.imageUrl||'/img/no-image.png');
+            const imgUrl=esc(it.imageUrl||'/images/no-image.png');
             tr.innerHTML=`
         <td class="center"><input type="checkbox" data-id="${id}"></td>
         <td>

@@ -36,9 +36,9 @@ public class CheckoutPageController {
 
             // Lấy giỏ hiện tại
             CartDto currentCart = cartService.getCartForCurrentUser();
-            if (currentCart.items() == null || currentCart.items().isEmpty()) {
-                return "redirect:/cart";
-            }
+//            if (currentCart.items() == null || currentCart.items().isEmpty()) {
+//                return "redirect:/cart";
+//            }
 
             // Coupon đang áp dụng (nếu có)
             String appliedCouponCode = currentCart.appliedCoupon();

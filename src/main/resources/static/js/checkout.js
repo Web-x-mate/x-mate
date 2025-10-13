@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function getSelectedPayInfo(){
         const r=document.querySelector('input[name="pay"]:checked');
-        if(!r) return {label:'Thanh toán khi nhận hàng',logo:'/img/cod.png'};
+        if(!r) return {label:'Thanh toán khi nhận hàng',logo:'/images/cod.png'};
         const item=r.closest('.payitem');
         const label=item?.querySelector('.title')?.textContent?.trim()||r.value;
         const img=item?.querySelector('.pay-logo');
