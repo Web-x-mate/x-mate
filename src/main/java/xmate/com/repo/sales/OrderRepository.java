@@ -100,7 +100,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
           o.shipping_status                AS shippingStatus,
           o.created_at                     AS createdAt
         FROM orders o
-        LEFT JOIN customer c ON c.id = o.customer_id
+        LEFT JOIN customers c ON c.id = o.customers_id
         ORDER BY o.created_at DESC
         LIMIT :limit
         """, nativeQuery = true)

@@ -2,38 +2,69 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Giỏ hàng</title>
+    <title>XMate • Giỏ hàng</title>
+
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/cart.css}"/>
 </head>
 <body>
-<div class="container">
-    <h1 class="page-title">Cart Page</h1>
+<header class="xm-header">
+    <div class="wrap">
+        <a class="brand" href="/"><span class="logo">X</span>Mate</a>
+        <nav class="nav">
+            <a href="/">New</a><a href="/">Nam</a><a href="/">Nữ</a><a class="sale" href="/sale">Sale</a><a href="/blog">C&S</a>
+        </nav>
+        <div class="right">
+            <div class="search"><input type="text" placeholder="Tìm kiếm"/><svg viewBox="0 0 24 24" width="18" height="18"><path d="m21 21-4.3-4.3M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <a class="mini-link" href="/login">Đăng nhập</a>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <h1 class="page-title">My Cart</h1>
+
+    <section class="free-ship">
+        <div class="fs-top"><span id="fs-text">Miễn phí vận chuyển cho đơn từ 500.000đ</span><span id="fs-right"></span></div>
+        <div class="fs-bar"><div id="fs-bar-fill"></div></div>
+        <div class="fs-scale"><span>0</span><span>500k</span></div>
+    </section>
+
     <div class="row">
         <div class="card">
+            <div class="list-head">
+                <label class="chk-all"><input id="chk-all" type="checkbox"/> <span>Chọn tất cả</span></label>
+                <button id="btnDeleteSelected" class="btn btn-danger btn-sm">Xóa tất cả</button>
+            </div>
+
             <table>
                 <thead>
                 <tr>
-                    <th class="chk"><input id="chk-all" type="checkbox"/></th>
+                    <th class="chk"></th>
                     <th>Sản phẩm</th>
-                    <th class="center">Đơn giá</th>
-                    <th class="center" style="width:180px;">Số lượng</th>
-                    <th class="right">Thành tiền</th>
+                    <th class="center nowrap">Đơn giá</th>
+                    <th class="center nowrap" style="width:200px;">Số lượng</th>
+                    <th class="right nowrap">Thành tiền</th>
                     <th class="right" style="width:72px;"></th>
                 </tr>
                 </thead>
                 <tbody id="cart-body"></tbody>
             </table>
+
             <div id="empty" class="empty" style="display:none;">Giỏ hàng trống.</div>
         </div>
 
-        <aside class="card right">
+        <!-- Đổi class "right" -> "summary" (sticky chỉ áp cho aside này) -->
+        <aside class="card summary">
             <div class="voucher-strip">
-                <button class="nav prev" type="button">‹</button>
+                <button class="nav prev" type="button" aria-label="Prev">‹</button>
                 <div id="coupon-list" class="tickets"></div>
-                <button class="nav next" type="button">›</button>
+                <button class="nav next" type="button" aria-label="Next">›</button>
             </div>
 
             <div class="coupon">
@@ -41,11 +72,14 @@
                 <button id="btnCoupon" class="btn btn-primary" type="button">ÁP DỤNG</button>
             </div>
 
-            <div class="rowline"><div class="muted">Tạm tính</div><div id="subtotal">0 đ</div></div>
-            <div class="rowline"><div class="muted">Giảm giá</div><div id="discount">0 đ</div></div>
-            <div class="rowline"><div class="muted">Phí vận chuyển</div><div id="shipping">0 đ</div></div>
+            <div class="rowline"><div class="muted">Tạm tính</div><div id="subtotal" class="nowrap">0 đ</div></div>
+            <div class="rowline"><div class="muted">Giảm giá</div><div id="discount" class="nowrap">0 đ</div></div>
+            <div class="rowline">
+                <div class="muted">Phí vận chuyển</div>
+                <div class="nowrap"><span id="shipping">0 đ</span> <span id="ship-badge" class="badge-free" hidden>Miễn phí</span></div>
+            </div>
             <hr>
-            <div class="rowline total"><div>Tổng cộng</div><div id="total">0 đ</div></div>
+            <div class="rowline total"><div>Tổng cộng</div><div id="total" class="nowrap">0 đ</div></div>
 
             <div class="actions actions-right">
                 <a class="btn" href="/">← Tiếp tục mua</a>
@@ -53,7 +87,8 @@
             </div>
         </aside>
     </div>
-</div>
-<script defer th:src="@{/js/cart.js?v=12}"></script>
+</main>
+
+<script defer th:src="@{/js/cart.js?v=22}"></script>
 </body>
 </html>

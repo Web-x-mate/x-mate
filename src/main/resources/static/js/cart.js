@@ -1,4 +1,6 @@
+// cart.js v=22
 document.addEventListener('DOMContentLoaded', () => {
+    const FREE_SHIP_MIN = 500000;
     const els = {
         tbody: byId('cart-body'),
         empty: byId('empty'),
@@ -10,7 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
         couponInput: byId('coupon'),
         couponList: byId('coupon-list'),
         navPrev: document.querySelector('.voucher-strip .prev'),
-        navNext: document.querySelector('.voucher-strip .next')
+        navNext: document.querySelector('.voucher-strip .next'),
+        chkAll: byId('chk-all'),
+        btnDeleteSelected: byId('btnDeleteSelected'),
+        fsText: byId('fs-text'),
+        fsRight: byId('fs-right'),
+        fsBar: byId('fs-bar-fill'),
+        shipBadge: byId('ship-badge'),
     };
 
     function byId(id){ return document.getElementById(id); }
@@ -31,20 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const res = await fetch(url, o);
-
         if (res.status === 401) {
             const next = encodeURIComponent(location.pathname + location.search);
-            location.href = `/login?next=${next}`;
-            throw new Error('Unauthorized');
+            location.href = `/login?next=${next}`; throw new Error('Unauthorized');
         }
-
         if (!res.ok) throw new Error(await res.text());
-
         const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-            const text = await res.text();
-            throw new Error('Unexpected response (not JSON): ' + text.slice(0,120));
-        }
+        if (!ct.includes('application/json')) throw new Error('Unexpected response');
         return await res.json();
     }
 
@@ -69,6 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }catch(e){ console.error('removeItem', e); }
     }
 
+    async function removeSelected(){
+        const ids = [...els.tbody.querySelectorAll('input[type="checkbox"][data-id]:checked')]
+            .map(ch => ch.dataset.id);
+        if(!ids.length) return;
+        try{
+            await apiFetch('/api/cart/items/bulk-delete', { method:'POST', body: JSON.stringify({ itemIds: ids }) });
+        }catch{
+            for(const id of ids){ await apiFetch(`/api/cart/items/${id}`, { method:'DELETE' }); }
+        }
+        await loadCart();
+    }
+
     async function loadCoupons(subtotal){
         try{
             const list = await apiFetch(`/api/coupons?subtotal=${encodeURIComponent(subtotal||0)}`);
@@ -80,11 +93,29 @@ document.addEventListener('DOMContentLoaded', () => {
         try{
             const payload = { addressId:0, couponCode:(code||'').trim()||null };
             const p = await apiFetch('/api/checkout/pricing', { method:'POST', body: JSON.stringify(payload) });
-            els.sub.textContent=vnd(p.subtotal);
-            els.discount.textContent=vnd(p.discount);
-            els.ship.textContent=vnd(p.shipping);
-            els.total.textContent=vnd(p.total);
+            updatePricingUI(p);
         }catch(e){ console.error('applyPricing', e); }
+    }
+
+    function updatePricingUI(p){
+        els.sub.textContent=vnd(p.subtotal);
+        els.discount.textContent=vnd(p.discount);
+        els.ship.textContent=vnd(p.shipping);
+        els.total.textContent=vnd(p.total);
+
+        els.shipBadge.hidden = Number(p.shipping||0) > 0;
+
+        const now = Number(p.subtotal||0);
+        const ratio = Math.max(0, Math.min(1, now / FREE_SHIP_MIN));
+        els.fsBar.style.width = (ratio*100)+'%';
+        if (now >= FREE_SHIP_MIN) {
+            els.fsText.textContent = 'Đạt mốc miễn phí vận chuyển 🎉';
+            els.fsRight.textContent = '';
+        } else {
+            const remain = FREE_SHIP_MIN - now;
+            els.fsText.textContent = 'Miễn phí vận chuyển cho đơn từ 500.000đ';
+            els.fsRight.textContent = `Còn thiếu ${vnd(remain)}`;
+        }
     }
 
     function render(dto){
@@ -99,27 +130,24 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="center"><input type="checkbox" data-id="${id}"></td>
         <td>
           <div class="prod">
-            <img class="img" src="${imgUrl}">
+            <img class="img" src="${imgUrl}" alt="">
             <div>
               <div class="title">${esc(it.productName||'')}</div>
-              <div class="muted">${esc(it.size||'')}${it.color?' · '+esc(it.color):''}</div>
+              <div class="muted">Size: ${esc(it.size||'-')}  ${it.color?` • Màu: ${esc(it.color)}`:''}</div>
             </div>
           </div>
         </td>
-        <td class="center">${vnd(it.price)}</td>
-        <td class="center">
+        <td class="center nowrap"><span class="price">${vnd(it.price)}</span></td>
+        <td class="center nowrap">
           <button type="button" class="btn btn-sm btn-minus" data-id="${id}">−</button>
           <input class="inp-qty" data-id="${id}" value="${it.qty}">
           <button type="button" class="btn btn-sm btn-plus" data-id="${id}">+</button>
         </td>
-        <td class="right">${vnd(it.lineTotal)}</td>
+        <td class="right nowrap"><span class="line">${vnd(it.lineTotal)}</span></td>
         <td class="right"><button type="button" class="btn btn-danger btn-sm btn-remove" data-id="${id}">Xoá</button></td>`;
             els.tbody.appendChild(tr);
         }
-        els.sub.textContent=vnd(dto.subtotal);
-        els.discount.textContent=vnd(dto.discount);
-        els.ship.textContent=vnd(dto.shipping);
-        els.total.textContent=vnd(dto.total);
+        updatePricingUI(dto);
         loadCoupons(dto.subtotal);
     }
 
@@ -130,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.className='ticket'; el.dataset.code=c.code;
             el.innerHTML=`<div class="code">${c.code} ${c.remaining?`<small class="muted">(Còn ${c.remaining})</small>`:''}</div>
         <div class="desc">${c.title}</div>
-        <div class="meta">HSD: ${c.expiry||'—'}</div>`;
+        <div class="meta">HSD: ${c.expiry||'—'}${c.minSubtotal?` • Min: ${vnd(c.minSubtotal)}`:''}</div>`;
             els.couponList.appendChild(el);
         });
     }
@@ -167,6 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(minus){ const id=minus.dataset.id; const inp=minus.parentElement.querySelector('.inp-qty'); patchQty(id,(parseInt(inp.value||'1',10)-1)); }
         if(plus){ const id=plus.dataset.id; const inp=plus.parentElement.querySelector('.inp-qty'); patchQty(id,(parseInt(inp.value||'1',10)+1)); }
         if(rm){ removeItem(rm.dataset.id); }
+    });
+
+    els.btnDeleteSelected?.addEventListener('click', removeSelected);
+    els.chkAll?.addEventListener('change', (e)=>{
+        els.tbody.querySelectorAll('input[type="checkbox"][data-id]').forEach(ch=>{ ch.checked = e.target.checked; });
     });
 
     loadCart();

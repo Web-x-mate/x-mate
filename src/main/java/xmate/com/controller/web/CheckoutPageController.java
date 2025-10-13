@@ -57,7 +57,7 @@ public class CheckoutPageController {
             model.addAttribute("availableCoupons", availableCoupons);
 
         } catch (IllegalStateException e) {
-            // Chưa đăng nhập
+
             return "redirect:/login";
         }
         return "checkout/index";

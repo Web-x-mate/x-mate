@@ -22,7 +22,6 @@ public class CheckoutApiController {
     private final PricingService pricingService;
     private final CheckoutService checkoutService;
 
-    // GET "ping" cho phép test nhanh trên trình duyệt
     @GetMapping
     public Map<String, Object> info() {
         return Map.of(
@@ -32,7 +31,6 @@ public class CheckoutApiController {
         );
     }
 
-    // GET pricing: dùng query params, tiện mở trực tiếp trên browser
     @GetMapping("/pricing")
     public PricingDto pricingByQuery(@RequestParam(required = false) Long addressId,
                                      @RequestParam(name = "coupon", required = false) String couponCode) {
