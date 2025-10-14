@@ -1,0 +1,61 @@
+<!-- templates/chat/user.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Chat với Admin</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/chat.css}"/>
+
+    <!-- SockJS/STOMP -->
+    <script defer src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <!-- Chat chính -->
+    <script defer th:src="@{/js/chat.js}"></script>
+    <!-- Inbox nhúng chỉ dành cho admin -->
+    <script th:if="${isAdmin}" defer th:src="@{/js/admin-inbox-embed.js}"></script>
+</head>
+<body>
+
+<!-- ========== KHUNG CHÍNH ========== -->
+<div class="chat-shell" th:classappend="${isAdmin} ? '' : ' only-chat'">
+
+    <!-- Sidebar chỉ hiển thị nếu là admin -->
+    <aside class="chat-sidebar" th:if="${isAdmin}">
+        <input id="inboxSearch" class="search" placeholder="Tìm theo email..."/>
+        <div id="inboxTotal" class="total">Đang tải…</div>
+        <div id="inboxList" class="inbox"></div>
+    </aside>
+
+    <!-- Khu vực chat -->
+    <section class="chat-board">
+        <div class="chat-header">
+            <div><b>Phòng:</b> <span th:text="${room}">u-0</span></div>
+            <div>Đang chat với: <b class="peer" th:text="${peerEmail}">peer@example.com</b></div>
+        </div>
+
+        <!-- Nội dung tin nhắn -->
+        <div id="chatArea" class="chat-area"></div>
+
+        <!-- Ô nhập và nút gửi -->
+        <div class="chat-input">
+            <input id="msg" type="text" placeholder="Nhập tin nhắn..." />
+            <button id="sendBtn" type="button">Gửi</button>
+        </div>
+    </section>
+</div>
+<!-- ========== HẾT KHUNG CHÍNH ========== -->
+
+<!-- Biến inline cho JS -->
+<script th:inline="javascript">
+    window.CHAT_ROOM   = /*[[${room}]]*/ 'u-0';
+    window.CHAT_ME     = /*[[${me}]]*/ 'me@example.com';
+    window.CHAT_ME_ID  = /*[[${meId}]]*/ 0;
+    window.WS_URL      = /*[[@{/ws}]]*/ '/ws';
+    window.IS_ADMIN    = /*[[${isAdmin}]]*/ false;
+</script>
+
+</body>
+</html>

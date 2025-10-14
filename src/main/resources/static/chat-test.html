@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WS Quick Test</title>
+<body>
+<button onclick="connect()">Connect</button>
+<button onclick="send()">Send</button>
+<pre id="log"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    let stomp, room = 'u-1';
+    const log = (s)=> document.getElementById('log').textContent += s + '\n';
+
+    function connect(){
+        const sock = new SockJS('/ws');            // cùng host -> không CORS
+        stomp = Stomp.over(sock);
+        stomp.connect({}, () => {
+            log('Connected');
+            stomp.subscribe('/topic/room.'+room, m => log('ROOM << ' + m.body));
+            stomp.subscribe('/topic/admin.inbox',  m => log('INBOX << ' + m.body));
+        }, err => log('ERROR ' + err));
+    }
+
+    function send(){
+        const payload = { senderId: 1, sender: 'user1@example.com', content: 'hello', room };
+        stomp.send('/app/chat.send/'+room, {}, JSON.stringify(payload));
+        log('SENT >> ' + JSON.stringify(payload));
+    }
+</script>
+</body>

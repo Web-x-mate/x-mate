@@ -2,38 +2,35 @@
 package xmate.com.service.dashboard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityManager;            // 🔥 ADDED
-import jakarta.persistence.PersistenceContext;     // 🔥 ADDED
-
-import xmate.com.repo.catalog.CategoryRepository;  // 🔥 ADDED
-import xmate.com.repo.catalog.ProductRepository;   // 🔥 ADDED
-import xmate.com.repo.catalog.ProductVariantRepository; // 🔥 ADDED
-import xmate.com.repo.catalog.ProductMediaRepository;   // 🔥 ADDED
-
-
+import xmate.com.repo.catalog.CategoryRepository;
+import xmate.com.repo.catalog.ProductMediaRepository;
+import xmate.com.repo.catalog.ProductRepository;
+import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.discount.DiscountUsageRepository;
 import xmate.com.repo.inventory.InventoryRepository;
 import xmate.com.repo.procurement.PurchaseOrderRepository;
-import xmate.com.repo.sales.OrderItemRepository;
-import xmate.com.repo.sales.OrderRepository;
+import xmate.com.repo.sales.*;
+
 import xmate.com.repo.system.ActivityLogRepository;
+import xmate.com.repo.system.PermissionRepository;
 import xmate.com.repo.system.RoleRepository;
 import xmate.com.repo.system.UserRepository;
-import xmate.com.repo.system.PermissionRepository;      // 🔥 ADDED
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
+/** Build toàn bộ dữ liệu Dashboard (KPIs, sparkline, chart, tables) dưới dạng JSON */
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
     private final OrderRepository orderRepo;
-    private final OrderItemRepository orderItemRepo;
+    private final OrderItemRepository orderItemRepo; // (đang dùng cho "top variants by qty")
     private final InventoryRepository invRepo;
     private final DiscountUsageRepository discUsageRepo;
     private final PurchaseOrderRepository poRepo;
@@ -41,85 +38,89 @@ public class DashboardService {
     private final RoleRepository roleRepo;
     private final ActivityLogRepository logRepo;
 
-    // 🔥 ADDED: catalog repos
+    // Catalog snapshot
     private final CategoryRepository catRepo;
     private final ProductRepository prodRepo;
     private final ProductVariantRepository varRepo;
     private final ProductMediaRepository mediaRepo;
 
-    // 🔥 ADDED: permission repo (đếm quyền cho RBAC)
+    // RBAC
     private final PermissionRepository permRepo;
 
-    // 🔥 ADDED: dùng native SQL đơn giản cho Activity 24h
     @PersistenceContext
     private EntityManager em;
 
     private final ObjectMapper om = new ObjectMapper();
 
-    /** KPIs + Sparklines + Sales(3 chart) + Live tables + Catalog/RBAC/Activity */
     public String buildKpisAndSalesJson(LocalDate from, LocalDate to, String gran) {
         Map<String, Object> root = new LinkedHashMap<>();
 
-        // ====== KPIs ======
-        BigDecimal revenuePaid = orderRepo.sumPaidRevenue(from, to);
-        long orders = orderRepo.countOrdersBetween(from, to);
+        // ===== KPIs =====
+        BigDecimal revenuePaid = orderRepo.sumPaidRevenue(from, to);          // BigDecimal
+        long orders           = orderRepo.countOrdersBetween(from, to);       // long
         put(root, "kpis.revenuePaid", revenuePaid);
         put(root, "kpis.orders", orders);
         put(root, "kpis.lowStock", invRepo.countLowStock(5));
         put(root, "kpis.usersRoles", userRepo.count() + " / " + roleRepo.count());
         put(root, "kpis.logsToday", logRepo.countToday());
         put(root, "kpis.discountOrders", discUsageRepo.countOrdersUsedDiscount(from, to));
+
         long poOpen = poRepo.countByStatus().stream()
                 .filter(r -> "SUBMITTED".equals(r.getLabel()) || "PARTIALLY_RECEIVED".equals(r.getLabel()))
                 .mapToLong(r -> r.getValue() == null ? 0L : r.getValue())
                 .sum();
         put(root, "kpis.poOpen", poOpen);
 
-        // ====== Sparklines (rev, orders, aov) ======
-        var revSeries = orderRepo.sparkRevenue(from, to);
-        var ordSeries = orderRepo.sparkOrders(from, to);
+        // ===== Sparklines =====
+        List<Double> revSeries = orderRepo.sparkRevenue(from, to).stream()
+                .map(v -> v.getValue() == null ? 0d : v.getValue())
+                .toList();
+        List<Integer> ordSeries = orderRepo.sparkOrders(from, to).stream()
+                .map(v -> v.getValue() == null ? 0 : v.getValue())
+                .toList();
         List<Double> aovSeries = new ArrayList<>();
         int n = Math.max(revSeries.size(), ordSeries.size());
         for (int i = 0; i < n; i++) {
-            double r = i < revSeries.size() && revSeries.get(i) != null ? revSeries.get(i) : 0d;
-            int o = i < ordSeries.size() && ordSeries.get(i) != null ? ordSeries.get(i) : 0;
+            double r = i < revSeries.size() ? revSeries.get(i) : 0d;
+            int o    = i < ordSeries.size() ? ordSeries.get(i) : 0;
             aovSeries.add(o > 0 ? r / o : 0d);
         }
         put(root, "sparklines.revenue", revSeries);
         put(root, "sparklines.orders", ordSeries);
         put(root, "sparklines.aov", aovSeries);
+        // Các sparkline còn lại demo rỗng
         put(root, "sparklines.lowStock", List.of());
         put(root, "sparklines.users", List.of());
         put(root, "sparklines.logs", List.of());
         put(root, "sparklines.discountOrders", List.of());
         put(root, "sparklines.poOpen", List.of());
 
-        // ====== Sales charts ======
-        // 1) Doanh thu theo thời gian
-        var agg = orderRepo.aggregatePaidRevenue(from, to, gran);
+        // ===== Sales charts =====
+        // 1) Doanh thu theo thời gian (gran: DAY/MONTH/YEAR)
+        List<LabelValueD> revAgg = orderRepo.aggregatePaidRevenue(from, to, gran);
         List<String> revLabels = new ArrayList<>();
         List<Double> revValues = new ArrayList<>();
-        for (var row : agg) {
+        for (LabelValueD row : revAgg) {
             revLabels.add(row.getLabel());
             revValues.add(row.getValue() == null ? 0d : row.getValue());
         }
         put(root, "revenueSeries.labels", revLabels);
         put(root, "revenueSeries.values", revValues);
 
-        // 2) Phễu trạng thái đơn
-        var funnel = orderRepo.funnel(from, to);
+        // 2) Funnel theo trạng thái đơn
+        List<LabelValueI> funnel = orderRepo.funnel(from, to);
         List<String> fLabels = new ArrayList<>();
         List<Integer> fValues = new ArrayList<>();
-        for (var r : funnel) {
+        for (LabelValueI r : funnel) {
             fLabels.add(r.getLabel());
             fValues.add(r.getValue() == null ? 0 : r.getValue());
         }
         put(root, "orderFunnel.labels", fLabels);
         put(root, "orderFunnel.values", fValues);
 
-        // 3) Top sản phẩm/biến thể
+        // 3) Top sản phẩm/biến thể theo số lượng (tuỳ bạn đã có query trong orderItemRepo)
         int TOP = 10;
-        var top = orderItemRepo.topVariantsByQty(from, to, TOP);
+        var top = orderItemRepo.topVariantsByQty(from, to, TOP); // giả định đã có
         List<String> tLabels = new ArrayList<>();
         List<Integer> tValues = new ArrayList<>();
         for (var r : top) {
@@ -129,12 +130,12 @@ public class DashboardService {
         put(root, "topVariants.labels", tLabels);
         put(root, "topVariants.values", tValues);
 
-        // ====== Live tables ======
+        // ===== Live tables =====
         // Recent orders
         int RECENT_ORDERS = 10;
-        var ro = orderRepo.recent(RECENT_ORDERS);
+        List<RecentOrderRow> ro = orderRepo.recent(RECENT_ORDERS);
         List<Map<String, Object>> recentOrders = new ArrayList<>();
-        for (var r : ro) {
+        for (RecentOrderRow r : ro) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("code", r.getCode());
             m.put("customer", r.getCustomer());
@@ -175,7 +176,7 @@ public class DashboardService {
         }
         put(root, "poReceiving", poReceiving);
 
-        // ====== Catalog snapshot (bar chart) — labels + values ======  🔥 ADDED
+        // Catalog snapshot
         put(root, "catalog.labels", List.of("Categories", "Products", "Variants", "Media"));
         put(root, "catalog.values", List.of(
                 catRepo.count(),
@@ -184,14 +185,11 @@ public class DashboardService {
                 mediaRepo.count()
         ));
 
-        // ====== RBAC (bar chart): Roles vs Permissions ======        🔥 ADDED
+        // RBAC snapshot
         put(root, "rbac.labels", List.of("Roles", "Permissions"));
-        put(root, "rbac.values", List.of(
-                roleRepo.count(),
-                permRepo.count()
-        ));
+        put(root, "rbac.values", List.of(roleRepo.count(), permRepo.count()));
 
-        // ====== Activity logs (24h) — pie chart by action ======      🔥 ADDED
+        // Activity (24h) – pie chart by action (native SQL, có thể khác DB → tuỳ chỉnh)
         try {
             @SuppressWarnings("unchecked")
             List<Object[]> rows = em.createNativeQuery("""
@@ -206,17 +204,17 @@ public class DashboardService {
             List<Integer> actValues = new ArrayList<>();
             for (Object[] row : rows) {
                 actLabels.add(Objects.toString(row[0], "UNKNOWN"));
-                // COUNT(*) trả BIGINT → về Java là BigInteger/Long → convert sang int an toàn
                 Number cnt = (Number) row[1];
                 actValues.add(cnt == null ? 0 : cnt.intValue());
             }
             put(root, "activity.labels", actLabels);
             put(root, "activity.values", actValues);
         } catch (Exception ignore) {
-            // fallback rỗng (không phá UI)
             put(root, "activity.labels", List.of());
             put(root, "activity.values", List.of());
         }
+
+        // Stock chart demo
         int STOCK_TOP = 12;
         var stock = invRepo.topStock(STOCK_TOP);
         List<String> stkLabels = new ArrayList<>();
@@ -231,6 +229,7 @@ public class DashboardService {
         put(root, "stock.onHand",   stkOn);
         put(root, "stock.reserved", stkRes);
 
+        // PO status
         var pos = poRepo.countByStatusBetween(from, to);
         List<String> poLabels = new ArrayList<>();
         List<Integer> poVals  = new ArrayList<>();
@@ -241,48 +240,14 @@ public class DashboardService {
         put(root, "poStatus.labels", poLabels);
         put(root, "poStatus.values", poVals);
 
-//        var seg = segmentRepo.distribution();
-//        List<String> segLabels = new ArrayList<>();
-//        List<Integer> segVals  = new ArrayList<>();
-//        for (var r : seg) {
-//            segLabels.add(r.getLabel());
-//            segVals.add(r.getValue() == null ? 0 : r.getValue());
-//        }
-//        put(root, "segments.labels", segLabels);
-//        put(root, "segments.values", segVals);
-
-//        var loy = loyaltyRepo.sumPointsByTier();
-//        List<String> loyLabels = new ArrayList<>();
-//        List<Integer> loyVals  = new ArrayList<>();
-//        for (var r : loy) {
-//            loyLabels.add(r.getLabel());
-//            loyVals.add(r.getValue() == null ? 0 : r.getValue());
-//        }
-//        put(root, "loyalty.labels", loyLabels);
-//        put(root, "loyalty.values", loyVals);
-
-        int DISC_TOP = 10;
-        var eff = discUsageRepo.effectiveness(from, to, DISC_TOP);
-        List<String> disLabels = new ArrayList<>();
-        List<Integer> disOrders = new ArrayList<>();
-        List<Double>  disRev    = new ArrayList<>();
-        for (var r : eff) {
-            disLabels.add(r.getLabel());
-            disOrders.add(r.getOrders() == null ? 0 : r.getOrders());
-            disRev.add(r.getRevenue() == null ? 0d : r.getRevenue());
-        }
-        put(root, "discountEffect.labels",  disLabels);
-        put(root, "discountEffect.orders",  disOrders);
-        put(root, "discountEffect.revenue", disRev);
         try {
             return om.writeValueAsString(root);
         } catch (Exception e) {
             throw new RuntimeException("Serialize dashboard json failed", e);
         }
-
     }
 
-    // helper
+    // helper: set value theo path "a.b.c"
     @SuppressWarnings("unchecked")
     private static void put(Map<String, Object> root, String path, Object value) {
         String[] parts = path.split("\\.");

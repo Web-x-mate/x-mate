@@ -5,138 +5,120 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import xmate.com.entity.customer.Customer;
 import xmate.com.entity.sales.Order;
+import xmate.com.entity.common.OrderStatus;
+import xmate.com.entity.common.PaymentStatus;
+import xmate.com.entity.common.ShippingStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     Optional<Order> findByCode(String code);
+    Page<Order> findByCustomer(Customer customer, Pageable pageable);
+    Optional<Order> findByCodeAndCustomer(String code, Customer customer);
 
-    @Query("""
-      SELECT o FROM Order o
-      LEFT JOIN o.customer c
-      WHERE (:q IS NULL OR :q='' OR
-            LOWER(o.code) LIKE LOWER(CONCAT('%',:q,'%')) OR
-            (c IS NOT NULL AND LOWER(c.fullname) LIKE LOWER(CONCAT('%',:q,'%'))))
-        AND (:status IS NULL OR CAST(o.status AS string)=:status)
-        AND (:payment IS NULL OR CAST(o.paymentStatus AS string)=:payment)
-        AND (:shipping IS NULL OR CAST(o.shippingStatus AS string)=:shipping)
-      """)
-    Page<Order> search(@Param("q") String q,
-                       @Param("status") String status,
-                       @Param("payment") String payment,
-                       @Param("shipping") String shipping,
-                       Pageable pageable);
+    @Query("select o.status from Order o where o.code = :code")
+    Optional<OrderStatus> findStatusByCode(@Param("code") String code);
 
-    // ==========================
-    // === Dashboard (MySQL) ===
-    // ==========================
-
-    /** Doanh thu đã thanh toán (PAID) trong khoảng ngày — cột đúng là orders.total */
+    // ====== Dashboard: KPIs ======
     @Query(value = """
-        SELECT COALESCE(SUM(o.total), 0)
-        FROM orders o
-        WHERE o.payment_status = 'PAID'
-          AND DATE(o.created_at) BETWEEN :from AND :to
+        SELECT COALESCE(SUM(total),0) 
+        FROM orders 
+        WHERE payment_status = 'PAID'
+          AND DATE(created_at) BETWEEN :from AND :to
         """, nativeQuery = true)
     BigDecimal sumPaidRevenue(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** Tổng số đơn trong khoảng ngày */
     @Query(value = """
-        SELECT COUNT(*)
-        FROM orders o
-        WHERE DATE(o.created_at) BETWEEN :from AND :to
+        SELECT COUNT(*) 
+        FROM orders 
+        WHERE DATE(created_at) BETWEEN :from AND :to
         """, nativeQuery = true)
     long countOrdersBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** Sparkline: doanh thu theo ngày (MySQL 8 dùng recursive CTE thay generate_series) */
+    // ====== Dashboard: Sparklines (theo ngày) ======
     @Query(value = """
-        WITH RECURSIVE d AS (
-          SELECT :from AS d
-          UNION ALL
-          SELECT DATE_ADD(d, INTERVAL 1 DAY) FROM d WHERE d < :to
-        )
-        SELECT COALESCE(SUM(o.total), 0) AS val
-        FROM d
-        LEFT JOIN orders o
-          ON DATE(o.created_at) = d.d
-         AND o.payment_status = 'PAID'
-        GROUP BY d.d
-        ORDER BY d.d
+        SELECT DATE(created_at) AS label, SUM(total) AS value
+        FROM orders
+        WHERE payment_status = 'PAID'
+          AND DATE(created_at) BETWEEN :from AND :to
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at)
         """, nativeQuery = true)
-    List<Double> sparkRevenue(@Param("from") LocalDate from, @Param("to") LocalDate to);
+    List<LabelValueD> sparkRevenue(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** Sparkline: số đơn theo ngày */
     @Query(value = """
-        WITH RECURSIVE d AS (
-          SELECT :from AS d
-          UNION ALL
-          SELECT DATE_ADD(d, INTERVAL 1 DAY) FROM d WHERE d < :to
-        )
-        SELECT COALESCE(COUNT(o.id), 0) AS val
-        FROM d
-        LEFT JOIN orders o
-          ON DATE(o.created_at) = d.d
-        GROUP BY d.d
-        ORDER BY d.d
+        SELECT DATE(created_at) AS label, COUNT(*) AS value
+        FROM orders
+        WHERE DATE(created_at) BETWEEN :from AND :to
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at)
         """, nativeQuery = true)
-    List<Integer> sparkOrders(@Param("from") LocalDate from, @Param("to") LocalDate to);
+    List<LabelValueI> sparkOrders(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** Aggregate doanh thu PAID theo D/W/M → (label,value) */
+    // ====== Dashboard: Doanh thu theo ngày/tháng/năm ======
     @Query(value = """
-        SELECT
-          CASE :gran
-            WHEN 'D' THEN DATE_FORMAT(DATE(o.created_at), '%d/%m')
-            WHEN 'W' THEN CONCAT(YEAR(o.created_at), '-W', LPAD(WEEK(o.created_at, 1), 2, '0'))
-            ELSE DATE_FORMAT(DATE(o.created_at), '%m/%Y')
+        SELECT 
+          CASE 
+            WHEN :gran = 'DAY'   THEN DATE(created_at)
+            WHEN :gran = 'MONTH' THEN DATE_FORMAT(created_at,'%Y-%m')
+            WHEN :gran = 'YEAR'  THEN DATE_FORMAT(created_at,'%Y')
           END AS label,
-          SUM(o.total) AS value
-        FROM orders o
-        WHERE o.payment_status = 'PAID'
-          AND DATE(o.created_at) BETWEEN :from AND :to
+          SUM(total) AS value
+        FROM orders
+        WHERE payment_status = 'PAID'
+          AND DATE(created_at) BETWEEN :from AND :to
         GROUP BY label
-        ORDER BY MIN(DATE(o.created_at))
+        ORDER BY label
         """, nativeQuery = true)
-    List<LvDouble> aggregatePaidRevenue(@Param("from") LocalDate from,
-                                        @Param("to") LocalDate to,
-                                        @Param("gran") String gran);
-    interface LvDouble { String getLabel(); Double getValue(); }
+    List<LabelValueD> aggregatePaidRevenue(@Param("from") LocalDate from,
+                                           @Param("to") LocalDate to,
+                                           @Param("gran") String gran);
 
-    /** Phễu trạng thái đơn (đếm theo status) — cast COUNT(*) về SIGNED để map Integer nếu muốn */
+    // ====== Dashboard: Funnel trạng thái đơn (đếm theo OrderStatus) ======
     @Query(value = """
-        SELECT o.status AS label, CAST(COUNT(*) AS SIGNED) AS value
+        SELECT o.status AS label, COUNT(*) AS value
         FROM orders o
         WHERE DATE(o.created_at) BETWEEN :from AND :to
         GROUP BY o.status
         ORDER BY o.status
         """, nativeQuery = true)
-    List<LvInt> funnel(@Param("from") LocalDate from, @Param("to") LocalDate to);
-    interface LvInt { String getLabel(); Integer getValue(); }
+    List<LabelValueI> funnel(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** Đơn gần nhất (bảng dưới) — customers.name & orders.total & DATE_FORMAT */
+    // ====== Dashboard: Recent orders ======
     @Query(value = """
-        SELECT o.code AS code,
-               COALESCE(c.fullname, 'Khách lẻ') AS customer,
-               o.total AS total,
-               o.payment_status AS paymentStatus,
-               o.shipping_status AS shippingStatus,
-               DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i') AS createdAt
+        SELECT 
+          o.code                           AS code,
+          COALESCE(c.full_name, c.email)   AS customer,
+          o.total                          AS total,
+          o.payment_status                 AS paymentStatus,
+          o.shipping_status                AS shippingStatus,
+          o.created_at                     AS createdAt
         FROM orders o
-        LEFT JOIN customers c ON c.id = o.customer_id
+        LEFT JOIN customers c ON c.id = o.customers_id
         ORDER BY o.created_at DESC
-        LIMIT :n
+        LIMIT :limit
         """, nativeQuery = true)
-    List<RecentOrderRow> recent(@Param("n") int n);
-    interface RecentOrderRow {
-        String getCode();
-        String getCustomer();
-        double getTotal();
-        String getPaymentStatus();
-        String getShippingStatus();
-        String getCreatedAt();
-    }
+    List<RecentOrderRow> recent(@Param("limit") int limit);
+
+    // ====== Admin search (đã sửa ở bước trước) ======
+    @Query("""
+        SELECT o FROM Order o
+        WHERE (:q IS NULL OR :q = '' 
+              OR LOWER(o.code) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(COALESCE(o.shippingAddress,'')) LIKE LOWER(CONCAT('%', :q, '%')))
+          AND (:status   IS NULL OR o.status         = :status)
+          AND (:payment  IS NULL OR o.paymentStatus  = :payment)
+          AND (:shipping IS NULL OR o.shippingStatus = :shipping)
+        """)
+    Page<Order> search(@Param("q") String q,
+                       @Param("status") OrderStatus status,
+                       @Param("payment") PaymentStatus payment,
+                       @Param("shipping") ShippingStatus shipping,
+                       Pageable pageable);
 }

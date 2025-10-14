@@ -22,4 +22,7 @@ public class ProductVariant {
     private StockPolicy stockPolicy = StockPolicy.DENY;
     @Column(name="is_active", nullable=false) private Boolean active = true;
     @Column(name="created_at", nullable=false) private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+
+
+
 }

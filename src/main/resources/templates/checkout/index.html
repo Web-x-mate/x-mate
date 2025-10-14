@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Thanh toán - XMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/checkout-ui.css}"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="xm-header">
+    <div class="wrap">
+        <a class="brand" href="/">
+            <span class="logo">X</span> <b>Mate</b>
+        </a>
+        <nav class="nav">
+            <a href="/new">New</a>
+            <a href="/men">Nam</a>
+            <a href="/women">Nữ</a>
+            <a href="/sale" class="sale">Sale</a>
+            <a href="/cs">C&S</a>
+        </nav>
+        <div class="right">
+            <div class="search">
+                <input type="text" placeholder="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <a href="/login" class="login">Đăng nhập</a>
+        </div>
+    </div>
+</header>
+
+<main class="container page">
+    <h1>Thông tin vận chuyển</h1>
+
+    <div class="grid">
+        <section class="card">
+            <div class="addr-list" th:if="${addresses != null and !addresses.isEmpty()}">
+                <label th:each="addr, iter : ${addresses}" class="addr">
+                    <input class="addr-radio" type="radio" name="addr"
+                           th:value="${addr.id}" th:checked="${iter.index == 0}">
+                    <div th:text="${addr.fullAddress}">123 Lê Lợi, Q.1, TP.HCM</div>
+                </label>
+            </div>
+
+            <form id="shippingForm" class="form">
+                <div class="two">
+                    <label>Họ tên <input id="fullname" placeholder="Nhập họ tên của bạn"/></label>
+                    <label>Giới tính <select><option>Nam</option><option>Nữ</option></select></label>
+                </div>
+
+                <div class="two">
+                    <label>Email <input id="email" type="email" placeholder="Nhập email của bạn"/></label>
+                    <label>Số điện thoại <input id="phone" placeholder="Nhập số điện thoại"/></label>
+                </div>
+
+                <label>Địa chỉ (trước số nhà) <input id="address1" placeholder="Nhập địa chỉ"/></label>
+
+                <div class="two">
+                    <label>Tỉnh/Thành phố <input id="city" placeholder="Chọn tỉnh/thành phố"/></label>
+                    <label>Ghi chú <input id="note" placeholder="Ghi chú đơn hàng (không bắt buộc)"/></label>
+                </div>
+
+                <div class="voucher-strip" th:if="${availableCoupons != null and !availableCoupons.isEmpty()}">
+                    <button class="nav prev" type="button" disabled>‹</button>
+                    <div id="coupon-list" class="tickets">
+                        <div th:each="c : ${availableCoupons}" class="ticket"
+                             th:data-code="${c.code}"
+                             th:classappend="${c.code == appliedCouponCode ? 'selected' : ''}">
+                            <div class="code" th:text="${c.code}">COOL90</div>
+                            <div class="desc" th:text="${c.title}">Giảm 90.000đ</div>
+                            <div class="meta" th:if="${c.endAt != null}"
+                                 th:text="'HSD: ' + ${#temporals.format(c.endAt, 'dd-MM-yyyy')}">HSD: 10-11-2025</div>
+                        </div>
+                    </div>
+                    <button class="nav next" type="button">›</button>
+                </div>
+
+                <div class="coupon-row">
+                    <input id="coupon" placeholder="Nhập mã giảm giá" th:value="${appliedCouponCode}"/>
+                    <button type="button" id="btnApply" class="btn outline">Áp dụng</button>
+                </div>
+                <div id="couponMsg" class="muted" style="margin-top:6px">
+                    <span class="ok" th:if="${appliedCouponCode != null}">Đã áp dụng mã giảm giá</span>
+                </div>
+            </form>
+        </section>
+
+        <aside class="card summary" id="summary">
+            <h3>Chi tiết đơn hàng</h3>
+            <div id="items" class="muted" style="margin-bottom:8px">
+                <div th:each="item : ${cartItems}" class="cart-line-summary">
+                    <span th:text="${item.productName} + ' x' + ${item.qty}">Sản phẩm x1</span>
+                    <b th:text="${#numbers.formatDecimal(item.lineTotal,0,'POINT',0,'COMMA')} + ' đ'">0 đ</b>
+                </div>
+            </div>
+            <ul class="sum-list">
+                <li><span>Tạm tính</span><b id="p-sub">0 đ</b></li>
+                <li><span>Giảm giá</span><b id="p-discount">0 đ</b></li>
+                <li><span>Phí vận chuyển</span><b id="p-ship">0 đ</b></li>
+            </ul>
+            <div class="grand"><span>Tổng cộng</span><b id="p-total">0 đ</b></div>
+        </aside>
+    </div>
+
+    <hr class="spacer"/>
+    <h2>Hình thức thanh toán</h2>
+    <section class="paylist">
+        <label class="payitem">
+            <input type="radio" name="pay" value="COD" checked>
+            <div class="content">
+                <img th:src="@{/images/cod.png}" alt="COD" class="pay-logo">
+                <div><div class="title">Thanh toán khi nhận hàng</div><div class="sub">Trả tiền mặt</div></div>
+            </div>
+        </label>
+        <label class="payitem">
+            <input type="radio" name="pay" value="VIETQR">
+            <div class="content">
+                <img th:src="@{/images/vnpay.png}" alt="VIETQR" class="pay-logo">
+                <div><div class="title">Chuyển khoản VietQR</div><div class="sub">Tự động điền nội dung</div></div>
+            </div>
+        </label>
+    </section>
+
+    <div class="dock">
+        <div class="container dock-in">
+            <div class="dock-left">
+                <div class="dock-meta">
+                    <span class="dock-title">Phương thức:</span>
+                    <span id="dockPayChip" class="pay-chip"></span>
+                    <span class="dock-voucher muted">Voucher: <span id="dockCoupon">chưa áp dụng</span></span>
+                </div>
+            </div>
+            <div class="dock-right">
+                <div class="dock-total">
+                    <div class="muted">Tổng cộng</div>
+                    <div id="dockTotal" class="big">0 đ</div>
+                </div>
+                <button id="btnPlace" class="btn primary">ĐẶT HÀNG</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/checkout.js}"></script>
+    <div style="height:80px"></div>
+</main>
+</body>
+</html>

@@ -9,20 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-@Entity @Table(
+@Entity
+@Table(
         name = "customers",
         indexes = {
-                @Index(name = "ix_customers_email", columnList = "email")
+                @Index(name = "ix_customers_email", columnList = "email"),
+                @Index(name = "ix_customers_oauth", columnList = "oauth_provider,oauth_subject")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_customers_email", columnNames = {"email"}),
+                @UniqueConstraint(name = "uk_customers_oauth_pair", columnNames = {"oauth_provider", "oauth_subject"})
         }
 )
 public class Customer {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Email duy nhất (đã normalize xuống lowercase ở prePersist/preUpdate) */
     @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    /** Cho phép null để hỗ trợ tài khoản OAuth2 không có mật khẩu cục bộ */
+    @Column(name = "password_hash", nullable = true, length = 255)
     private String passwordHash;
 
     @Column(length = 120)
@@ -31,8 +39,9 @@ public class Customer {
     @Column(length = 20)
     private String phone;
 
+    /** yyyy-MM-dd */
     @Column
-    private LocalDate dob;                   // yyyy-MM-dd
+    private LocalDate dob;
 
     /** "M","F","O" */
     @Column(length = 1)
@@ -44,6 +53,13 @@ public class Customer {
     @Column(name = "weight_kg")
     private Integer weightKg;
 
+    /** OAuth2 provider (vd: "google", "facebook"), có thể null nếu local account */
+    @Column(name = "oauth_provider", length = 40)
+    private String oauthProvider;
+
+    /** Subject/ID của provider (vd: Google sub), có thể null nếu local account */
+    @Column(name = "oauth_subject", length = 128)
+    private String oauthSubject;
 
     @Column(nullable = false)
     private Boolean enabled = true;
@@ -69,5 +85,7 @@ public class Customer {
         if (email != null) email = email.trim().toLowerCase();
         if (phone != null) phone = phone.trim();
         if (gender != null) gender = gender.trim().toUpperCase(); // "M","F","O"
+        if (oauthProvider != null) oauthProvider = oauthProvider.trim().toLowerCase();
+        if (oauthSubject != null) oauthSubject = oauthSubject.trim();
     }
 }
