@@ -8,7 +8,7 @@
       <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
       <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
       <div class="topbar-right">
-        <a th:href="@{/admin/settings/profile}">Profile</a>
+        <a th:href="@{/settings/profile}">Profile</a>
       </div>
     </div>
   </th:block>
@@ -42,7 +42,7 @@
           <details class="mgroup" data-key="m_customers">
               <summary>Customers</summary>
               <a th:href="@{/admin/customers}">Customers</a>
-              <a th:href="@{/admin/customers/segments}">Segments</a>
+              <a th:href="@{/admin/membership-tiers}">Membership Tier</a>
           </details>
 
           <details class="mgroup" data-key="m_procurement">

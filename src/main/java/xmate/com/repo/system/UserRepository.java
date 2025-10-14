@@ -44,4 +44,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     Optional<User> findByLoginWithRoles(@Param("key") String key);
 
+    Optional<User> findByUsername(String username);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    boolean existsByPhoneAndIdNot(String phone, Long id);
+
 }
