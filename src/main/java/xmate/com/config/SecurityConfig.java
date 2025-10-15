@@ -1,6 +1,7 @@
 // src/main/java/xmate/com/config/SecurityConfig.java
 package xmate.com.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,7 +37,7 @@ public class SecurityConfig {
                 // API dùng JWT: bỏ CSRF cho /api/**
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
 
-                // Dùng session khi cần cho form-login / oauth2
+                // Dùng session nếu cần cho form-login / oauth2
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
                 // Phân quyền
@@ -44,18 +45,31 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/error",
                                 "/auth/**", "/api/auth/**",
-                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/ws/**"
+                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/ws/**",
+                                "/uploads/**" // ảnh biên lai
                         ).permitAll()
+
+                        // bắt buộc đăng nhập cho checkout APIs
+                        .requestMatchers("/api/checkout/**").authenticated()
+
+                        // upload biên lai: để authenticated (đổi thành permitAll nếu bạn muốn cho khách chưa login cũng gửi)
+                        .requestMatchers("/api/payment/proof").permitAll()
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().permitAll()
                 )
 
+                // Trả 401 khi chưa đăng nhập để FE bắt được
+                .exceptionHandling(e -> e.authenticationEntryPoint(
+                        (req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                ))
+
                 .authenticationProvider(daoAuthProvider)
 
                 .formLogin(form -> form
-                        .loginPage("/auth/login")           // GET hiển thị form
-                        .loginProcessingUrl("/auth/login")  // POST submit form
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .successHandler(roleRedirect)
@@ -79,13 +93,12 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                // JWT filter chạy trước Username/Password
+                // JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Lấy AuthenticationManager mặc định
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
