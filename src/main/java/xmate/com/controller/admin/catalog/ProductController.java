@@ -3,6 +3,7 @@ package xmate.com.controller.admin.catalog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
 
-    // LIST
+
     @GetMapping
     public String index(@RequestParam(defaultValue = "") String q,
                         @RequestParam(defaultValue = "0") int page,
@@ -39,14 +40,14 @@ public class ProductController {
         return "catalog/products/list"; // -> templates/catalog/products/list.html
     }
 
-    // VIEW (optional)
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW_DETAIL')")
     @GetMapping("/{id}")
     public String view(@PathVariable Long id, Model model) {
         model.addAttribute("product", productService.get(id));
         return "catalog/products/view"; // nếu chưa có có thể tạm dùng form
     }
 
-    // NEW (GET form)
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("product", new Product());
@@ -54,7 +55,7 @@ public class ProductController {
         return "catalog/products/form"; // -> templates/catalog/products/form.html
     }
 
-    // NEW (POST submit)
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
     @PostMapping("/new")
     public String create(@ModelAttribute Product product,
                          @RequestParam(required = false) Long categoryId,
@@ -70,7 +71,7 @@ public class ProductController {
         return "redirect:/admin/catalog/products";
     }
 
-    // EDIT (GET form)
+    @PreAuthorize("hasAuthority('PRODUCT_EDIT')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         model.addAttribute("product", productService.get(id));
@@ -78,7 +79,7 @@ public class ProductController {
         return "catalog/products/form";
     }
 
-    // EDIT (POST submit)
+    @PreAuthorize("hasAuthority('PRODUCT_EDIT')")
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
                          @ModelAttribute Product product,
@@ -95,7 +96,7 @@ public class ProductController {
         return "redirect:/admin/catalog/products";
     }
 
-    // DELETE
+    @PreAuthorize("hasAuthority('PRODUCT_DELETE')")
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         productService.delete(id);

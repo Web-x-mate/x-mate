@@ -34,6 +34,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
          where u.email = :email
       """)
     Optional<User> findByEmailWithRolesAndPermissions(@Param("email") String email);
+
     Optional<User> findByEmailIgnoreCase(String email);
 
     @Query("""

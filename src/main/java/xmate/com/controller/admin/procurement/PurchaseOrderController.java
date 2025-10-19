@@ -4,6 +4,7 @@ package xmate.com.controller.admin.procurement;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class PurchaseOrderController {
         model.addAttribute("suppliers", supplierService.search("", PageRequest.of(0, 200)).getContent());
         return "procurement/po/list";
     }
-
+    @PreAuthorize("hasAnyAuthority('PO_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(Model model) {
         PurchaseOrderForm form = new PurchaseOrderForm();
@@ -59,7 +60,7 @@ public class PurchaseOrderController {
         model.addAttribute("suppliers", supplierService.search("", PageRequest.of(0, 200)).getContent());
         return "procurement/po/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PO_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@ModelAttribute("form") PurchaseOrderForm form, RedirectAttributes ra) {
         PurchaseOrder po = form.toPO();
@@ -68,7 +69,7 @@ public class PurchaseOrderController {
         ra.addFlashAttribute("success", "Đã tạo PO");
         return "redirect:/admin/procurement/po";
     }
-
+    @PreAuthorize("hasAnyAuthority('PO_EDIT','ROLE_ADMIN')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         PurchaseOrder po = service.get(id);
@@ -77,14 +78,14 @@ public class PurchaseOrderController {
         model.addAttribute("suppliers", supplierService.search("", PageRequest.of(0, 200)).getContent());
         return "procurement/po/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PO_EDIT','ROLE_ADMIN')")
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id, @ModelAttribute("form") PurchaseOrderForm form, RedirectAttributes ra) {
         service.update(id, form.toPO(), form.toItems());
         ra.addFlashAttribute("success", "Đã cập nhật PO");
         return "redirect:/admin/procurement/po";
     }
-
+    @PreAuthorize("hasAnyAuthority('PO_DELETE','ROLE_ADMIN')")
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         service.delete(id);
@@ -92,6 +93,7 @@ public class PurchaseOrderController {
         return "redirect:/admin/procurement/po";
     }
 
+    @PreAuthorize("hasAnyAuthority('PO_STATUS_UPDATE','ROLE_ADMIN')")
     @PostMapping("/{id}/status")
     public String changeStatus(@PathVariable Long id, @RequestParam POStatus status, RedirectAttributes ra) {
         service.changeStatus(id, status);

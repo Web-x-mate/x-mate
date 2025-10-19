@@ -3,6 +3,7 @@ package xmate.com.controller.admin.customer;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,13 +31,13 @@ public class MembershipTierAdminController {
         model.addAttribute("items", p.getContent());
         return "customers/membershipTier/list";
     }
-
+    @PreAuthorize("hasAuthority('MEMBERSHIP_TIER_CREATE')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("t", new MembershipTier());
         return "customers/membershipTier/form";
     }
-
+    @PreAuthorize("hasAuthority('MEMBERSHIP_TIER_EDIT')")
     @GetMapping("/{code}/edit")
     public String editForm(@PathVariable String code, Model model, RedirectAttributes ra) {
         var t = service.get(code);
@@ -61,7 +62,7 @@ public class MembershipTierAdminController {
             return "redirect:/admin/membership-tiers/" + t.getCode() + "/edit";
         }
     }
-
+    @PreAuthorize("hasAuthority('MEMBERSHIP_TIER_DELETE')")
     @PostMapping("/{code}/delete")
     public String delete(@PathVariable String code, RedirectAttributes ra) {
         try {

@@ -66,9 +66,31 @@ public class AdminCustomerServiceImpl implements AdminCustomerService {
     // ⚠️ Ghi đè readOnly=false cho method ghi
     @Override
     @Transactional
-    public Customer save(Customer c) {
-        // entity tự normalize ở @PrePersist/@PreUpdate
-        return customerRepo.saveAndFlush(c);
+    public Customer save(Customer in) {
+        if (in.getId() == null) {
+            // tạo mới: nếu cho phép tạo customer không đặt mật khẩu,
+            // set rỗng để không vi phạm NOT NULL ở DB
+            if (in.getPasswordHash() == null) in.setPasswordHash("");
+            // email đã normalize ở entity
+            return customerRepo.saveAndFlush(in);
+        }
+
+        // cập nhật: merge field, KHÔNG đụng tới passwordHash & email
+        Customer cur = customerRepo.findById(in.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        cur.setFullname(in.getFullname());
+        cur.setPhone(in.getPhone());
+        cur.setGender(in.getGender());
+        cur.setDob(in.getDob());
+        cur.setHeightCm(in.getHeightCm());
+        cur.setWeightKg(in.getWeightKg());
+        cur.setEnabled(Boolean.TRUE.equals(in.getEnabled()));
+        cur.setOauthProvider(in.getOauthProvider());
+        cur.setOauthSubject(in.getOauthSubject());
+
+        // KHÔNG set email, KHÔNG set passwordHash ở form này
+        return customerRepo.saveAndFlush(cur);
     }
 
     // ⚠️ Ghi đè readOnly=false + xóa con trước cha để tránh FK RESTRICT

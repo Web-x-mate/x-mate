@@ -23,5 +23,7 @@ public class CombinedUserDetailsService implements UserDetailsService {
         catch (UsernameNotFoundException ex) { /* fallthrough */ }
         return customer.loadUserByUsername(username); // ném UsernameNotFound nếu cả 2 đều fail
     }
+
+
 }
 

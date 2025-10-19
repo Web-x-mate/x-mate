@@ -4,6 +4,7 @@ package xmate.com.controller.admin.inventory;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class InventoryController {
         model.addAttribute("q", q);
         return "inventory/list";
     }
-
+    @PreAuthorize("hasAnyAuthority('INVENTORY_ADJUST','ROLE_ADMIN')")
     @GetMapping("/adjust/{variantId}")
     public String adjustForm(@PathVariable Long variantId, Model model) {
         Inventory i = service.getOrCreate(variantId);
@@ -39,6 +40,7 @@ public class InventoryController {
         return "inventory/adjust";
     }
 
+    @PreAuthorize("hasAnyAuthority('INVENTORY_ADJUST','ROLE_ADMIN')")
     @PostMapping("/adjust/{variantId}")
     public String doAdjust(@PathVariable Long variantId,
                            @ModelAttribute("form") AdjustForm form,

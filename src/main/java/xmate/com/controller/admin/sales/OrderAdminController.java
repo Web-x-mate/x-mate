@@ -4,6 +4,7 @@ package xmate.com.controller.admin.sales;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -72,7 +73,7 @@ public class OrderAdminController {
         model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/list";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("form", new OrderForm());
@@ -82,7 +83,7 @@ public class OrderAdminController {
         model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         Order order = form.toOrder();
@@ -92,7 +93,7 @@ public class OrderAdminController {
         ra.addFlashAttribute("success", "Tạo đơn hàng thành công");
         return "redirect:/admin/sales/orders";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Order o = service.get(id);
@@ -103,7 +104,7 @@ public class OrderAdminController {
         model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')")
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id, @ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         List<OrderItem> items = form.toItems();
@@ -112,7 +113,7 @@ public class OrderAdminController {
         ra.addFlashAttribute("success", "Cập nhật đơn hàng thành công");
         return "redirect:/admin/sales/orders";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_DELETE','ROLE_ADMIN')")
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         service.delete(id);
@@ -227,4 +228,6 @@ public class OrderAdminController {
         }
         return 0L;
     }
+
+
 }

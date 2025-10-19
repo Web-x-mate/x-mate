@@ -3,6 +3,7 @@ package xmate.com.controller.admin.customer;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,13 +33,13 @@ public class CustomerController {
         model.addAttribute("items", p.getContent());
         return "customers/customer/list";
     }
-
+    @PreAuthorize("hasAuthority('CUSTOMER_CREATE')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("c", new Customer());
         return "customers/customer/form";
     }
-
+    @PreAuthorize("hasAuthority('CUSTOMER_EDIT')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
         var c = service.get(id);
@@ -64,7 +65,7 @@ public class CustomerController {
             return "redirect:/admin/customers/" + c.getId() + "/edit";
         }
     }
-
+    @PreAuthorize("hasAuthority('CUSTOMER_DELETE')")
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
