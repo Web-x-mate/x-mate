@@ -10,6 +10,8 @@ import xmate.com.entity.customer.Customer;
 import xmate.com.repo.auth.RefreshTokenRepository;
 import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.security.JwtUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.time.Instant;
 import java.util.Map;
@@ -39,7 +41,9 @@ public class FacebookAuthService {
                                PasswordEncoder encoder,
                                JwtUtils jwt,
                                RefreshTokenRepository rtRepo) {
-        this.http = builder.build();
+        this.http = builder
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
         this.userRepo = userRepo;
         this.encoder = encoder;
         this.jwt = jwt;
@@ -93,15 +97,16 @@ public class FacebookAuthService {
     private DebugToken debugToken(String userToken) {
         String appToken = appId + "|" + appSecret;
         return http.get()
-                .uri("https://graph.facebook.com/debug_token?input_token={ut}&access_token={at}",
-                        userToken, appToken)
+                .uri("https://graph.facebook.com/debug_token?input_token={ut}&access_token={at}&format=json", userToken, appToken)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(DebugToken.class);
     }
 
     private Me fetchMe(String userToken) {
         return http.get()
-                .uri("https://graph.facebook.com/me?fields=id,name,email&access_token={ut}", userToken)
+                .uri("https://graph.facebook.com/v19.0/me?fields=id,name,email&access_token={ut}&format=json", userToken)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(Me.class);
     }

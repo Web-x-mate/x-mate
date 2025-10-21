@@ -94,7 +94,7 @@ public class AuthController {
     // ===== cookie helpers =====
     private void setAuthCookies(HttpServletResponse res, TokenRes t){
         ResponseCookie access = ResponseCookie.from("ACCESS_TOKEN", t.accessToken())
-                .httpOnly(true).secure(false) // prod: true (HTTPS)
+                .httpOnly(true).secure(true) // prod: true (HTTPS)
                 .path("/").sameSite("Lax").build();
         ResponseCookie refresh = ResponseCookie.from("REFRESH_TOKEN", t.refreshToken())
                 .httpOnly(true).secure(false) // prod: true (HTTPS)

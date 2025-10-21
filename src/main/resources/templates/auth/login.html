@@ -89,103 +89,88 @@
 
 <!-- Facebook SDK -->
 <div id="fb-root"></div>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+<script>
+    // Promise resolve khi FB.init gọi xong
+    const fbReady = new Promise((resolve) => {
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '1495990908193900',
+                cookie: true,        // nên bật nếu server dùng session
+                xfbml: false,
+                version: 'v19.0'
+            });
+            console.log('[FB] SDK ready');
+            resolve(true);
+        };
+    });
+
+    // Nạp SDK đúng 1 lần
+    (function (d, s, id) {
+        if (d.getElementById(id)) return;
+        const js = d.createElement(s);
+        js.id = id; js.async = true; js.defer = true; js.crossOrigin = 'anonymous';
+        js.src = 'https://connect.facebook.net/vi_VN/sdk.js';
+        d.getElementsByTagName('head')[0].appendChild(js);
+    })(document, 'script', 'facebook-jssdk');
+</script>
 
 <script>
     const $ = (s) => document.querySelector(s);
     const show = el => el.classList.remove('hidden');
     const hide = el => el.classList.add('hidden');
-
-    // Toggle password
-    $('#toggleEye')?.addEventListener('click', () => {
-        const pwd = $('#pwd');
-        pwd.type = (pwd.type === 'password') ? 'text' : 'password';
-    });
-
-    // Kết quả chung
-    // THAY handleAuthResult hiện tại bằng bản này:
-    async function handleAuthResult(resp, errEl) {
+    window.handleAuthResult = async function handleAuthResult(resp, errEl){
         let text = '';
-        try {
-            text = await resp.text();
-        } catch {
-        }
+        try { text = await resp.text(); } catch {}
         if (!resp.ok) {
             console.error('Auth error:', resp.status, text);
-            errEl.classList.remove('hidden');
-            errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.';
+            if (errEl) { show(errEl); errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.'; }
             return;
         }
-
-        // cố gắng parse JSON (không dùng để điều hướng)
         let data = {};
-        try {
-            data = text ? JSON.parse(text) : {};
-        } catch (e) {
-            console.warn('JSON parse fail', e, text);
-        }
-
-        // (tuỳ ý) lưu token nếu backend vẫn trả về
-        if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+        try { data = text ? JSON.parse(text) : {}; } catch {}
+        if (data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
         if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-
-        // QUAN TRỌNG: đi thẳng tới /auth/complete để server đọc cookie ACCESS_TOKEN và set Authentication
         location.href = '/auth/complete';
-    }
-
-
-    // Form login → /api/auth/login
-    const errLogin = $('#errLogin');
-    $('#loginForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        hide(errLogin);
-        const email = $('#email').value.trim();
-        const password = $('#pwd').value;
-        try {
-            const resp = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-            await handleAuthResult(resp, errLogin);
-        } catch (ex) {
-            show(errLogin);
-            errLogin.textContent = 'Lỗi mạng: ' + ex.message;
-        }
-    });
-
-    // Facebook → /api/auth/facebook
-    window.fbAsyncInit = function () {
-        FB.init({appId: '1152571593486247', cookie: false, xfbml: false, version: 'v19.0'});
     };
-    const errFacebook = $('#errFacebook');
-    $('#btnFacebook')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        hide(errFacebook);
-        if (!window.FB) {
-            show(errFacebook);
-            errFacebook.textContent = 'Không tải được Facebook SDK.';
-            return;
-        }
-        FB.login(async (response) => {
-            try {
-                if (response.status === 'connected' && response.authResponse?.accessToken) {
-                    const resp = await fetch('/api/auth/facebook', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({accessToken: response.authResponse.accessToken})
-                    });
-                    await handleAuthResult(resp, errFacebook);
-                } else {
+    const errFacebook = document.getElementById('errFacebook');
+
+    $('#btnFacebook')?.addEventListener('click', async (e) => {
+        e.preventDefault(); hide(errFacebook);
+        try {
+            // CHỜ CHẮC FB.init xong (không tự poll nữa)
+            await fbReady;
+
+            // Gọi login (có thể thêm scope: 'email' nếu app đã được duyệt)
+            FB.login((response) => {
+                (async () => {
+                    console.log('FB.login response =', response);
+                    const t = response?.authResponse?.accessToken;
+                    if (response.status === 'connected' && t) {
+                        const resp = await fetch('/api/auth/facebook', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ accessToken: t }),
+                            credentials: 'include'
+                        });
+                        await handleAuthResult(resp, errFacebook);
+                    } else {
+                        show(errFacebook);
+                        errFacebook.textContent = 'Đăng nhập Facebook bị hủy hoặc thất bại.';
+                    }
+                })().catch(ex => {
                     show(errFacebook);
-                    errFacebook.textContent = 'Đăng nhập Facebook bị hủy hoặc thất bại.';
-                }
-            } catch (ex) {
-                show(errFacebook);
-                errFacebook.textContent = 'Lỗi mạng: ' + ex.message;
-            }
-        }, {scope: 'email'});
+                    errFacebook.textContent = 'Lỗi xử lý callback Facebook.';
+                    console.error(ex);
+                });
+            }/*, { scope: 'email', return_scopes: true }*/);
+        } catch (ex) {
+            show(errFacebook);
+            errFacebook.textContent = 'FB SDK chưa sẵn sàng hoặc bị chặn.';
+            console.error(ex);
+        }
     });
 </script>
+
 
 <!-- GSI: CHỈ 1 SCRIPT & 1 INIT -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
