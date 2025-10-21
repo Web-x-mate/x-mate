@@ -38,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             return Enum.valueOf(type, raw.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            return null; // nếu giá trị không hợp lệ -> bỏ lọc
+            return null;
         }
     }
 

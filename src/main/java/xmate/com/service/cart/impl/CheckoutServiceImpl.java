@@ -3,20 +3,24 @@ package xmate.com.service.cart.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import xmate.com.dto.cart.CartDto;
 import xmate.com.dto.checkout.CheckoutReq;
 import xmate.com.dto.checkout.OrderPlacedDto;
 import xmate.com.dto.checkout.PricingDto;
 import xmate.com.entity.cart.Payment;
 import xmate.com.entity.catalog.ProductVariant;
+import xmate.com.entity.enums.PaymentMethod;
+import xmate.com.entity.enums.OrderStatus;
+import xmate.com.entity.enums.PaymentStatus;
 import xmate.com.entity.customer.Address;
 import xmate.com.entity.customer.Customer;
-import xmate.com.entity.common.OrderStatus;          // ✅ DÙNG common.*
-import xmate.com.entity.enums.PaymentMethod;
-import xmate.com.entity.enums.PaymentStatus;
+
 import xmate.com.entity.sales.Order;
 import xmate.com.entity.sales.OrderItem;
 import xmate.com.repo.cart.PaymentRepository;
@@ -50,18 +54,30 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final VietQRService vietQRService;
     private final ObjectMapper objectMapper;
 
+    /** Lấy customer hiện tại hoặc ném 401 để FE xử lý đăng nhập */
+    private Customer currentCustomerOr401() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn chưa đăng nhập");
+        }
+        String name = auth.getName();
+        if (name == null || "anonymousUser".equalsIgnoreCase(name)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn chưa đăng nhập");
+        }
+        return userRepository.findByEmail(name)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bạn chưa đăng nhập"));
+    }
+
     @Override
     @Transactional
     public OrderPlacedDto placeOrder(CheckoutReq req, String idempotencyKey) {
-        // 1) User hiện tại
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Customer user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Bạn chưa đăng nhập."));
+        // 1) User hiện tại (401 nếu chưa đăng nhập)
+        Customer user = currentCustomerOr401();
 
         // 2) Giỏ hàng
         CartDto currentCart = cartService.getCartForCurrentUser();
         if (currentCart.items() == null || currentCart.items().isEmpty()) {
-            throw new IllegalStateException("Giỏ hàng của bạn đang trống.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng của bạn đang trống.");
         }
 
         // 3) Tính giá
@@ -72,7 +88,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Address addressToUse;
         if (req.addressId() != null) {
             addressToUse = addressRepository.findById(req.addressId())
-                    .orElseThrow(() -> new IllegalArgumentException("Địa chỉ đã chọn không hợp lệ."));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Địa chỉ đã chọn không hợp lệ."));
         } else {
             Address newAddress = new Address();
             newAddress.setCustomer(user);
@@ -98,15 +114,16 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         PaymentMethod paymentMethodEnum = PaymentMethod.valueOf(req.paymentMethod().toUpperCase());
         order.setStatus(paymentMethodEnum == PaymentMethod.COD
-                ? OrderStatus.PLACED                   // ✅ dùng common.OrderStatus
-                : OrderStatus.PENDING_PAYMENT);        // ✅ dùng common.OrderStatus
+                ? OrderStatus.PLACED
+                : OrderStatus.PENDING_PAYMENT);
 
         final Order savedOrder = orderRepository.save(order);
 
         // 6) Items
         List<OrderItem> orderItems = currentCart.items().stream().map(item -> {
             ProductVariant variant = variantRepository.findById(item.variantId())
-                    .orElseThrow(() -> new IllegalStateException("Không tìm thấy sản phẩm ID: " + item.variantId()));
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, "Không tìm thấy sản phẩm ID: " + item.variantId()));
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
@@ -125,7 +142,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         payment.setOrder(savedOrder);
         payment.setMethod(req.paymentMethod());
         payment.setAmount(total);
-        payment.setStatus(PaymentStatus.UNPAID.name());       // gọn hơn
+        payment.setStatus(PaymentStatus.UNPAID.name());
         payment.setTxnRef(savedOrder.getCode());
         paymentRepository.save(payment);
 
@@ -134,7 +151,6 @@ public class CheckoutServiceImpl implements CheckoutService {
                 ? "/orders/" + savedOrder.getCode()
                 : "/orders/pay/" + savedOrder.getCode();
 
-        // Nếu OrderPlacedDto.total là long -> dùng longValue()
         return OrderPlacedDto.builder()
                 .id(savedOrder.getId())
                 .code(savedOrder.getCode())
