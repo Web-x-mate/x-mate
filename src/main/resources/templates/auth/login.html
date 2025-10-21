@@ -149,8 +149,7 @@
                         const resp = await fetch('/api/auth/facebook', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ accessToken: t }),
-                            credentials: 'include'
+                            body: JSON.stringify({ accessToken: t })
                         });
                         await handleAuthResult(resp, errFacebook);
                     } else {
