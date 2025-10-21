@@ -10,4 +10,8 @@ public interface IAuthService {
     TokenRes login(LoginReq req);
     TokenRes refresh(RefreshReq req);
     void logout(String refreshToken);
+
+    // GOOGLE → JWT
+    TokenRes loginWithGoogle(String idToken);
+    TokenRes loginWithFacebook(String userAccessToken);
 }

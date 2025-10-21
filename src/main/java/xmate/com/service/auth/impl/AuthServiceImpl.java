@@ -26,17 +26,22 @@ public class AuthServiceImpl implements IAuthService {
     private final PasswordEncoder encoder;
     private final JwtUtils jwt;
     private final long refreshExp;
-
+    private final FacebookAuthService facebookAuthService;
+    private final GoogleAuthService googleAuthService;
     public AuthServiceImpl(CustomerRepository userRepo,
                            RefreshTokenRepository rtRepo,
                            PasswordEncoder encoder,
                            JwtUtils jwt,
-                           @Value("${app.jwt.refresh-exp-ms}") long refreshExp) {
+                           @Value("${app.jwt.refresh-exp-ms}") long refreshExp,
+                           GoogleAuthService googleAuthService,
+                           FacebookAuthService facebookAuthService) {
         this.userRepo = userRepo;
         this.rtRepo = rtRepo;
         this.encoder = encoder;
         this.jwt = jwt;
         this.refreshExp = refreshExp;
+        this.googleAuthService = googleAuthService;
+        this.facebookAuthService = facebookAuthService;
     }
 
     @Override
@@ -91,7 +96,7 @@ public class AuthServiceImpl implements IAuthService {
 
     // ===== helpers =====
 
-    private TokenRes issueTokens(Customer u) {
+    public TokenRes issueTokens(Customer u) {
         String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer"));
         RefreshToken rt = RefreshToken.builder()
                 .token(UUID.randomUUID().toString())
@@ -102,6 +107,18 @@ public class AuthServiceImpl implements IAuthService {
         rtRepo.save(rt);
         return new TokenRes(access, rt.getToken());
     }
+
+    @Override
+    public TokenRes loginWithGoogle(String idToken) {
+        return googleAuthService.loginWithGoogle(idToken);
+    }
+
+    @Override
+    public TokenRes loginWithFacebook(String userAccessToken) {
+        return facebookAuthService.loginWithFacebook(userAccessToken);
+    }
+
+
 
     private static String norm(String email) {
         return email == null ? null : email.trim().toLowerCase();

@@ -1,5 +1,6 @@
 package xmate.com.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,67 +13,53 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import xmate.com.security.JwtAuthFilter;
-import xmate.com.security.RoleRedirectSuccessHandler;
-import xmate.com.security.oauth.CustomOAuth2UserService;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtFilter;
-    private final CustomOAuth2UserService oAuth2UserService;
-
-    public SecurityConfig(JwtAuthFilter jwtFilter, CustomOAuth2UserService oAuth2UserService) {
-        this.jwtFilter = jwtFilter;
-        this.oAuth2UserService = oAuth2UserService;
-    }
+    private final AuthenticationProvider daoAuthProvider;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           RoleRedirectSuccessHandler roleRedirect,
-                                           AuthenticationProvider daoAuthProvider) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // static
+                        .requestMatchers("/", "/css/**","/js/**","/images/**").permitAll()
+
+                        // AUTH endpoints (public)
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/logout",
+                                "/api/auth/google",
+                                "/api/auth/facebook"
+                        ).permitAll()
+                        .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
+
+                        // Các trang web yêu cầu đã đăng nhập bằng JWT
+                        .requestMatchers("/auth/complete/**").authenticated()
                         .requestMatchers("/user/**").authenticated()
+
+                        // API bảo vệ bởi JWT
+                        .requestMatchers("/api/**").authenticated()
+
+                        // còn lại cho phép
                         .anyRequest().permitAll()
                 )
-                .authenticationProvider(daoAuthProvider) // 👈 ĐĂNG KÝ provider CHUẨN, KHÔNG vòng lặp
-                .formLogin(form -> form
-                        .loginPage("/auth/login")
-                        .loginProcessingUrl("/auth/login")
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        .successHandler(roleRedirect)
-                        .failureUrl("/auth/login?error")
-                        .permitAll()
-                )
-                .oauth2Login(o -> o
-                        .loginPage("/auth/login")
-                        .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
-                        .successHandler(roleRedirect)
-                        .failureHandler((rq, rs, ex) -> { ex.printStackTrace(); rs.sendRedirect("/auth/login?oauth2Error"); })
-                )
-                .logout(l -> l
-                        .logoutUrl("/auth/logout")
-                        .logoutSuccessUrl("/")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll()
-                )
+                .authenticationProvider(daoAuthProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Dùng AuthenticationConfiguration để lấy AuthenticationManager mặc định (ProviderManager)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
     }
 }
-

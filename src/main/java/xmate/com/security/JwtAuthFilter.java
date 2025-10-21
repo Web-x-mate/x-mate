@@ -29,9 +29,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        // CHỈ lọc khi vào /api/**
-        return !request.getServletPath().startsWith("/api/");
+        String p = request.getServletPath();
+        // Static, trang public
+        if (p.startsWith("/css/") || p.startsWith("/js/") || p.startsWith("/images/")
+                || p.startsWith("/webjars/") || p.startsWith("/favicon")
+                || p.equals("/") || p.equals("/auth/login") || p.startsWith("/auth/register")
+                || p.startsWith("/oauth2/")) {
+            return true;
+        }
+        // ⬇⬇⬇ BỎ LỌC CHO TOÀN BỘ API AUTH
+        if (p.startsWith("/api/auth/")) {
+            return true;
+        }
+        // Bỏ lọc cho preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+        return false;
     }
+
+
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -39,35 +56,49 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        // Nếu đã có session-auth (form login/OAuth2) thì bỏ qua JWT
-        var ctx = SecurityContextHolder.getContext();
-        if (ctx.getAuthentication() != null && ctx.getAuthentication().isAuthenticated()) {
+        // Nếu đã có Authentication thì bỏ qua
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(request, response);
             return;
         }
 
-        String auth = request.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Bearer ")) {
+        // 1) Lấy token: ưu tiên header, fallback cookie
+        String token = null;
+
+        String authz = request.getHeader("Authorization");
+        if (authz != null && authz.startsWith("Bearer ")) {
+            token = authz.substring(7);
+        } else if (request.getCookies() != null) {
+            for (var c : request.getCookies()) {
+                if ("ACCESS_TOKEN".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+
+        // Không có token -> cho qua
+        if (token == null || token.isBlank()) {
             chain.doFilter(request, response);
             return;
         }
 
-        String token = auth.substring(7);
+        // 2) Validate & set Authentication
         try {
             if (jwtService.isTokenValid(token)) {
                 String username = jwtService.extractUsername(token);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (username != null) {
                     UserDetails user = userDetailsService.loadUserByUsername(username);
-                    var authentication = new UsernamePasswordAuthenticationToken(
-                            user, null, user.getAuthorities());
+                    var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
                 chain.doFilter(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
             }
-        } catch (JwtException | IllegalArgumentException ex) {
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
         }
     }
+
 }
