@@ -94,13 +94,13 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query(value = """
         SELECT 
           o.code                           AS code,
-          COALESCE(c.full_name, c.email)   AS customer,
+          COALESCE(c.fullname, c.email)   AS customer,
           o.total                          AS total,
           o.payment_status                 AS paymentStatus,
           o.shipping_status                AS shippingStatus,
           o.created_at                     AS createdAt
         FROM orders o
-        LEFT JOIN customers c ON c.id = o.customers_id
+        LEFT JOIN customers c ON c.id = o.customer_id
         ORDER BY o.created_at DESC
         LIMIT :limit
         """, nativeQuery = true)

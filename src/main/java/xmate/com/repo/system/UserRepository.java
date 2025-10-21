@@ -34,6 +34,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
          where u.email = :email
       """)
     Optional<User> findByEmailWithRolesAndPermissions(@Param("email") String email);
+
     Optional<User> findByEmailIgnoreCase(String email);
 
     @Query("""
@@ -43,5 +44,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
        where lower(u.username) = lower(:key) or lower(u.email) = lower(:key)
     """)
     Optional<User> findByLoginWithRoles(@Param("key") String key);
+
+    Optional<User> findByUsername(String username);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    boolean existsByPhoneAndIdNot(String phone, Long id);
 
 }
