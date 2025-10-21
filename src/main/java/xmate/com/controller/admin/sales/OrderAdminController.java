@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import xmate.com.entity.catalog.ProductVariant;
+import xmate.com.entity.common.ShippingStatus;
 import xmate.com.entity.customer.Customer;
 import xmate.com.entity.sales.Order;
 import xmate.com.entity.sales.OrderItem;
@@ -74,7 +75,7 @@ public class OrderAdminController {
 
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentStatuses", PaymentStatus.values());
-        model.addAttribute("shippingStatuses", getShippingStatuses()); // List<String>
+        model.addAttribute("shippingStatuses", ShippingStatus.values()); // List<String>
 
         return "orders/list";
     }
@@ -85,7 +86,7 @@ public class OrderAdminController {
         model.addAttribute("customers", getAllCustomers());
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentStatuses", PaymentStatus.values());
-        model.addAttribute("shippingStatuses", getShippingStatuses());
+        model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
     @PreAuthorize("hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')")
@@ -106,7 +107,7 @@ public class OrderAdminController {
         model.addAttribute("customers", getAllCustomers());
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentStatuses", PaymentStatus.values());
-        model.addAttribute("shippingStatuses", getShippingStatuses());
+        model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
     @PreAuthorize("hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')")
@@ -129,18 +130,7 @@ public class OrderAdminController {
     private List<Customer> getAllCustomers() {
         return customerRepo.findAll(PageRequest.of(0, 200, Sort.by("id").descending())).getContent();
     }
-
-    /** Tập giá trị shippingStatus dạng String để hiển thị trong form (tạm thời chưa làm enum). */
-    private List<String> getShippingStatuses() {
-        return Arrays.asList(
-                "NOT_SHIPPED",
-                "PICKING",
-                "SHIPPING",
-                "DELIVERED",
-                "RETURNED",
-                "CANCELLED"
-        );
-    }
+    
 
     // ======= DTO FORM (đồng bộ long VND) =======
     @Data
