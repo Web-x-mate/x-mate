@@ -1,0 +1,571 @@
+:root {
+    --bg: #f6f7fb;
+    --card: #fff;
+    --text: #111;
+    --muted: #6b7280;
+    --primary: #2f6cf6;
+    --danger: #f43f5e;
+    --radius: 14px;
+    --shadow: 0 6px 20px rgba(0, 0, 0, .06);
+}
+
+/* ============ RESET / BASE ============ */
+* {
+    box-sizing: border-box
+}
+
+html, body {
+    margin: 0;
+    color: var(--text);
+    font: 16px/1.45 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #fff;
+}
+
+a {
+    color: inherit;
+    text-decoration: none
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+.page {
+    padding: 24px 0
+}
+
+h1 {
+    font-size: 28px;
+    margin: 10px 0 18px
+}
+
+h2 {
+    font-size: 26px;
+    margin: 16px 0 12px
+}
+
+h3 {
+    margin: 0 0 12px
+}
+
+.muted {
+    color: var(--muted)
+}
+
+.ok {
+    color: #22c55e
+}
+
+.err {
+    color: var(--danger)
+}
+
+hr.spacer {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 26px 0
+}
+
+.hidden {
+    display: none !important
+}
+
+/* ============ HEADER (giống Cart) ============ */
+.xm-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: #fff;
+    border-bottom: 1px solid #eee
+}
+
+.xm-header__in, .xm-header .wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 64px;
+    height: 64px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+.xm-brand, .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 20px
+}
+
+.xm-logo, .logo {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #000;
+    color: #fff;
+    font-weight: 900;
+    line-height: 1
+}
+
+.xm-nav, .nav {
+    display: flex;
+    gap: 12px;
+    margin-left: 8px
+}
+
+.chip, .xm-header .nav a {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #f1f3f6;
+    font-weight: 500;
+    color: #0f172a
+}
+
+.chip--active, .xm-header .nav a.sale {
+    background: #ffe8e8;
+    color: #b10000
+}
+
+.xm-tools, .right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px
+}
+
+/* Search box */
+.search {
+    position: relative;
+    display: flex;
+    align-items: center
+}
+
+.search input {
+    width: 260px;
+    height: 36px;
+    padding: 0 36px 0 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #f6f7f9;
+    outline: 0
+}
+
+.search .ico, .search i {
+    position: absolute;
+    right: 12px;
+    top: 9px;
+    color: #374151;
+    font-size: 15px
+}
+
+.login {
+    white-space: nowrap;
+    color: #374151;
+    font-weight: 500
+}
+
+/* ============ LAYOUT 2 CỘT ============ */
+.grid {
+    display: grid;
+    grid-template-columns:1fr 360px;
+    gap: 24px
+}
+
+@media (max-width: 980px) {
+    .grid {
+        grid-template-columns:1fr
+    }
+}
+
+/* ============ CARD & FORM ============ */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px
+}
+
+.card .hd {
+    padding: 0 0 12px;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    margin-bottom: 12px
+}
+
+.card .bd {
+    padding: 0
+}
+
+.form label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 12px
+}
+
+.form input, .form select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 12px;
+    background: #fff;
+    margin-top: 4px
+}
+
+.form .two {
+    display: grid;
+    grid-template-columns:1fr 1fr;
+    gap: 12px
+}
+
+/* Coupon input + button */
+.coupon-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px
+}
+
+.coupon-row input {
+    flex: 1
+}
+
+/* Buttons */
+.btn {
+    border: 0;
+    border-radius: 12px;
+    height: 42px;
+    padding: 0 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: #fff
+}
+
+.btn.primary:hover {
+    background: #1c52d1
+}
+
+.btn.outline {
+    background: #fff;
+    border: 1px solid #e5e7eb
+}
+
+.btn.outline:hover {
+    background: #f9fafb
+}
+
+.btn:disabled {
+    opacity: .6;
+    cursor: not-allowed
+}
+
+/* ============ SUMMARY ============ */
+.summary .sum-list {
+    list-style: none;
+    padding: 0;
+    margin: 0
+}
+
+.summary .sum-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee
+}
+
+.summary .grand {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 10px
+}
+
+.cart-line-summary {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 4px
+}
+
+/* ============ ADDRESS & PAYMENT ============ */
+.addr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px
+}
+
+.addr {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    cursor: pointer
+}
+
+.addr:has(input:checked) {
+    border-color: var(--primary);
+    background: #f0f3fe
+}
+
+.paylist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.payitem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    background: #fff;
+    transition: .2s;
+    padding: 10px 12px;
+    cursor: pointer
+}
+
+.payitem:hover {
+    box-shadow: var(--shadow)
+}
+
+.payitem input[type=radio] {
+    margin: 0 6px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto
+}
+
+.payitem .content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1
+}
+
+.pay-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex: 0 0 40px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #e5e7eb;
+    padding: 4px
+}
+
+.payitem .title {
+    font-weight: 600
+}
+
+.payitem .sub {
+    font-size: 13px;
+    color: var(--muted)
+}
+
+/* ============ VOUCHER STRIP ============ */
+.voucher-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0
+}
+
+.tickets {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 6px 2px;
+    scrollbar-width: none
+}
+
+.tickets::-webkit-scrollbar {
+    display: none
+}
+
+.ticket {
+    flex-shrink: 0;
+    width: 200px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 10px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: .2s;
+    text-align: left
+}
+
+.ticket:hover {
+    border-color: var(--primary);
+    border-style: solid
+}
+
+.ticket.selected {
+    border-color: var(--primary);
+    border-style: solid;
+    box-shadow: 0 0 0 2px var(--primary);
+    background: #f0f3fe
+}
+
+.ticket .code {
+    font-weight: 700;
+    font-size: 15px
+}
+
+.ticket .desc {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 4px 0
+}
+
+.ticket .meta {
+    font-size: 12px;
+    color: #aaa
+}
+
+.voucher-strip .nav {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0;
+    line-height: 30px
+}
+
+.voucher-strip .nav:disabled {
+    opacity: .3;
+    cursor: not-allowed
+}
+
+/* ============ BOTTOM DOCK ============ */
+.dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f3f7ff;
+    border-top: 1px solid #e5e7eb;
+    z-index: 30
+}
+
+.dock-in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    height: 80px
+}
+
+.dock-left, .dock-right {
+    display: flex;
+    align-items: center;
+    gap: 14px
+}
+
+.dock-total .big {
+    font-size: 18px;
+    font-weight: 800
+}
+
+.pay-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eef2ff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 4px 8px
+}
+
+.pay-chip img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #e5e7eb
+}
+
+.dock-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap
+}
+
+.dock-voucher {
+    white-space: nowrap
+}
+
+/* ============ VIETQR + UPLOADER ============ */
+.qr-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap
+}
+
+.qr img {
+    max-width: 220px;
+    border-radius: 12px;
+    border: 1px solid #eee
+}
+
+.qr-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px
+}
+
+.sep {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 14px 0
+}
+
+.uploader {
+    display: grid;
+    gap: 10px
+}
+
+.preview {
+    border: 1px dashed #bbb;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.preview img {
+    max-width: 120px;
+    border-radius: 8px
+}
+
+.status {
+    background: #f7f8fa;
+    border-radius: 10px;
+    padding: 10px
+}

@@ -1,38 +1,64 @@
 <!-- src/main/resources/templates/system/permissions/list.html -->
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
 <body>
 <section layout:fragment="content">
-    <h1>Permissions</h1>
-
-    <div class="d-flex justify-content-between mb-3">
-        <form method="get" class="d-flex">
-            <input type="text" name="q" th:value="${q}" class="form-control me-2" placeholder="Search permission key">
-            <button class="btn btn-primary">Search</button>
-        </form>
-        <a th:href="@{/admin/system/permissions/new}" class="btn btn-success">+ Thêm permission</a>
+    <!-- Khi KHÔNG có quyền VIEW -->
+    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PERM_MGMT_VIEW','ROLE_ADMIN')">
+        Bạn không có quyền xem danh sách permissions.
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead class="table-light"><tr><th>ID</th><th>Key</th><th style="width:200px;">Actions</th></tr></thead>
-            <tbody>
-            <tr th:each="p : ${page?.content}">
-                <td th:text="${p.id}">1</td>
-                <td th:text="${p.key}">catalog.product.view</td>
-                <td class="d-flex gap-2">
-                    <a th:href="@{|/admin/system/permissions/${p.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
-                    <a th:href="@{|/admin/system/permissions/${p.id}/delete|}" onclick="return confirm('Xóa permission này?');" class="btn btn-sm btn-danger">Delete</a>
-                </td>
-            </tr>
-            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                <td colspan="3" class="text-center">No data</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <!-- Khi CÓ quyền VIEW -->
+    <div sec:authorize="hasAnyAuthority('PERM_MGMT_VIEW','ROLE_ADMIN')">
+        <h1>Permissions</h1>
 
-    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/system/permissions', q=${q})}"></div>
+        <div class="d-flex justify-content-between mb-3">
+            <form method="get" class="d-flex">
+                <input type="text" name="q" th:value="${q}" class="form-control me-2" placeholder="Search permission key">
+                <button class="btn btn-primary">Search</button>
+            </form>
+
+            <!-- Nút tạo chỉ hiển thị khi có quyền CREATE -->
+            <a th:href="@{/admin/system/permissions/new}"
+               class="btn btn-success"
+               sec:authorize="hasAnyAuthority('PERM_MGMT_CREATE','ROLE_ADMIN')">+ Thêm permission</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                <tr><th>ID</th><th>Key</th><th style="width:200px;">Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${page?.content}">
+                    <td th:text="${p.id}">1</td>
+                    <td th:text="${p.key}">catalog.product.view</td>
+                    <td class="d-flex gap-2">
+                        <!-- Edit -->
+                        <a th:href="@{|/admin/system/permissions/${p.id}/edit|}"
+                           class="btn btn-sm btn-warning"
+                           sec:authorize="hasAnyAuthority('PERM_MGMT_EDIT','ROLE_ADMIN')">Edit</a>
+
+                        <!-- Delete -->
+                        <a th:href="@{|/admin/system/permissions/${p.id}/delete|}"
+                           onclick="return confirm('Xóa permission này?');"
+                           class="btn btn-sm btn-danger"
+                           sec:authorize="hasAnyAuthority('PERM_MGMT_DELETE','ROLE_ADMIN')">Delete</a>
+                    </td>
+                </tr>
+                <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                    <td colspan="3" class="text-center">No data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/system/permissions', q=${q})}"></div>
+    </div>
 </section>
 </body>
 </html>

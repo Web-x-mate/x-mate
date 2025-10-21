@@ -2,7 +2,8 @@
 package xmate.com.service.sales.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xmate.com.entity.sales.Order;
@@ -11,9 +12,8 @@ import xmate.com.repo.sales.OrderItemRepository;
 import xmate.com.repo.sales.OrderRepository;
 import xmate.com.service.sales.OrderService;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,53 +23,73 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository itemRepo;
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public Page<Order> search(String q, String status, String payment, String shipping, Pageable pageable) {
-        return orderRepo.search(q, status, payment, shipping, pageable);
+        xmate.com.entity.common.OrderStatus st = parseEnum(status, xmate.com.entity.common.OrderStatus.class);
+        xmate.com.entity.common.PaymentStatus pay = parseEnum(payment, xmate.com.entity.common.PaymentStatus.class);
+        xmate.com.entity.common.ShippingStatus ship = parseEnum(shipping, xmate.com.entity.common.ShippingStatus.class);
+        return orderRepo.search(q, st, pay, ship, pageable);
     }
 
-    @Override @Transactional(readOnly = true)
+    // helper generic
+    private static <E extends Enum<E>> E parseEnum(String raw, Class<E> type) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return Enum.valueOf(type, raw.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
     public Order get(Long id) {
         return orderRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Order not found"));
     }
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public Order getByCode(String code) {
         return orderRepo.findByCode(code).orElseThrow(() -> new IllegalArgumentException("Order not found"));
     }
 
     @Override
     public Order create(Order order, List<OrderItem> items) {
-        // sinh code nếu chưa có
+        // Gen code nếu chưa có / kiểm tra trùng
         if (order.getCode() == null || order.getCode().isBlank()) {
             order.setCode(genCode());
         } else if (orderRepo.findByCode(order.getCode()).isPresent()) {
             throw new IllegalArgumentException("Order code already exists");
         }
+
         order.setId(null);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(null);
 
-        // init số tiền an toàn
-        if (order.getSubtotal() == null) order.setSubtotal(BigDecimal.ZERO);
-        if (order.getDiscountAmount() == null) order.setDiscountAmount(BigDecimal.ZERO);
-        if (order.getShippingFee() == null) order.setShippingFee(BigDecimal.ZERO);
-        if (order.getTotal() == null) order.setTotal(BigDecimal.ZERO);
+        // Mặc định tiền = 0L
+        // (các field này là primitive long trong entity nên thực tế đã = 0)
+        if (order.getSubtotal() < 0) order.setSubtotal(0L);
+        if (order.getDiscountAmount() < 0) order.setDiscountAmount(0L);
+        if (order.getShippingFee() < 0) order.setShippingFee(0L);
+        if (order.getTotal() < 0) order.setTotal(0L);
 
         Order saved = orderRepo.save(order);
 
-        // save items
+        // Lưu items
         if (items != null) {
             for (OrderItem it : items) {
                 it.setId(null);
                 it.setOrder(saved);
-                if (it.getPrice() == null) it.setPrice(BigDecimal.ZERO);
-                if (it.getQty() == null) it.setQty(0);
-                it.setTotal(it.getPrice().multiply(BigDecimal.valueOf(it.getQty())));
+                if (it.getPrice() < 0) it.setPrice(0L);
+                if (it.getQty() < 0) it.setQty(0);
+                it.setLineTotal(it.getPrice() * (long) it.getQty());
                 itemRepo.save(it);
             }
         }
-        // recalc totals
+
+        // Tính lại tổng
         return recalc(saved.getId());
     }
 
@@ -77,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
     public Order update(Long id, Order order, List<OrderItem> items) {
         Order db = get(id);
 
-        // cho phép đổi vài field
+        // Cho phép chỉnh các field
         db.setCustomer(order.getCustomer());
         db.setStatus(order.getStatus());
         db.setPaymentStatus(order.getPaymentStatus());
@@ -87,20 +107,20 @@ public class OrderServiceImpl implements OrderService {
         db.setTrackingCode(order.getTrackingCode());
         db.setNoteInternal(order.getNoteInternal());
 
-        // fee/discount chỉnh tay (nếu có)
-        db.setDiscountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
-        db.setShippingFee(order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
+        // Fee/discount do admin nhập (long)
+        db.setDiscountAmount(Math.max(0L, order.getDiscountAmount()));
+        db.setShippingFee(Math.max(0L, order.getShippingFee()));
         db.setUpdatedAt(LocalDateTime.now());
 
-        // cập nhật items: xoá hết + thêm lại (đơn giản, dễ hiểu)
+        // Cập nhật items: xoá hết + thêm lại
         itemRepo.deleteByOrderId(db.getId());
         if (items != null) {
             for (OrderItem it : items) {
                 it.setId(null);
                 it.setOrder(db);
-                if (it.getPrice() == null) it.setPrice(BigDecimal.ZERO);
-                if (it.getQty() == null) it.setQty(0);
-                it.setTotal(it.getPrice().multiply(BigDecimal.valueOf(it.getQty())));
+                if (it.getPrice() < 0) it.setPrice(0L);
+                if (it.getQty() < 0) it.setQty(0);
+                it.setLineTotal(it.getPrice() * (long) it.getQty());
                 itemRepo.save(it);
             }
         }
@@ -120,15 +140,15 @@ public class OrderServiceImpl implements OrderService {
         Order db = get(orderId);
         List<OrderItem> items = itemRepo.findByOrderId(orderId);
 
-        BigDecimal subtotal = items.stream()
-                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQty())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long subtotal = items.stream()
+                .mapToLong(i -> i.getPrice() * (long) i.getQty())
+                .sum();
 
-        BigDecimal discount = db.getDiscountAmount() != null ? db.getDiscountAmount() : BigDecimal.ZERO;
-        BigDecimal shipFee  = db.getShippingFee()   != null ? db.getShippingFee()   : BigDecimal.ZERO;
+        long discount = Math.max(0L, db.getDiscountAmount());
+        long shipFee  = Math.max(0L, db.getShippingFee());
 
-        BigDecimal total = subtotal.subtract(discount).add(shipFee);
-        if (total.compareTo(BigDecimal.ZERO) < 0) total = BigDecimal.ZERO;
+        long total = subtotal - discount + shipFee;
+        if (total < 0L) total = 0L;
 
         db.setSubtotal(subtotal);
         db.setTotal(total);
@@ -139,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
     private String genCode() {
         // Ví dụ: ORD-YYYYMMDD-xxxx
         String date = java.time.LocalDate.now().toString().replaceAll("-", "");
-        String rnd = String.valueOf((int)(Math.random()*9000)+1000);
+        String rnd = String.valueOf((int) (Math.random() * 9000) + 1000);
         return "ORD-" + date + "-" + rnd;
     }
 }

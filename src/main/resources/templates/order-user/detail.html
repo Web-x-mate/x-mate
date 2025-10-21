@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đặt hàng thành công</title>
+</head>
+<body>
+<div class="container">
+    <h1>Đặt hàng thành công!</h1>
+    <p>Cảm ơn bạn đã mua hàng. Mã đơn hàng của bạn là: <b th:text="${orderCode}"></b></p>
+    <p>Trạng thái hiện tại: <span th:text="${orderStatus}"></span></p>
+
+    <a th:href="@{/orders}" class="btn">Xem lịch sử đơn hàng</a>
+    <a th:href="@{/}" class="btn">Tiếp tục mua sắm</a>
+</div>
+</body>
+</html>

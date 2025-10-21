@@ -14,7 +14,7 @@
             <div class="flex-1">
                 <label>Customer</label>
                 <select class="form-select" name="customerId" required>
-                    <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}"
+                    <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.fullname}"
                             th:selected="${form.customerId != null and form.customerId == c.id}"></option>
                 </select>
             </div>

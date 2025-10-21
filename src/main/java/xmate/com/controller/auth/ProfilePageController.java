@@ -1,4 +1,4 @@
-// src/main/java/vn/hieesu/project/web/ProfilePageController.java
+
 package xmate.com.controller.auth;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,6 @@ public class ProfilePageController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được email");
         }
 
-        // ⬇️ Không còn orElseThrow()
         var opt = userRepo.findByEmailIgnoreCase(email);
 
         if (opt.isEmpty()) {
@@ -38,7 +37,6 @@ public class ProfilePageController {
 
         Customer u = opt.get();
 
-        // Case 2: có user nhưng chưa có sđt -> tiếp tục flow complete
         if (u.getPhone() == null || u.getPhone().isBlank()) {
             return "redirect:/auth/complete";
         }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thanh toán đơn hàng</title>
+    <link rel="stylesheet" th:href="@{/css/checkout-ui.css}"/> <style>
+    .payment-container {
+        max-width: 500px;
+        margin: 40px auto;
+        text-align: center;
+    }
+    .payment-container img {
+        max-width: 300px;
+        width: 100%;
+        margin: 20px 0;
+        border: 1px solid #eee;
+        border-radius: 8px;
+    }
+    .actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+<header class="topbar" th:replace="~{layout :: header}"></header>
+
+<main class="container page" th:if="${order != null}">
+    <div class="payment-container card">
+        <h1>Vui lòng quét mã để thanh toán</h1>
+        <p>Mã đơn hàng: <b th:text="${order.code}"></b></p>
+        <p>Tổng tiền: <b th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + ' đ'"></b></p>
+
+        <img th:src="${vietQrUrl}" alt="Mã VietQR">
+
+        <p class="muted">Sau khi hoàn tất thanh toán trên ứng dụng ngân hàng, bạn có thể kiểm tra lại trạng thái đơn hàng.</p>
+
+        <div class="actions">
+            <a th:href="@{/orders}" class="btn outline">Xem lịch sử đơn hàng</a>
+            <a th:href="@{/}" class="btn primary">Quay về trang chủ</a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
