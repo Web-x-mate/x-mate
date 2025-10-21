@@ -1,6 +1,7 @@
 // src/main/java/xmate/com/config/SecurityConfig.java
 package xmate.com.config;
 
+import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,50 +14,44 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import xmate.com.security.JwtAuthFilter;
-import xmate.com.security.RoleRedirectSuccessHandler;
-import xmate.com.security.oauth.CustomOAuth2UserService;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtFilter;
-    private final CustomOAuth2UserService oAuth2UserService;
-
-    public SecurityConfig(JwtAuthFilter jwtFilter, CustomOAuth2UserService oAuth2UserService) {
-        this.jwtFilter = jwtFilter;
-        this.oAuth2UserService = oAuth2UserService;
-    }
+    private final AuthenticationProvider daoAuthProvider;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           RoleRedirectSuccessHandler roleRedirect,
-                                           AuthenticationProvider daoAuthProvider) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // API dùng JWT: bỏ CSRF cho /api/**
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-
-                // Dùng session nếu cần cho form-login / oauth2
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-
-                // Phân quyền
+                .csrf(csrf -> csrf.disable())
+                .cors(c -> {})
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/", "/error",
-                                "/auth/**", "/api/auth/**",
-                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/ws/**",
-                                "/uploads/**" // ảnh biên lai
+                        // static
+                        .requestMatchers("/", "/css/**","/js/**","/images/**").permitAll()
+
+                        // AUTH endpoints (public)
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/logout",
+                                "/api/auth/google",
+                                "/api/auth/facebook"
                         ).permitAll()
+                        .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
 
-                        // bắt buộc đăng nhập cho checkout APIs
-                        .requestMatchers("/api/checkout/**").authenticated()
-
-                        // upload biên lai: để authenticated (đổi thành permitAll nếu bạn muốn cho khách chưa login cũng gửi)
-                        .requestMatchers("/api/payment/proof").permitAll()
-
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Các trang web yêu cầu đã đăng nhập bằng JWT
+                        .requestMatchers("/auth/complete/**").authenticated()
                         .requestMatchers("/user/**").authenticated()
+
+                        // API bảo vệ bởi JWT
+                        .requestMatchers("/api/**").authenticated()
+
+                        // còn lại cho phép
                         .anyRequest().permitAll()
                 )
 
