@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/client/css/home.css}"/>
+</th:block>
+
+<div layout:fragment="content">
+    <div class="home-banner"></div>
+
+    <div class="search-summary" th:if="${isSearch}">
+        <div class="search-summary__container">
+            <h1 class="search-summary__title">
+                Ket qua cho
+                "<span class="search-summary__keyword" th:text="${searchQuery}">tu khoa</span>"
+            </h1>
+            <p class="search-summary__meta" th:text="${searchTotal} + ' san pham'">0 san pham</p>
+        </div>
+    </div>
+
+    <!-- SỬA 1: tách th:each ra khỏi th:replace để tránh product=null -->
+    <section class="products" th:if="${products != null and !products.isEmpty()}">
+        <div th:each="p : ${products}">
+            <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
+        </div>
+    </section>
+
+    <div class="search-empty" th:if="${products == null or products.isEmpty()}">
+        <span th:if="${isSearch}">Khong tim thay san pham phu hop.</span>
+        <span th:unless="${isSearch}">Chua co san pham nao.</span>
+    </div>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/client/js/product-card.js}"></script>
+    <script th:src="@{/client/js/home.js}"></script>
+</th:block>
+</body>
+</html>

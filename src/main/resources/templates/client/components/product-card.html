@@ -1,0 +1,78 @@
+<th:block th:fragment="productCard(product)">
+    <div class="product-card"
+         th:attr="data-product-id=${product.slug},
+                  data-product-slug=${product.slug},
+                  data-product-title=${product.title},
+                  data-product-price=${product.priceForCart},
+                  data-product-image=${product.thumbnail}">
+
+        <div class="thumb-wrap">
+            <div class="thumb-ratio">
+                <a class="product-link"
+                   th:href="@{/product/detail/{slug}(slug=${product.slug})}"
+                   th:aria-label="${product.title}">
+                    <img class="product-thumb"
+                         th:src="${product.thumbnail}"
+                         th:alt="${product.title}"
+                         loading="lazy" />
+                    <img class="product-thumb product-thumb--hover"
+                         th:if="${product.hoverThumbnail != null}"
+                         th:src="${product.hoverThumbnail}"
+                         th:alt="${product.title}"
+                         loading="lazy" />
+                </a>
+            </div>
+
+            <div class="quick-add"
+                 th:if="${product.sizes != null and !product.sizes.isEmpty()}"
+                 tabindex="0">
+                <div class="quick-add__title">
+                    <span>Them vao gio hang</span>
+                    <span class="quick-add__plus">+</span>
+                </div>
+                <div class="quick-add__sizes">
+                    <button class="quick-add__btn"
+                            type="button"
+                            th:each="size : ${product.sizes}"
+                            th:text="${size}"
+                            th:attr="data-size=${size}">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="swatches" th:if="${product.colors != null and !product.colors.isEmpty()}">
+            <button class="swatch"
+                    type="button"
+                    th:each="color, iterStat : ${product.colors}"
+                    th:attr="data-color-name=${color['name']},
+                             data-color=${color['name']},
+                             data-color-hex=${color['hex']},
+                             data-color-image=${color['image']}"
+                    th:style="${color['style']}">
+                <span class="visually-hidden" th:text="${color['name']}">Mau</span>
+            </button>
+        </div>
+
+        <div class="info">
+            <a class="title"
+               th:href="@{/product/detail/{slug}(slug=${product.slug})}"
+               th:text="${product.title}">San pham</a>
+
+            <div class="price-row">
+                <span class="final"
+                      th:if="${product.finalPriceText != null}"
+                      th:text="${product.finalPriceText}">0&nbsp;&#273;</span>
+
+                <!-- SỬA 2: Không lồng 2 cặp ${} trong th:if -->
+                <span class="discount-pill"
+                      th:if="${product.hasDiscount and product.discountPercent > 0}"
+                      th:text="'-' + ${product.discountPercent} + '%'">-0%</span>
+
+                <span class="old"
+                      th:if="${product.hasDiscount and product.originalPriceText != null}"
+                      th:text="${product.originalPriceText}">0&nbsp;&#273;</span>
+            </div>
+        </div>
+    </div>
+</th:block>
