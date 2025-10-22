@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout",
                                 "/api/auth/google",
-                                "/api/auth/facebook"
+                                "/api/auth/facebook",
+                                "/api/admin/auth/login"
                         ).permitAll()
                         .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
 

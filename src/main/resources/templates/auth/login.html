@@ -61,7 +61,7 @@
         <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập
             lại.</p>
 
-        <form th:action="@{/auth/login}" method="post" id="loginForm" novalidate>
+        <form method="post" id="loginForm" novalidate>
             <div class="float-field">
                 <input class="float-input" type="text" name="email" id="email" placeholder=" " required>
                 <label class="float-label" for="email">Email/SDT của bạn</label>
@@ -118,20 +118,7 @@
     const $ = (s) => document.querySelector(s);
     const show = el => el.classList.remove('hidden');
     const hide = el => el.classList.add('hidden');
-    window.handleAuthResult = async function handleAuthResult(resp, errEl){
-        let text = '';
-        try { text = await resp.text(); } catch {}
-        if (!resp.ok) {
-            console.error('Auth error:', resp.status, text);
-            if (errEl) { show(errEl); errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.'; }
-            return;
-        }
-        let data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch {}
-        if (data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
-        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-        location.href = '/auth/complete';
-    };
+
     const errFacebook = document.getElementById('errFacebook');
 
     $('#btnFacebook')?.addEventListener('click', async (e) => {
@@ -235,5 +222,61 @@
 
     window.addEventListener('load', initGoogle);
 </script>
+<script>
+    const errLogin = document.getElementById('errLogin');
+
+
+    async function callJson(url, body){
+        return fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+            credentials: 'include'
+        });
+    }
+
+    function decodeJwtPayload(jwt){
+        try{
+            const b = (jwt||'').split('.')[1] || '';
+            const s = atob(b.replace(/-/g,'+').replace(/_/g,'/'));
+            return JSON.parse(decodeURIComponent(escape(s)));
+        }catch{ return {}; }
+    }
+
+    async function handleAuthResult(resp, errEl){
+        let text = ''; try { text = await resp.text(); } catch {}
+        if (!resp.ok) {
+            if (errEl) { show(errEl); errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.'; }
+            console.error('Auth error:', resp.status, text);
+            return false;
+        }
+        let data = {}; try { data = text ? JSON.parse(text) : {}; } catch {}
+        if (data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+        // TokenRes chỉ có 2 field → đọc claim để biết có role không
+        const p = decodeJwtPayload(data.accessToken || '');
+        const isStaff = p?.actor === 'staff' && Array.isArray(p?.roles) && p.roles.length > 0;
+
+        location.href = isStaff ? '/admin' : '/auth/complete';
+        return true;
+    }
+
+    document.getElementById('loginForm')?.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        hide(errLogin);
+        const email = e.target.email.value.trim();
+        const password = e.target.password.value;
+
+        // 1) thử đăng nhập admin
+        let resp = await callJson('/api/admin/auth/login', { email, password });
+
+        // 2) nếu không phải admin → thử customer
+        if (!resp.ok) resp = await callJson('/api/auth/login', { email, password });
+
+        await handleAuthResult(resp, errLogin);
+    });
+</script>
+
 </body>
 </html>
