@@ -41,6 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (p.startsWith("/api/auth/")) {
             return true;
         }
+        if (p.startsWith("/api/admin/auth/")) return true;
         // Bỏ lọc cho preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
