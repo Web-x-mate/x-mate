@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Bảng điều khiển</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        /*
+         * DARK MODE VARIABLES
+         * Nền tối, bề mặt tối (card), chữ sáng
+         * Màu sắc biểu đồ được tăng độ bão hòa (sáng và đậm hơn)
+         */
+        :root{
+            /* Base Colors (Dark Mode) */
+            --bg:#0f172a;               /* slate-900: Nền tổng thể */
+            --surface:#1e293b;          /* slate-800: Nền Card */
+            --text:#f8fafc;             /* slate-50: Chữ chính */
+            --muted:#94a3b8;            /* slate-400: Chữ phụ/mờ */
+            --bd:#334155;               /* slate-700: Đường viền/Ngăn cách */
+            --ring:#475569;             /* slate-600: Shadow/Ring */
+
+            /* KPI & Status Colors */
+            --up-bg:#064e3b;            /* Màu nền Tăng (xanh đậm) */
+            --up:#34d399;               /* Màu chữ Tăng (xanh sáng) */
+            --down-bg:#7f1d1d;          /* Màu nền Giảm (đỏ đậm) */
+            --down:#f87171;             /* Màu chữ Giảm (đỏ sáng) */
+
+            /* Icon Backgrounds (Dark Mode - ít bão hòa hơn nền sáng) */
+            --ico-blue-bg:#172554;      /* Màu nền icon */
+            --ico-blue:#38bdf8;         /* Màu icon */
+            --ico-green-bg:#14532d;
+            --ico-green:#4ade80;
+            --ico-purple-bg:#312e81;
+            --ico-purple:#a78bfa;
+            --ico-orange-bg:#7c2d12;
+            --ico-orange:#fb923c;
+            --ico-gray-bg:#334155;
+            --ico-gray:#e5e7eb;
+        }
+
+        /* Chart Colors (Tăng độ bão hòa/độ sáng cho nền đen) */
+        .chart-colors {
+            --chart-blue: #38bdf8;      /* Sky-400 */
+            --chart-red: #f87171;       /* Red-400 */
+            --chart-orange: #fb923c;    /* Orange-400 */
+            --chart-yellow: #facc15;    /* Yellow-400 */
+            --chart-green: #4ade80;     /* Green-400 */
+            --chart-purple: #a78bfa;    /* Violet-400 */
+            --chart-pink: #f472b6;      /* Pink-400 */
+        }
+
+        /* Áp dụng màu nền/chữ */
+        body{background:var(--bg); color:var(--text)}
+        .wrap{max-width:1360px;margin:0 auto}
+        .card{background:var(--surface);border:1px solid var(--bd);border-radius:1rem;box-shadow:0 2px 4px rgba(0,0,0,.5)} /* Shadow mạnh hơn cho dark mode */
+        .muted{color:var(--muted)}
+        .btn{padding:.45rem .7rem;border-radius:.55rem;border:1px solid var(--bd);font-size:.875rem;background:var(--surface);color:var(--text)}
+        .btn:hover{background:var(--ring)} /* Đổi màu hover cho dễ thấy */
+
+        input[type="date"], select{background:var(--surface);color:var(--text);border:1px solid var(--bd);outline:none}
+        input[type="date"]:focus, select:focus{box-shadow:0 0 0 3px var(--ring)}
+
+        /* ... giữ nguyên các class layout khác ... */
+        .filter-grid{
+            display:grid;
+            grid-template-columns: minmax(520px,1fr) auto auto;
+            align-items:center;
+            column-gap:.5rem; row-gap:.35rem;
+        }
+        .field-inline{display:flex; align-items:center; gap:.4rem; flex-wrap:nowrap}
+        .field-wrap{display:flex; align-items:center; gap:.75rem; flex-wrap:wrap}
+        .filter-presets{
+            grid-column: 1 / 2;
+            display:flex; justify-content:center; gap:.5rem; flex-wrap:wrap; margin-top:.2rem;
+        }
+        .ctl{ font-size:.92rem; padding:.45rem .6rem; border-radius:.5rem; }
+        .ctl-select{ font-size:.92rem; padding:.45rem 2rem .45rem .6rem; border-radius:.5rem; }
+
+        .kpi{display:flex;gap:.75rem;align-items:center;padding:.85rem;background:var(--surface);border:1px solid var(--bd);border-radius:1rem;min-height:84px}
+        .ico{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:.85rem}
+        .ico.blue{background:var(--ico-blue-bg);color:var(--ico-blue)}
+        .ico.green{background:var(--ico-green-bg);color:var(--ico-green)}
+        .ico.purple{background:var(--ico-purple-bg);color:var(--ico-purple)}
+        .ico.orange{background:var(--ico-orange-bg);color:var(--ico-orange)}
+        .ico.gray{background:var(--ico-gray-bg);color:var(--ico-gray)}
+        .kmain{min-width:0; flex:1}
+        .kval{font-size:1.45rem;line-height:1;font-weight:800; font-variant-numeric:tabular-nums}
+        .kcap{font-size:.84rem;color:var(--muted);margin-top:.2rem;white-space:nowrap}
+        .kright{margin-left:.4rem; display:flex; align-items:center}
+        .chip{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .55rem;border-radius:999px;font-weight:700;font-size:.74rem;white-space:nowrap}
+        .chip.up{background:var(--up-bg);color:var(--up)}
+        .chip.down{background:var(--down-bg);color:var(--down)}
+        canvas.small-pie{max-height:200px!important}
+    </style>
+</head>
+
+<body class="chart-colors"> <section layout:fragment="content">
+    <div class="wrap p-3 md:p-5 space-y-4">
+
+        <div class="card p-3 md:p-4">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Bảng điều khiển</h1>
+
+            <div class="filter-grid">
+                <div class="field-wrap">
+                    <div class="field-inline">
+                        <span class="text-base">Từ</span>
+                        <input id="from" type="date" class="ctl"/>
+                        <span class="muted">📅</span>
+                    </div>
+
+                    <span class="muted">→</span>
+
+                    <div class="field-inline">
+                        <span class="text-base">Đến</span>
+                        <input id="to" type="date" class="ctl"/>
+                        <span class="muted">📅</span>
+                    </div>
+
+                    <div class="filter-presets">
+                        <button type="button" data-preset="today"  class="btn">Hôm nay</button>
+                        <button type="button" data-preset="7d"     class="btn">7 ngày</button>
+                        <button type="button" data-preset="30d"    class="btn">30 ngày</button>
+                        <button type="button" data-preset="12m"    class="btn">12 tháng</button>
+                    </div>
+                </div>
+
+                <select id="gran" class="ctl-select">
+                    <option value="D">Theo ngày</option>
+                    <option value="W">Theo tuần</option>
+                    <option value="M">Theo tháng</option>
+                </select>
+
+                <button id="apply" type="button"
+                        class="px-4 py-2 rounded-lg text-sm font-medium"
+                        style="background:var(--chart-blue);color:#0f172a">Áp dụng</button>
+            </div>
+        </div>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3">
+            <div class="kpi">
+                <div class="ico blue"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M6 4a2 2 0 0 0-2 2v12.5A1.5 1.5 0 0 0 5.5 20H20v-2H6.5a.5.5 0 1 1 0-1H20V6a2 2 0 0 0-2-2H6z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_articles">0</div><div class="kcap truncate">Tổng bài viết</div></div>
+                <div class="kright"><span id="t_articles" class="chip up">+0%</span></div>
+            </div>
+            <div class="kpi">
+                <div class="ico green"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 19h16v2H2V3h2v16zm3-6 3-3 3 2 4-5 3 3-1.4 1.4-1.6-1.6-4 5-3-2-3 3L7 13z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_views">0</div><div class="kcap truncate">Lượt xem trang</div></div>
+                <div class="kright"><span id="t_views" class="chip up">+0%</span></div>
+            </div>
+            <div class="kpi">
+                <div class="ico purple"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 4h16v10H6l-2 2V4zm2 4h12v2H6V8z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_comments">0</div><div class="kcap truncate">Bình luận</div></div>
+                <div class="kright"><span id="t_comments" class="chip up">+0%</span></div>
+            </div>
+            <div class="kpi">
+                <div class="ico orange"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zm-9 7a6 6 0 1 1 12 0v2H7v-2z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_authors">0</div><div class="kcap truncate">Tác giả</div></div>
+                <div class="kright"><span id="t_authors" class="chip down">-0%</span></div>
+            </div>
+            <div class="kpi">
+                <div class="ico gray"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M21 5H3v14h18V5zm-2 2v7l-4-4-3 3-2-2-5 5V7h14z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_media">0</div><div class="kcap truncate">Tệp media</div></div>
+                <div class="kright"><span id="t_media" class="chip up">+0%</span></div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold">Hiệu suất nội dung</h3>
+                    <span class="px-2 py-1 rounded-full text-xs" style="background:rgba(167,139,250,.2);color:#a78bfa">12 tháng qua</span>
+                </div>
+                <canvas id="c_perf"></canvas>
+            </div>
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold">Nội dung theo danh mục</h3>
+                    <span class="px-2 py-1 rounded-full text-xs" style="background:rgba(167,139,250,.2);color:#a78bfa">Năm nay</span>
+                </div>
+                <canvas id="c_cat"></canvas>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Lịch sử hệ thống</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_sys" class="small-pie"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hoạt động người dùng</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_user"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Ảnh chụp Catalog</h3><span class="muted text-xs">ngành hàng / sản phẩm / biến thể / media</span></div><canvas id="c_catalog"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">RBAC: Vai trò × Quyền</h3><span class="muted text-xs">roles / permissions</span></div><canvas id="c_rbac"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Nhật ký (24h)</h3><span class="muted text-xs">CREATE / UPDATE / DELETE / STATUS</span></div><canvas id="c_logs" class="small-pie"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Tồn kho: có sẵn vs giữ chỗ</h3><span class="muted text-xs">SKU</span></div><canvas id="c_stock"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Đơn mua theo trạng thái</h3><span class="muted text-xs">PO</span></div><canvas id="c_po" class="small-pie"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Phân bố phân khúc KH</h3><span class="muted text-xs">segments</span></div><canvas id="c_seg" class="small-pie"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Điểm tích lũy theo hạng</h3><span class="muted text-xs">loyalty</span></div><canvas id="c_loy"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hiệu quả khuyến mãi</h3><span class="muted text-xs">discounts + usages</span></div><canvas id="c_disc"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="card overflow-hidden">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">Đơn gần nhất</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div></div>
+                <div class="p-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left muted"><tr><th class="py-2">Mã</th><th class="py-2">Khách</th><th class="py-2">Tổng</th><th class="py-2">TT</th><th class="py-2">Giao</th><th class="py-2">Ngày</th></tr></thead>
+                        <tbody id="t_orders"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card overflow-hidden">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">SKU tồn thấp</h3><a href="#" class="muted hover:underline text-sm">Tới kho</a></div></div>
+                <div class="p-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left muted"><tr><th class="py-2">SKU</th><th class="py-2">Tên</th><th class="py-2">Có sẵn</th><th class="py-2">Giữ chỗ</th></tr></thead>
+                        <tbody id="t_low"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card overflow-hidden">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">PO đang nhận</h3><a href="#" class="muted hover:underline text-sm">Tới mua hàng</a></div></div>
+                <div class="p-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left muted"><tr><th class="py-2">PO</th><th class="py-2">Nhà cung cấp</th><th class="py-2">Trạng thái</th><th class="py-2">Đã nhận/Tổng</th></tr></thead>
+                        <tbody id="t_po"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const DASHBOARD = {
+            kpis:{ totalArticles:1247, pageViews:89200, comments:2847, activeAuthors:24, mediaFiles:3456,
+                deltaArticles:12.5, deltaViews:23.1, deltaComments:8.2, deltaAuthors:-2.1, deltaMedia:15.7 },
+            performance:{ labels:["01","02","03","04","05","06","07","08","09","10","11","12"],
+                articles:[45,52,49,61,55,70,72,68,80,77,83,86],
+                pageViewsK:[11,12,13,16,15,22,24,23,28,27,29,34] },
+            category:{ labels:["Công nghệ","Kinh doanh","Sức khỏe","Thể thao","Giải trí","Chính trị","Khoa học"], values:[158,145,98,88,76,70,60] },
+            system:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[35,42,7,16] },
+            userActivity:{ labels:["Đăng nhập","Sửa","Xuất bản","Bình luận","Thích"], values:[120,80,45,200,300] },
+            catalog:{ labels:["Ngành hàng","Sản phẩm","Biến thể","Media"], values:[12,154,423,786] },
+            rbac:{ labels:["Admin","Biên tập","Tác giả","Xem"], values:[12,34,24,58] },
+            activity:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[80,140,20,35] },
+            stock:{ labels:["SKU-A","SKU-B","SKU-C","SKU-D","SKU-E","SKU-F"], onHand:[120,80,95,60,150,70], reserved:[20,10,15,5,30,12] },
+            poStatus:{ labels:["Nháp","Chờ","Đang nhận","Đã hạch toán","Hủy"], values:[4,8,6,3,1] },
+            segments:{ labels:["Mới","Quay lại","VIP","Ngủ đông"], values:[320,510,85,120] },
+            loyalty:{ labels:["Đồng","Bạc","Vàng","Bạch kim"], values:[1200,430,140,35] },
+            discountEffect:{ labels:["SPRING10","FREESHIP","BLACKFRI","MEMBER5"], orders:[120,240,85,160], revenue:[24000000,36500000,17800000,22200000] },
+            recentOrders:[
+                {code:"#10021",customer:"Nguyễn A",total:1250000,paymentStatus:"PAID",shippingStatus:"SHIPPED",createdAt:"2025-10-21 09:14"},
+                {code:"#10022",customer:"Trần B",total:850000,paymentStatus:"PAID",shippingStatus:"PENDING",createdAt:"2025-10-21 10:05"},
+                {code:"#10023",customer:"Lê C",total:2190000,paymentStatus:"PENDING",shippingStatus:"-",createdAt:"2025-10-21 11:44"},
+                {code:"#10024",customer:"Phạm D",total:640000,paymentStatus:"PAID",shippingStatus:"DELIVERED",createdAt:"2025-10-21 12:12"}
+            ],
+            lowSkus:[
+                {sku:"XM-AT-001-M",name:"Áo thun A - M",onHand:5,reserved:3},
+                {sku:"XM-AT-001-L",name:"Áo thun A - L",onHand:4,reserved:2},
+                {sku:"XM-QJ-002-32",name:"Quần jean B - 32",onHand:7,reserved:4},
+                {sku:"XM-SN-003-42",name:"Sneaker C - 42",onHand:3,reserved:1}
+            ],
+            poReceiving:[
+                {code:"PO-2401",supplier:"ABC Supply",status:"RECEIVING",receivedQty:120,totalQty:300},
+                {code:"PO-2402",supplier:"XYZ Corp",status:"RECEIVING",receivedQty:40,totalQty:100},
+                {code:"PO-2403",supplier:"Delta Ltd",status:"AWAITING",receivedQty:0,totalQty:80}
+            ]
+        };
+    </script>
+
+    <script>
+        const $ = id=>document.getElementById(id);
+        const money=v=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(Number(v||0));
+        const cssVar = name => getComputedStyle(document.body).getPropertyValue(name).trim();
+
+        // 1. ÁP DỤNG MÀU CHUNG (ĐẬM HƠN/SÁNG HƠN CHO DARK MODE)
+        const primaryColor = cssVar('--chart-blue');
+        const secondaryColor = cssVar('--chart-red');
+        const tertiaryColor = cssVar('--chart-orange');
+        const quaternaryColor = cssVar('--chart-yellow');
+        const quinaryColor = cssVar('--chart-green');
+        const senaryColor = cssVar('--chart-purple');
+
+        const multiColors = [primaryColor, secondaryColor, tertiaryColor, quaternaryColor, quinaryColor, senaryColor, cssVar('--chart-pink')];
+
+        // Cấu hình chung cho Chart.js để tối ưu cho Dark Mode
+        Chart.defaults.color = cssVar('--muted'); // Màu chữ trên biểu đồ (nhãn, trục)
+        Chart.defaults.borderColor = cssVar('--bd'); // Màu đường lưới/viền
+
+        const toISODate=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        const setRange=k=>{const to=new Date(), from=new Date(); if(k==='today'){} else if(k==='7d'){from.setDate(to.getDate()-6)} else if(k==='30d'){from.setDate(to.getDate()-29)} else {from.setMonth(to.getMonth()-11)}; $('from').value=toISODate(from); $('to').value=toISODate(to);};
+        setRange('12m');
+        document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.preset)));
+        $('apply').addEventListener('click',()=>{/* gọi API thật nếu cần */});
+
+        const k=DASHBOARD.kpis; const pct=(el,v)=>{const n=Number(v||0); el.textContent=(n>=0?'+':'')+n.toFixed(1)+'%'; el.className='chip '+(n>=0?'up':'down');};
+        $('k_articles').textContent=(k.totalArticles||0).toLocaleString('vi-VN');
+        $('k_views').textContent=(k.pageViews||0).toLocaleString('vi-VN');
+        $('k_comments').textContent=(k.comments||0).toLocaleString('vi-VN');
+        $('k_authors').textContent=k.activeAuthors||0;
+        $('k_media').textContent=(k.mediaFiles||0).toLocaleString('vi-VN');
+        pct($('t_articles'),k.deltaArticles); pct($('t_views'),k.deltaViews); pct($('t_comments'),k.deltaComments); pct($('t_authors'),k.deltaAuthors); pct($('t_media'),k.deltaMedia);
+
+        const make=(el,type,labels,sets,opts)=> new Chart(el,{type,data:{labels,datasets:sets},options:opts||{}});
+        const pf=DASHBOARD.performance;
+        make($('c_perf'),'line', pf.labels,[
+            {label:'Bài viết xuất bản',data:pf.articles,tension:.35,fill:true, backgroundColor:'rgba(56,189,248,0.2)', borderColor:primaryColor, pointBackgroundColor:primaryColor}, // Xanh sáng
+            {label:'Lượt xem (nghìn)',data:pf.pageViewsK,tension:.35,fill:true, backgroundColor:'rgba(74,222,128,0.2)', borderColor:quinaryColor, pointBackgroundColor:quinaryColor} // Xanh lá sáng
+        ],{plugins:{legend:{position:'top'}}});
+
+        const cat=DASHBOARD.category;
+        make($('c_cat'),'bar', cat.labels,[{label:'Bài viết',data:cat.values, backgroundColor:multiColors}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+
+        make($('c_sys'),'pie', DASHBOARD.system.labels,[{
+            data:DASHBOARD.system.values,
+            backgroundColor: [primaryColor, secondaryColor, tertiaryColor, quinaryColor]
+        }],{plugins:{legend:{position:'bottom'}}});
+
+        make($('c_user'),'bar', DASHBOARD.userActivity.labels,[{label:'Tác vụ',data:DASHBOARD.userActivity.values, backgroundColor:primaryColor}],{scales:{y:{beginAtZero:true}}});
+
+        make($('c_catalog'),'bar', DASHBOARD.catalog.labels,[{label:'Số lượng',data:DASHBOARD.catalog.values, backgroundColor:primaryColor}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+
+        make($('c_rbac'),'bar', DASHBOARD.rbac.labels,[{label:'Quyền/role',data:DASHBOARD.rbac.values, backgroundColor:primaryColor}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+
+        make($('c_logs'),'doughnut', DASHBOARD.activity.labels,[{
+            data:DASHBOARD.activity.values,
+            backgroundColor: [primaryColor, secondaryColor, tertiaryColor, quinaryColor]
+        }],{plugins:{legend:{position:'bottom'}}});
+
+        make($('c_stock'),'bar', DASHBOARD.stock.labels,[
+            {label:'Có sẵn',data:DASHBOARD.stock.onHand, backgroundColor:primaryColor},
+            {label:'Giữ chỗ',data:DASHBOARD.stock.reserved, backgroundColor:secondaryColor}
+        ],{scales:{y:{beginAtZero:true}}});
+
+        make($('c_po'),'pie', DASHBOARD.poStatus.labels,[{
+            data:DASHBOARD.poStatus.values,
+            backgroundColor: [tertiaryColor, primaryColor, quinaryColor, secondaryColor, senaryColor] // Đổi thứ tự/màu để nổi bật hơn
+        }],{plugins:{legend:{position:'bottom'}}});
+
+        make($('c_seg'),'pie', DASHBOARD.segments.labels,[{
+            data:DASHBOARD.segments.values,
+            backgroundColor: [primaryColor, secondaryColor, tertiaryColor, quinaryColor]
+        }],{plugins:{legend:{position:'bottom'}}});
+
+        make($('c_loy'),'bar', DASHBOARD.loyalty.labels,[{label:'Điểm',data:DASHBOARD.loyalty.values, backgroundColor:primaryColor}],{scales:{y:{beginAtZero:true}}});
+
+        make($('c_disc'),'bar', DASHBOARD.discountEffect.labels,[
+            {label:'Số đơn',data:DASHBOARD.discountEffect.orders, backgroundColor:primaryColor, yAxisID:'y'},
+            {label:'Doanh thu',data:DASHBOARD.discountEffect.revenue, backgroundColor:secondaryColor, yAxisID:'y1'}
+        ],{
+            scales:{
+                y:{beginAtZero:true},
+                y1:{beginAtZero:true,position:'right',ticks:{callback:v=>money(v)}, grid:{drawOnChartArea:false}}
+            },
+            plugins:{legend:{position:'top'}}
+        });
+
+        // 2. RENDERING BẢNG
+        $('t_orders').innerHTML=DASHBOARD.recentOrders.map(r=>`
+      <tr class="border-t" style="border-color:var(--bd)">
+        <td class="py-2 font-medium">${r.code}</td>
+        <td class="py-2">${r.customer}</td>
+        <td class="py-2">${money(r.total)}</td>
+        <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(255,255,255,.1); color:var(--text)">${r.paymentStatus}</span></td>
+        <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(255,255,255,.1); color:var(--text)">${r.shippingStatus}</span></td>
+        <td class="py-2 muted">${r.createdAt}</td>
+      </tr>`).join('');
+        $('t_low').innerHTML=DASHBOARD.lowSkus.map(r=>`
+      <tr class="border-t" style="border-color:var(--bd)">
+        <td class="py-2 font-mono">${r.sku}</td>
+        <td class="py-2">${r.name}</td>
+        <td class="py-2">${r.onHand}</td>
+        <td class="py-2">${r.reserved}</td>
+      </tr>`).join('');
+        $('t_po').innerHTML=DASHBOARD.poReceiving.map(r=>`
+      <tr class="border-t" style="border-color:var(--bd)">
+        <td class="py-2 font-mono">${r.code}</td>
+        <td class="py-2">${r.supplier}</td>
+        <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(255,255,255,.1); color:var(--text)">${r.status}</span></td>
+        <td class="py-2">${r.receivedQty}/${r.totalQty}</td>
+      </tr>`).join('');
+    </script>
+</section>
+</body>
+</html>

@@ -1,77 +1,199 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <th:block layout:fragment="headExtras">
+        <style>
+            /*
+             * ĐỊNH NGHĨA BIẾN MÀU (Đã đồng bộ Dark Mode)
+             * Cần đặt ở đây hoặc trong file layout chính để các fragment đều dùng được.
+             */
+            :root {
+                --bg: #0f172a;               /* Nền tổng thể: slate-900 */
+                --surface: #1e293b;          /* Nền Card/Sidebar/Topbar: slate-800 */
+                --text: #f8fafc;             /* Chữ chính: slate-50 */
+                --muted: #94a3b8;            /* Chữ phụ/mờ: slate-400 */
+                --bd: #334155;               /* Đường viền/Ngăn cách: slate-700 */
+                --ring: #475569;             /* Hover/Active Background: slate-600 */
+                --highlight: #38bdf8;        /* Màu chủ đạo/Active Link: Sky-400 */
+            }
+
+            /* 1. TOPBAR */
+            .topbar {
+                display: flex; align-items: center; padding: 1rem 1.5rem;
+                background: var(--surface);
+                color: var(--text);
+                border-bottom: 1px solid var(--bd);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+                /* Quan trọng: Đảm bảo topbar có chiều cao cố định và không lấn chiếm */
+                height: 64px;
+                flex-shrink: 0;
+                width: 100%; /* Lấy hết chiều rộng */
+            }
+            .topbar .logo { height: 24px; filter: brightness(1.5); }
+            .topbar .brand { font-size: 1.25rem; font-weight: 700; margin-left: 0.75rem; }
+            .topbar .topbar-right { margin-left: auto; }
+            .topbar .topbar-right a {
+                color: var(--highlight);
+                text-decoration: none;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+            }
+            .topbar .topbar-right a:hover {
+                background: var(--ring);
+            }
+
+            /* 2. SIDEBAR */
+            .sidebar {
+                background: var(--surface);
+                color: var(--text);
+                /* Chiều cao 100% của khu vực chứa nó (thường là main-container) */
+                height: 100%;
+                overflow-y: auto;
+                width: 260px;
+                flex-shrink: 0;
+                border-right: 1px solid var(--bd);
+            }
+            .sidebar .mgroup {
+                padding: 0.5rem 1rem;
+                border-bottom: 1px solid var(--bd);
+            }
+            .sidebar summary {
+                font-size: 1rem;
+                font-weight: 700;
+                padding: 0.5rem 0;
+                cursor: pointer;
+                color: var(--muted);
+                user-select: none;
+            }
+            .sidebar summary:hover { color: var(--text); }
+            .sidebar details[open] > summary { color: var(--text); }
+            .sidebar a {
+                display: block;
+                padding: 0.4rem 1rem;
+                margin-top: 0.25rem;
+                text-decoration: none;
+                color: var(--muted);
+                border-radius: 0.5rem;
+                transition: all 0.2s;
+            }
+            .sidebar a:hover {
+                background: var(--ring);
+                color: var(--text);
+            }
+            /* Link đang active (màu xanh sáng trên nền tối) */
+            .sidebar a.active {
+                background: var(--highlight);
+                color: var(--bg) !important;
+                font-weight: 600;
+            }
+
+            /* 3. FOOTER */
+            .footer {
+                padding: 1rem;
+                text-align: center;
+                color: var(--muted);
+                background: var(--surface);
+                border-top: 1px solid var(--bd);
+                flex-shrink: 0;
+                width: 100%;
+            }
+        </style>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const path = window.location.pathname;
+                const links = document.querySelectorAll('.sidebar a');
+
+                links.forEach(link => {
+                    const href = link.getAttribute('th:href') || link.getAttribute('href');
+                    if (path.startsWith(href) && href !== '/admin') { // Loại bỏ '/' hoặc điều chỉnh logic
+                        link.classList.add('active');
+
+                        const details = link.closest('details');
+                        if (details) {
+                            details.setAttribute('open', '');
+                            details.querySelector('summary').style.color = 'var(--highlight)';
+                        }
+                    }
+                    // Trường hợp đặc biệt cho link "Tổng quan"
+                    if (href === '/admin' && path === '/admin') {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</head>
 <body>
-  <th:block layout:fragment="headExtras"></th:block>
+<th:block layout:fragment="headExtras"></th:block>
 
-  <th:block layout:fragment="header">
+<th:block layout:fragment="header">
     <div class="topbar">
-      <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
-      <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
-      <div class="topbar-right">
-        <a th:href="@{/admin/settings/profile}">Profile</a>
-      </div>
+        <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
+        <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
+        <div class="topbar-right">
+            <a th:href="@{/admin/settings/profile}">Profile</a>
+        </div>
     </div>
-  </th:block>
+</th:block>
 
-  <th:block layout:fragment="sidebar">
-      <nav class="sidebar">
-          <details class="mgroup" data-key="m_dashboard" open>
-              <summary>Dashboard</summary>
-              <a th:href="@{/admin}">Tổng quan</a>
+<th:block layout:fragment="sidebar">
+    <nav class="sidebar">
+        <details class="mgroup" data-key="m_dashboard" open>
+            <summary>Dashboard</summary>
+            <a th:href="@{/admin}">Tổng quan</a>
+        </details>
 
-          </details>
+        <details class="mgroup" data-key="m_sales">
+            <summary>Sales</summary>
+            <a th:href="@{/admin/sales/orders}">Orders</a>
+            <a th:href="@{/admin/discounts}">Discounts</a>
+        </details>
 
-          <details class="mgroup" data-key="m_sales">
-              <summary>Sales</summary>
-              <a th:href="@{/admin/sales/orders}">Orders</a>
-              <a th:href="@{/admin/discounts}">Discounts</a>
-          </details>
+        <details class="mgroup" data-key="m_catalog">
+            <summary>Catalog</summary>
+            <a th:href="@{/admin/catalog/categories}">Categories</a>
+            <a th:href="@{/admin/catalog/products}">Products</a>
+        </details>
 
-          <details class="mgroup" data-key="m_catalog">
-              <summary>Catalog</summary>
-              <a th:href="@{/admin/catalog/categories}">Categories</a>
-              <a th:href="@{/admin/catalog/products}">Products</a>
+        <details class="mgroup" data-key="m_inventory">
+            <summary>Inventory</summary>
+            <a th:href="@{/admin/inventory}">Stock</a>
+        </details>
 
-          </details>
+        <details class="mgroup" data-key="m_customers">
+            <summary>Customers</summary>
+            <a th:href="@{/admin/customers}">Customers</a>
+            <a th:href="@{/admin/customers/segments}">Segments</a>
+        </details>
 
-          <details class="mgroup" data-key="m_inventory">
-              <summary>Inventory</summary>
-              <a th:href="@{/admin/inventory}">Stock</a>
-          </details>
+        <details class="mgroup" data-key="m_procurement">
+            <summary>Procurement</summary>
+            <a th:href="@{/admin/procurement/suppliers}">Suppliers</a>
+            <a th:href="@{/admin/procurement/po}">Purchase Orders</a>
+            <a th:href="@{/admin/procurement/batches(variantId=1)}">Batches</a>
+        </details>
 
-          <details class="mgroup" data-key="m_customers">
-              <summary>Customers</summary>
-              <a th:href="@{/admin/customers}">Customers</a>
-              <a th:href="@{/admin/customers/segments}">Segments</a>
-          </details>
+        <details class="mgroup" data-key="m_system">
+            <summary>System</summary>
+            <a th:href="@{/admin/system/users}">Users</a>
+            <a th:href="@{/admin/system/roles}">Roles</a>
+            <a th:href="@{/admin/system/permissions}">Permissions</a>
+            <a th:href="@{/admin/system/activity-logs}">Activity Logs</a>
+        </details>
 
-          <details class="mgroup" data-key="m_procurement">
-              <summary>Procurement</summary>
-              <a th:href="@{/admin/procurement/suppliers}">Suppliers</a>
-              <a th:href="@{/admin/procurement/po}">Purchase Orders</a>
-              <a th:href="@{/admin/procurement/batches(variantId=1)}">Batches</a>
-          </details>
-
-          <details class="mgroup" data-key="m_system">
-              <summary>System</summary>
-              <a th:href="@{/admin/system/users}">Users</a>
-              <a th:href="@{/admin/system/roles}">Roles</a>
-              <a th:href="@{/admin/system/permissions}">Permissions</a>
-              <a th:href="@{/admin/system/activity-logs}">Activity Logs</a>
-          </details>
-
-          <details class="mgroup" data-key="m_tools">
-              <summary>Tools</summary>
-              <a th:href="@{/admin/tools/import-export}">Import/Export</a>
-          </details>
-      </nav>
-  </th:block>
+        <details class="mgroup" data-key="m_tools">
+            <summary>Tools</summary>
+            <a th:href="@{/admin/tools/import-export}">Import/Export</a>
+        </details>
+    </nav>
+</th:block>
 
 
-  <th:block layout:fragment="footer">
+<th:block layout:fragment="footer">
     <div class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> Xmate</div>
-  </th:block>
+</th:block>
 
-  <th:block layout:fragment="bodyExtras"></th:block>
+<th:block layout:fragment="bodyExtras"></th:block>
 </body>
 </html>
