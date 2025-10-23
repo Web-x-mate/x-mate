@@ -8,7 +8,7 @@
   <link rel="stylesheet" th:href="@{/client/css/home.css}"/>
 </th:block>
 
-<div layout:fragment="content" th:with="p=${(products != null and !products.isEmpty()) ? products[0] : null}">
+<div layout:fragment="content">
   <div class="home-banner"></div>
 
   <div class="search-summary" th:if="${isSearch}">
@@ -21,102 +21,36 @@
     </div>
   </div>
 
-  <!-- CHỈ 1 SẢN PHẨM ĐẦU TIÊN -->
-  <section class="products" th:if="${p != null}">
-    <div class="product-card"
-         th:attr="data-product-id=${p.slug},
-                  data-product-slug=${p.slug},
-                  data-product-title=${p.title},
-                  data-product-price=${p.priceForCart},
-                  data-product-image=${p.thumbnail != null ? p.thumbnail : '/images/product-placeholder.svg'}">
-
-      <div class="thumb-wrap">
-        <div class="thumb-ratio">
-          <a class="product-link"
-             th:href="@{/product/detail/{slug}(slug=${p.slug})}"
-             th:aria-label="${p.title}">
-            <img class="product-thumb"
-                 th:src="${p.thumbnail}"
-                 th:alt="${p.title}"
-                 loading="lazy"/>
-            <img class="product-thumb product-thumb--hover"
-                 th:if="${p.hoverThumbnail != null}"
-                 th:src="${p.hoverThumbnail}"
-                 th:alt="${p.title}"
-                 loading="lazy"/>
-          </a>
-        </div>
-
-        <div class="quick-add"
-             th:if="${p.sizes != null and !p.sizes.isEmpty()}"
-             tabindex="0">
-          <div class="quick-add__title">
-            <span>Thêm vào giỏ hàng</span>
-            <span class="quick-add__plus">+</span>
-          </div>
-          <div class="quick-add__sizes">
-            <button class="quick-add__btn"
-                    type="button"
-                    th:each="size : ${p.sizes}"
-                    th:text="${size}"
-                    th:attr="data-size=${size}"></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="swatches" th:if="${p.colors != null and !p.colors.isEmpty()}">
-        <button class="swatch"
-                type="button"
-                th:each="color, iterStat : ${p.colors}"
-                th:classappend="${iterStat.first} ? ' is-active' : ''"
-                th:attr="data-color-name=${color['name']},
-                         data-color=${color['name']},
-                         data-color-hex=${color['hex']},
-                         data-color-image=${color['image']},
-                         data-color-hover-image=${color['hoverImage']},
-                         data-variant-id=${color['variantId']},
-                         data-variant-price=${color['price']},
-                         data-variant-compare=${color['compareAt']}"
-                th:style="${color['style']}">
-          <span class="visually-hidden" th:text="${color['name']}">Màu</span>
-        </button>
-      </div>
-
-      <div class="info">
-        <a class="title"
-           th:href="@{/product/detail/{slug}(slug=${p.slug})}"
-           th:text="${p.title}">Sản phẩm</a>
-
-        <div class="price-row">
-          <span class="final"
-                th:if="${p.finalPriceText != null}"
-                th:text="${p.finalPriceText}">0&nbsp;₫</span>
-
-          <span class="discount-pill"
-                th:if="${p.hasDiscount and p.discountPercent > 0}"
-                th:text="'-' + ${p.discountPercent} + '%'">-0%</span>
-
-          <span class="old"
-                th:if="${p.hasDiscount and p.originalPriceText != null}"
-                th:text="${p.originalPriceText}">0&nbsp;₫</span>
-        </div>
-      </div>
+  <!-- render bằng fragment -->
+  <section class="products" th:if="${products != null and !products.isEmpty()}">
+    <div th:each="p : ${products}">
+      <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
     </div>
   </section>
 
-  <div class="search-empty" th:if="${p == null}">
+  <div class="search-empty" th:if="${products == null or products.isEmpty()}">
     <span th:if="${isSearch}">Không tìm thấy sản phẩm phù hợp.</span>
     <span th:unless="${isSearch}">Chưa có sản phẩm nào.</span>
   </div>
 
-  <!-- JS INLINE Ở NGAY TRONG CONTENT ĐỂ CHẮC CHẮN ĐƯỢC RENDER -->
+  <!-- Inline debug JS: log khi click màu & size trên nhiều card -->
   <script>
     (function () {
-      // Log ngay khi script được parse
-      console.log('[HOME-ONE] inline debug script parsed');
+      console.log('[HOME] debug inline script parsed');
 
-      // Lắng nghe click ở DOCUMENT (event delegation)
+      // Log init: có bao nhiêu cards
+      document.addEventListener('DOMContentLoaded', function () {
+        var cards = document.querySelectorAll('.product-card');
+        console.log('[HOME] DOMContentLoaded. cards=', cards.length);
+        cards.forEach(function (c, i) {
+          var act = c.querySelector('.swatch.is-active');
+          if (act) console.log('[HOME] card#' + i, 'slug=', c.getAttribute('data-product-slug'), 'activeColor=', act.getAttribute('data-color'));
+        });
+      });
+
+      // Event delegation
       document.addEventListener('click', function (e) {
+        // click swatch (màu)
         var swatch = e.target.closest('.product-card .swatch');
         if (swatch) {
           var card1 = swatch.closest('.product-card');
@@ -131,7 +65,7 @@
             compare: swatch.getAttribute('data-variant-compare')
           });
 
-          // set active cho dễ thấy
+          // set active để thấy đang chọn
           if (card1) {
             card1.querySelectorAll('.swatch.is-active').forEach(function (el) { el.classList.remove('is-active'); });
             swatch.classList.add('is-active');
@@ -141,6 +75,7 @@
           return;
         }
 
+        // click size (Quick Add)
         var sizeBtn = e.target.closest('.product-card .quick-add__btn');
         if (sizeBtn) {
           var card2 = sizeBtn.closest('.product-card');
@@ -153,30 +88,14 @@
           return;
         }
       });
-
-      // Khi DOM sẵn sàng, log thêm tình trạng ban đầu
-      document.addEventListener('DOMContentLoaded', function () {
-        var card = document.querySelector('.product-card');
-        if (!card) {
-          console.log('[HOME-ONE] no product-card rendered');
-          return;
-        }
-        console.log('[HOME-ONE] DOMContentLoaded, product slug:', card.getAttribute('data-product-slug'));
-
-        var active = card.querySelector('.swatch.is-active');
-        if (active) {
-          console.log('[HOME-ONE] active color at init:', active.getAttribute('data-color'));
-        }
-      });
     })();
   </script>
 </div>
 
-<!-- (tùy) Nếu base layout của bạn có chỗ insert bodyExtras thì vẫn để block này -->
+<!-- Bạn có thể tắt 2 file JS ngoài khi đang test inline -->
 <th:block layout:fragment="bodyExtras">
-  <!-- Có thể bỏ 2 file này đi trong giai đoạn test vì ta đã inline JS ở trên -->
-  <!-- <script th:src="@{/client/js/product-card.js}"></script> -->
-  <!-- <script th:src="@{/client/js/home.js}"></script> -->
+  <script th:src="@{/client/js/product-card.js}"></script>
+  <script th:src="@{/client/js/home.js}"></script>
 </th:block>
 </body>
 </html>
