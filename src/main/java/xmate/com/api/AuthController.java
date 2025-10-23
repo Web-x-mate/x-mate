@@ -97,7 +97,7 @@ public class AuthController {
                 .httpOnly(true).secure(true) // prod: true (HTTPS)
                 .path("/").sameSite("Lax").build();
         ResponseCookie refresh = ResponseCookie.from("REFRESH_TOKEN", t.refreshToken())
-                .httpOnly(true).secure(false) // prod: true (HTTPS)
+                .httpOnly(true).secure(true) // prod: true (HTTPS)
                 .path("/").sameSite("Lax").build();
         res.addHeader("Set-Cookie", access.toString());
         res.addHeader("Set-Cookie", refresh.toString());
