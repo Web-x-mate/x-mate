@@ -19,17 +19,7 @@ import xmate.com.service.catalog.CategoryService;
 import xmate.com.service.catalog.ProductService;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -58,11 +48,8 @@ public class ClientHomeController {
                 .map(this::toProductCard)
                 .toList();
 
-        if (cards.isEmpty()) {
-            log.warn("[HOME] No products available to render.");
-        } else {
-            log.info("[HOME] First card: {}", cards.get(0));
-        }
+        if (cards.isEmpty()) log.warn("[HOME] No products available to render.");
+        else log.info("[HOME] First card: {}", cards.get(0));
 
         model.addAttribute("pageTitle", "X-Mate | Trang chủ");
         model.addAttribute("isSearch", isSearch);
@@ -88,17 +75,26 @@ public class ClientHomeController {
                 .sorted(Comparator.comparing(Category::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
+        log.debug("[NAV] total categories = {}", categories.size());
+        log.debug("[NAV] roots = {}", roots.stream().map(Category::getName).toList());
+
         if (roots.isEmpty()) {
             return List.of(
                     new NavGroup("nam", "NAM", List.of()),
-                    new NavGroup("nu", "NU", List.of())
+                    new NavGroup("nu", "NỮ", List.of())
             );
         }
 
         List<NavGroup> groups = new ArrayList<>();
         for (Category root : roots) {
-            List<NavColumn> columns = byParent.getOrDefault(root.getId(), List.of()).stream()
+            List<Category> children = byParent.getOrDefault(root.getId(), List.of()).stream()
                     .sorted(Comparator.comparing(Category::getName, String.CASE_INSENSITIVE_ORDER))
+                    .toList();
+
+            log.debug("[NAV] root '{}' has {} children -> {}",
+                    root.getName(), children.size(), children.stream().map(Category::getName).toList());
+
+            List<NavColumn> columns = children.stream()
                     .map(child -> {
                         List<NavItem> items = byParent.getOrDefault(child.getId(), List.of()).stream()
                                 .sorted(Comparator.comparing(Category::getName, String.CASE_INSENSITIVE_ORDER))
@@ -107,12 +103,14 @@ public class ClientHomeController {
                         return new NavColumn(child.getSlug(), child.getName(), items);
                     })
                     .toList();
+
             groups.add(new NavGroup(root.getSlug(), root.getName(), columns));
         }
         return groups;
     }
 
     private ProductCardView toProductCard(Product product) {
+        // Variants (sort by price asc để lấy rẻ nhất)
         List<ProductVariant> variants = variantRepository
                 .findAllByProduct_Id(product.getId(),
                         PageRequest.of(0, 50, Sort.by("price").ascending()))
@@ -122,18 +120,10 @@ public class ClientHomeController {
                 .filter(v -> v.getPrice() != null)
                 .min(Comparator.comparing(ProductVariant::getPrice));
 
+        // Format tiền
         NumberFormat currency = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        String finalPriceText = cheapest
-                .map(ProductVariant::getPrice)
-                .filter(Objects::nonNull)
-                .map(currency::format)
-                .orElse(null);
-
-        String comparePriceText = cheapest
-                .map(ProductVariant::getCompareAtPrice)
-                .filter(Objects::nonNull)
-                .map(currency::format)
-                .orElse(null);
+        String finalPriceText = cheapest.map(ProductVariant::getPrice).filter(Objects::nonNull).map(currency::format).orElse(null);
+        String comparePriceText = cheapest.map(ProductVariant::getCompareAtPrice).filter(Objects::nonNull).map(currency::format).orElse(null);
 
         boolean hasDiscount = finalPriceText != null && comparePriceText != null;
         int discountPercent = 0;
@@ -145,16 +135,14 @@ public class ClientHomeController {
             }
         }
 
+        // Medias
         List<ProductMedia> medias = mediaRepository.findAllByProduct_IdOrderBySortOrderAsc(product.getId());
         Map<Long, List<ProductMedia>> mediaByVariant = medias.stream()
                 .filter(media -> media.getVariant() != null)
                 .collect(Collectors.groupingBy(media -> media.getVariant().getId()));
+        String fallbackImage = medias.stream().findFirst().map(ProductMedia::getUrl).orElse("/images/product-placeholder.svg");
 
-        String fallbackImage = medias.stream()
-                .findFirst()
-                .map(ProductMedia::getUrl)
-                .orElse("/images/product-placeholder.svg");
-
+        // Build sizes + colors
         List<String> sizes = new ArrayList<>();
         Set<String> seenSizes = new LinkedHashSet<>();
         Map<String, Map<String, Object>> colorMap = new LinkedHashMap<>();
@@ -165,64 +153,48 @@ public class ClientHomeController {
             }
 
             String colorKey = Optional.ofNullable(variant.getColor()).orElse("").trim();
-            if (!colorKey.isEmpty() && !colorMap.containsKey(colorKey)) {
-                String barcode = Optional.ofNullable(variant.getBarcode()).orElse("").trim();
-                String hex = "";
-                if (!barcode.isEmpty()) {
-                    String normalized = barcode.startsWith("#") ? barcode.substring(1) : barcode;
-                    normalized = normalized.replaceAll("[^A-Fa-f0-9]", "");
-                    if (!normalized.isEmpty()) {
-                        normalized = normalized.length() >= 6 ? normalized.substring(0, 6) : String.format("%-6s", normalized).replace(' ', '0');
-                        hex = "#" + normalized.toUpperCase(Locale.ROOT);
-                    }
+            if (colorKey.isEmpty() || colorMap.containsKey(colorKey)) continue;
+
+            // barcode -> HEX
+            String barcode = Optional.ofNullable(variant.getBarcode()).orElse("").trim();
+            String hex = "";
+            if (!barcode.isEmpty()) {
+                String normalized = barcode.startsWith("#") ? barcode.substring(1) : barcode;
+                normalized = normalized.replaceAll("[^A-Fa-f0-9]", "");
+                if (!normalized.isEmpty()) {
+                    normalized = normalized.length() >= 6 ? normalized.substring(0, 6)
+                            : String.format("%-6s", normalized).replace(' ', '0');
+                    hex = "#" + normalized.toUpperCase(Locale.ROOT);
                 }
-
-                List<ProductMedia> variantMedias = mediaByVariant.getOrDefault(variant.getId(), List.of());
-                String imageUrl = variantMedias.stream()
-                        .findFirst()
-                        .map(ProductMedia::getUrl)
-                        .orElse(fallbackImage);
-                String hoverUrl = variantMedias.stream()
-                        .skip(1)
-                        .findFirst()
-                        .map(ProductMedia::getUrl)
-                        .orElse(null);
-
-                String style;
-                if (!hex.isEmpty()) {
-                    style = "--swatch-color:" + hex;
-                } else {
-                    style = "--swatch-color:#1f2937";
-                }
-
-                Map<String, Object> color = new LinkedHashMap<>();
-                color.put("name", colorKey);
-                color.put("hex", hex);
-                color.put("swatchUrl", null);
-                color.put("image", imageUrl);
-                color.put("hoverImage", hoverUrl);
-                color.put("variantId", variant.getId());
-                color.put("style", style);
-                colorMap.put(colorKey, color);
             }
+
+            List<ProductMedia> variantMedias = mediaByVariant.getOrDefault(variant.getId(), List.of());
+            String imageUrl = variantMedias.stream().findFirst().map(ProductMedia::getUrl).orElse(fallbackImage);
+            String hoverUrl = variantMedias.stream().skip(1).findFirst().map(ProductMedia::getUrl).orElse(null);
+
+            Map<String, Object> color = new LinkedHashMap<>();
+            color.put("name", colorKey);
+            color.put("hex", hex);
+            color.put("swatchUrl", null);
+            color.put("image", imageUrl);
+            color.put("hoverImage", hoverUrl);
+            color.put("variantId", variant.getId());
+            color.put("style", !hex.isEmpty() ? "--swatch-color:" + hex : "--swatch-color:#1f2937");
+            color.put("price", variant.getPrice());                   // <== để JS cập nhật giá theo variant
+            color.put("compareAt", variant.getCompareAtPrice());      // <== để JS cập nhật giá theo variant
+            colorMap.put(colorKey, color);
         }
 
-        String slug = Optional.ofNullable(product.getSlug())
-                .filter(s -> !s.isBlank())
+        String slug = Optional.ofNullable(product.getSlug()).filter(s -> !s.isBlank())
                 .orElseGet(() -> "product-" + (product.getId() != null ? product.getId() : UUID.randomUUID()));
-
-        String title = Optional.ofNullable(product.getName())
-                .filter(s -> !s.isBlank())
-                .orElse(slug);
+        String title = Optional.ofNullable(product.getName()).filter(s -> !s.isBlank()).orElse(slug);
 
         String thumbnail = fallbackImage;
         String hoverThumbnail = null;
         if (!colorMap.isEmpty()) {
             Map<String, Object> firstColor = colorMap.values().iterator().next();
             thumbnail = Objects.toString(firstColor.getOrDefault("image", fallbackImage), fallbackImage);
-            hoverThumbnail = Optional.ofNullable(firstColor.get("hoverImage"))
-                    .map(Object::toString)
-                    .orElse(null);
+            hoverThumbnail = Optional.ofNullable(firstColor.get("hoverImage")).map(Object::toString).orElse(null);
         }
 
         ProductCardView card = new ProductCardView(
@@ -241,18 +213,13 @@ public class ClientHomeController {
 
         log.info("[HOME] Card ready slug={} title='{}' price={} image={} sizes={} colors={}",
                 card.slug(), card.title(), card.finalPriceText(), card.thumbnail(), sizes, colorMap.keySet());
-
         return card;
     }
 
-    public record NavGroup(String slug, String title, List<NavColumn> children) {
-    }
-
-    public record NavColumn(String slug, String title, List<NavItem> items) {
-    }
-
-    public record NavItem(String slug, String title) {
-    }
+    // ==== DTO/records for view ====
+    public record NavGroup(String slug, String title, List<NavColumn> children) {}
+    public record NavColumn(String slug, String title, List<NavItem> items) {}
+    public record NavItem(String slug, String title) {}
 
     public record ProductCardView(
             String slug,

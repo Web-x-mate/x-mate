@@ -43,18 +43,25 @@
     }
   }
 
+  function normalizeSrc(value) {
+    return typeof value === 'string' ? value.trim() : ''
+  }
+
   function applyColorImage(card, imageUrl, hoverImageUrl) {
     var primary = card.querySelector('.product-thumb:not(.product-thumb--hover)')
     var hover = card.querySelector('.product-thumb--hover')
-    var normalized = typeof imageUrl === 'string' ? imageUrl.trim() : ''
-    var normalizedHover = typeof hoverImageUrl === 'string' ? hoverImageUrl.trim() : ''
-    var fallback = card.dataset.defaultImage || (primary && primary.dataset.originalSrc) || ''
+
+    var normalized = normalizeSrc(imageUrl)
+    var normalizedHover = normalizeSrc(hoverImageUrl)
+
+    var fallback =
+      card.dataset.defaultImage || (primary && primary.dataset.originalSrc) || ''
     var hoverFallback =
       card.dataset.defaultHover ||
       (hover && hover.dataset.originalSrc) ||
       fallback
 
-    var nextPrimary = normalized || fallback || ''
+    var nextPrimary = normalized || fallback
     if (primary && nextPrimary) {
       primary.setAttribute('src', nextPrimary)
     }
@@ -72,19 +79,18 @@
 
   function setSelectedColor(card, button) {
     var swatches = card.querySelectorAll('.swatch')
-    for (var i = 0; i < swatches.length; i++) {
-      swatches[i].classList.remove('is-active')
-    }
+    swatches.forEach(function (item) {
+      item.classList.remove('is-active')
+    })
     button.classList.add('is-active')
 
-    var color = button.getAttribute('data-color')
+    var color = button.getAttribute('data-color') || ''
+    var variantId = button.getAttribute('data-variant-id') || ''
     if (color) {
       card.setAttribute('data-selected-color', color)
     } else {
       card.removeAttribute('data-selected-color')
     }
-
-    var variantId = button.getAttribute('data-variant-id')
     if (variantId) {
       card.setAttribute('data-selected-variant', variantId)
     } else {
@@ -93,6 +99,13 @@
 
     var colorImage = button.getAttribute('data-color-image') || ''
     var colorHoverImage = button.getAttribute('data-color-hover-image') || ''
+    console.log('[ProductCard] Swatch selected', {
+      slug: card.getAttribute('data-product-slug') || null,
+      color: color || null,
+      variantId: variantId || null,
+      image: colorImage || null,
+      hoverImage: colorHoverImage || null,
+    })
     applyColorImage(card, colorImage, colorHoverImage)
   }
 
@@ -160,13 +173,14 @@
       price: Number(card.getAttribute('data-product-price') || 0),
       size: size,
       color: getSelectedColor(card),
+      variantId: card.getAttribute('data-selected-variant') || null,
       quantity: 1,
       image: card.getAttribute('data-product-image') || '',
     }
 
     button.disabled = true
     button.classList.add('is-loading')
-    showFeedback(card, 'Đang thêm vào giỏ hàng!', false)
+    showFeedback(card, '�?ang thA�m vA�o gi��? hA�ng!', false)
 
     fetch('/cart/items', {
       method: 'POST',
@@ -181,7 +195,7 @@
         if (!result) return
         if (result.ok && result.data && result.data.success) {
           updateCartBadge(result.data.cartQuantity)
-          showFeedback(card, 'Đã thêm vào giỏ hàng!', false)
+          showFeedback(card, '�?A� thA�m vA�o gi��? hA�ng!', false)
         } else {
           var message =
             (result && result.data && result.data.message) ||
@@ -217,18 +231,17 @@
       card.setAttribute('data-product-image', card.dataset.defaultImage)
     }
 
-    var colorButtons = card.querySelectorAll('.swatch')
-    for (var i = 0; i < colorButtons.length; i++) {
-      colorButtons[i].addEventListener('click', function (event) {
-        setSelectedColor(card, event.currentTarget)
+    card.querySelectorAll('.swatch').forEach(function (button) {
+      button.addEventListener('click', function () {
+        setSelectedColor(card, button)
       })
-    }
+    })
 
-    var quickAddButtons = card.querySelectorAll('.quick-add__btn')
-    for (var j = 0; j < quickAddButtons.length; j++) {
-      quickAddButtons[j].addEventListener('click', function (event) {
-        handleQuickAdd(card, event.currentTarget)
+    card.querySelectorAll('.quick-add__btn').forEach(function (button) {
+      button.addEventListener('click', function () {
+        handleQuickAdd(card, button)
       })
-    }
+    })
   })
 })()
+
