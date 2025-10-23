@@ -64,7 +64,7 @@ public class ClientHomeController {
             log.info("[HOME] First card: {}", cards.get(0));
         }
 
-        model.addAttribute("pageTitle", "X-Mate | Trang chu");
+        model.addAttribute("pageTitle", "X-Mate | Trang chủ");
         model.addAttribute("isSearch", isSearch);
         model.addAttribute("searchQuery", query);
         model.addAttribute("searchTotal", page.getTotalElements());
@@ -177,10 +177,16 @@ public class ClientHomeController {
                     }
                 }
 
-                String imageUrl = mediaByVariant.getOrDefault(variant.getId(), List.of()).stream()
+                List<ProductMedia> variantMedias = mediaByVariant.getOrDefault(variant.getId(), List.of());
+                String imageUrl = variantMedias.stream()
                         .findFirst()
                         .map(ProductMedia::getUrl)
                         .orElse(fallbackImage);
+                String hoverUrl = variantMedias.stream()
+                        .skip(1)
+                        .findFirst()
+                        .map(ProductMedia::getUrl)
+                        .orElse(null);
 
                 String style;
                 if (!hex.isEmpty()) {
@@ -194,6 +200,8 @@ public class ClientHomeController {
                 color.put("hex", hex);
                 color.put("swatchUrl", null);
                 color.put("image", imageUrl);
+                color.put("hoverImage", hoverUrl);
+                color.put("variantId", variant.getId());
                 color.put("style", style);
                 colorMap.put(colorKey, color);
             }
@@ -207,9 +215,15 @@ public class ClientHomeController {
                 .filter(s -> !s.isBlank())
                 .orElse(slug);
 
-        String thumbnail = !colorMap.isEmpty()
-                ? colorMap.values().iterator().next().getOrDefault("image", fallbackImage).toString()
-                : fallbackImage;
+        String thumbnail = fallbackImage;
+        String hoverThumbnail = null;
+        if (!colorMap.isEmpty()) {
+            Map<String, Object> firstColor = colorMap.values().iterator().next();
+            thumbnail = Objects.toString(firstColor.getOrDefault("image", fallbackImage), fallbackImage);
+            hoverThumbnail = Optional.ofNullable(firstColor.get("hoverImage"))
+                    .map(Object::toString)
+                    .orElse(null);
+        }
 
         ProductCardView card = new ProductCardView(
                 slug,
@@ -219,7 +233,7 @@ public class ClientHomeController {
                 hasDiscount,
                 discountPercent,
                 thumbnail,
-                null,
+                hoverThumbnail,
                 cheapest.map(ProductVariant::getPrice).map(Number::doubleValue).orElse(0d),
                 sizes,
                 new ArrayList<>(colorMap.values())

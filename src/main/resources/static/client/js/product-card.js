@@ -43,44 +43,38 @@
     }
   }
 
-  function applyColorImage(card, imageUrl) {
+  function applyColorImage(card, imageUrl, hoverImageUrl) {
     var primary = card.querySelector('.product-thumb:not(.product-thumb--hover)')
     var hover = card.querySelector('.product-thumb--hover')
     var normalized = typeof imageUrl === 'string' ? imageUrl.trim() : ''
-
-    if (normalized) {
-      if (primary) {
-        primary.setAttribute('src', normalized)
-      }
-      if (hover) {
-        hover.setAttribute('src', normalized)
-      }
-      card.setAttribute('data-product-image', normalized)
-      return
-    }
-
+    var normalizedHover = typeof hoverImageUrl === 'string' ? hoverImageUrl.trim() : ''
     var fallback = card.dataset.defaultImage || (primary && primary.dataset.originalSrc) || ''
     var hoverFallback =
       card.dataset.defaultHover ||
       (hover && hover.dataset.originalSrc) ||
       fallback
 
-    if (primary && fallback) {
-      primary.setAttribute('src', fallback)
+    var nextPrimary = normalized || fallback || ''
+    if (primary && nextPrimary) {
+      primary.setAttribute('src', nextPrimary)
     }
-    if (hover && hoverFallback) {
-      hover.setAttribute('src', hoverFallback)
+    if (nextPrimary) {
+      card.setAttribute('data-product-image', nextPrimary)
     }
-    if (fallback) {
-      card.setAttribute('data-product-image', fallback)
+
+    if (hover) {
+      var nextHover = normalizedHover || normalized || hoverFallback || nextPrimary
+      if (nextHover) {
+        hover.setAttribute('src', nextHover)
+      }
     }
   }
 
   function setSelectedColor(card, button) {
     var swatches = card.querySelectorAll('.swatch')
-    swatches.forEach(function (item) {
-      item.classList.remove('is-active')
-    })
+    for (var i = 0; i < swatches.length; i++) {
+      swatches[i].classList.remove('is-active')
+    }
     button.classList.add('is-active')
 
     var color = button.getAttribute('data-color')
@@ -90,8 +84,16 @@
       card.removeAttribute('data-selected-color')
     }
 
+    var variantId = button.getAttribute('data-variant-id')
+    if (variantId) {
+      card.setAttribute('data-selected-variant', variantId)
+    } else {
+      card.removeAttribute('data-selected-variant')
+    }
+
     var colorImage = button.getAttribute('data-color-image') || ''
-    applyColorImage(card, colorImage)
+    var colorHoverImage = button.getAttribute('data-color-hover-image') || ''
+    applyColorImage(card, colorImage, colorHoverImage)
   }
 
   function getSelectedColor(card) {
@@ -204,24 +206,29 @@
       if (colorValue) {
         card.setAttribute('data-selected-color', colorValue)
       }
-      var initialImage = initial.getAttribute('data-color-image') || ''
-      if (initialImage) {
-        applyColorImage(card, initialImage)
+      var initialVariantId = initial.getAttribute('data-variant-id')
+      if (initialVariantId) {
+        card.setAttribute('data-selected-variant', initialVariantId)
       }
+      var initialImage = initial.getAttribute('data-color-image') || ''
+      var initialHoverImage = initial.getAttribute('data-color-hover-image') || ''
+      applyColorImage(card, initialImage, initialHoverImage)
     } else if (card.dataset.defaultImage) {
       card.setAttribute('data-product-image', card.dataset.defaultImage)
     }
 
-    card.querySelectorAll('.swatch').forEach(function (button) {
-      button.addEventListener('click', function () {
-        setSelectedColor(card, button)
+    var colorButtons = card.querySelectorAll('.swatch')
+    for (var i = 0; i < colorButtons.length; i++) {
+      colorButtons[i].addEventListener('click', function (event) {
+        setSelectedColor(card, event.currentTarget)
       })
-    })
+    }
 
-    card.querySelectorAll('.quick-add__btn').forEach(function (button) {
-      button.addEventListener('click', function () {
-        handleQuickAdd(card, button)
+    var quickAddButtons = card.querySelectorAll('.quick-add__btn')
+    for (var j = 0; j < quickAddButtons.length; j++) {
+      quickAddButtons[j].addEventListener('click', function (event) {
+        handleQuickAdd(card, event.currentTarget)
       })
-    })
+    }
   })
 })()

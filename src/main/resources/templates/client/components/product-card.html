@@ -4,7 +4,7 @@
                   data-product-slug=${product.slug},
                   data-product-title=${product.title},
                   data-product-price=${product.priceForCart},
-                  data-product-image=${product.thumbnail}">
+                  data-product-image=${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}">
 
         <div class="thumb-wrap">
             <div class="thumb-ratio">
@@ -45,10 +45,13 @@
             <button class="swatch"
                     type="button"
                     th:each="color, iterStat : ${product.colors}"
+                    th:classappend="${iterStat.first} ? ' is-active' : ''"
                     th:attr="data-color-name=${color['name']},
                              data-color=${color['name']},
                              data-color-hex=${color['hex']},
-                             data-color-image=${color['image']}"
+                             data-color-image=${color['image']},
+                             data-color-hover-image=${color['hoverImage']},
+                             data-variant-id=${color['variantId']}"
                     th:style="${color['style']}">
                 <span class="visually-hidden" th:text="${color['name']}">Mau</span>
             </button>
