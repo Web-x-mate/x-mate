@@ -3,6 +3,7 @@ package xmate.com.controller.admin.catalog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class ProductVariantController {
         model.addAttribute("variants", variants);
         return "catalog/products/variants";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_VARIANT_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(@PathVariable Long productId, Model model) {
         model.addAttribute("product", productService.get(productId));
@@ -44,7 +45,7 @@ public class ProductVariantController {
         model.addAttribute("stockPolicies", StockPolicy.values());
         return "catalog/products/variant-form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_VARIANT_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@PathVariable Long productId,
                          @RequestParam String sku,
@@ -76,7 +77,7 @@ public class ProductVariantController {
         ra.addFlashAttribute("success", "Đã thêm variant");
         return "redirect:/admin/catalog/products/" + productId + "/variants";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_VARIANT_EDIT','ROLE_ADMIN')")
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long productId, @PathVariable Long id, Model model) {
         model.addAttribute("product", productService.get(productId));
@@ -84,7 +85,7 @@ public class ProductVariantController {
         model.addAttribute("stockPolicies", StockPolicy.values());
         return "catalog/products/variant-form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_VARIANT_EDIT','ROLE_ADMIN')")
     @PostMapping("/edit/{id}")
     public String update(@PathVariable Long productId, @PathVariable Long id,
                          @RequestParam String sku,
@@ -115,7 +116,7 @@ public class ProductVariantController {
         ra.addFlashAttribute("success", "Đã cập nhật variant");
         return "redirect:/admin/catalog/products/" + productId + "/variants";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_VARIANT_DELETE','ROLE_ADMIN')")
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long productId, @PathVariable Long id, RedirectAttributes ra) {
         variantService.delete(id);

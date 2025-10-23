@@ -6,7 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <style>
-        .error{color:#d00;text-align:center;margin:8px 0}
+        .error {
+            color: #d00;
+            text-align: center;
+            margin: 8px 0
+        }
+
+        .hidden {
+            display: none
+        }
     </style>
 </head>
 <body>
@@ -22,46 +30,53 @@
         <div class="muted">Quyền lợi dành riêng cho bạn khi tham gia Coolclub</div>
 
         <div class="perks">
-            <div class="perk"><img src="/images/perk-voucher.avif" alt="Voucher ưu đãi"><div><strong>Voucher ưu đãi</strong></div></div>
-            <div class="perk"><img src="/images/perk-gift.avif" alt="Quà tặng độc quyền"><div><strong>Quà tặng độc quyền</strong></div></div>
-            <div class="perk"><img src="/images/perk-cash.avif" alt="Hoàn tiền CoolCash"><div><strong>Hoàn tiền CoolCash</strong></div></div>
+            <div class="perk"><img src="/images/perk-voucher.avif" alt="Voucher ưu đãi">
+                <div><strong>Voucher ưu đãi</strong></div>
+            </div>
+            <div class="perk"><img src="/images/perk-gift.avif" alt="Quà tặng độc quyền">
+                <div><strong>Quà tặng độc quyền</strong></div>
+            </div>
+            <div class="perk"><img src="/images/perk-cash.avif" alt="Hoàn tiền CoolCash">
+                <div><strong>Hoàn tiền CoolCash</strong></div>
+            </div>
         </div>
 
         <div class="section-label">Đăng nhập hoặc đăng ký (miễn phí)</div>
 
         <div class="socials">
-            <a class="social-btn" th:href="@{/oauth2/authorization/google}" title="Đăng nhập Google">
+            <!-- Sẽ render nút GSI vào thẻ này -->
+            <a class="social-btn" href="#" id="btnGoogle" title="Đăng nhập Google">
                 <img src="/images/ic-google.png" alt="Google">
             </a>
-            <a class="social-btn" href="#" title="Đăng nhập Facebook (mock)">
+            <a class="social-btn" href="#" id="btnFacebook" title="Đăng nhập Facebook">
                 <img src="/images/ic-facebook.png" alt="Facebook">
             </a>
         </div>
 
         <div class="or">Hoặc</div>
 
-        <p class="error" th:if="${param.error}">Sai email hoặc mật khẩu.</p>
-        <p class="error" th:if="${param.oauth2Error}">Đăng nhập Google thất bại.</p>
-        <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập lại.</p>
+        <p class="error hidden" id="errLogin">Sai email hoặc mật khẩu.</p>
+        <p class="error hidden" id="errGoogle">Đăng nhập Google thất bại.</p>
+        <p class="error hidden" id="errFacebook">Đăng nhập Facebook thất bại.</p>
+        <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập
+            lại.</p>
 
-        <form th:action="@{/auth/login}" method="post" id="loginForm" novalidate>
-            <!-- Email/SDT (floating label) -->
+        <form method="post" id="loginForm" novalidate>
             <div class="float-field">
                 <input class="float-input" type="text" name="email" id="email" placeholder=" " required>
                 <label class="float-label" for="email">Email/SDT của bạn</label>
             </div>
 
-            <!-- Mật khẩu (floating label + eye) -->
             <div class="float-field" style="position:relative">
                 <input class="float-input" type="password" name="password" id="pwd" placeholder=" " required>
                 <label class="float-label" for="pwd">Mật khẩu</label>
-                <button type="button" id="toggleEye" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer">👁</button>
+                <button type="button" id="toggleEye"
+                        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer">
+                    👁
+                </button>
             </div>
 
-            <!-- CSRF: chỉ render khi _csrf có mặt (tránh lỗi khi bạn disable CSRF) -->
-            <input type="hidden" th:if="${_csrf != null}"
-                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button class="btn btn-primary" type="submit">ĐĂNG NHẬP</button>
         </form>
 
@@ -72,13 +87,196 @@
     </div>
 </div>
 
+<!-- Facebook SDK -->
+<div id="fb-root"></div>
 <script>
-    const eye = document.getElementById('toggleEye');
-    const pwd = document.getElementById('pwd');
-    eye?.addEventListener('click', ()=> {
-        const t = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
-        pwd.setAttribute('type', t);
+    // Promise resolve khi FB.init gọi xong
+    const fbReady = new Promise((resolve) => {
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '1495990908193900',
+                cookie: true,        // nên bật nếu server dùng session
+                xfbml: false,
+                version: 'v19.0'
+            });
+            console.log('[FB] SDK ready');
+            resolve(true);
+        };
+    });
+
+    // Nạp SDK đúng 1 lần
+    (function (d, s, id) {
+        if (d.getElementById(id)) return;
+        const js = d.createElement(s);
+        js.id = id; js.async = true; js.defer = true; js.crossOrigin = 'anonymous';
+        js.src = 'https://connect.facebook.net/vi_VN/sdk.js';
+        d.getElementsByTagName('head')[0].appendChild(js);
+    })(document, 'script', 'facebook-jssdk');
+</script>
+
+<script>
+    const $ = (s) => document.querySelector(s);
+    const show = el => el.classList.remove('hidden');
+    const hide = el => el.classList.add('hidden');
+
+    const errFacebook = document.getElementById('errFacebook');
+
+    $('#btnFacebook')?.addEventListener('click', async (e) => {
+        e.preventDefault(); hide(errFacebook);
+        try {
+            // CHỜ CHẮC FB.init xong (không tự poll nữa)
+            await fbReady;
+
+            // Gọi login (có thể thêm scope: 'email' nếu app đã được duyệt)
+            FB.login((response) => {
+                (async () => {
+                    console.log('FB.login response =', response);
+                    const t = response?.authResponse?.accessToken;
+                    if (response.status === 'connected' && t) {
+                        const resp = await fetch('/api/auth/facebook', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ accessToken: t }),
+                            credentials: 'include'
+                        });
+                        await handleAuthResult(resp, errFacebook);
+                    } else {
+                        show(errFacebook);
+                        errFacebook.textContent = 'Đăng nhập Facebook bị hủy hoặc thất bại.';
+                    }
+                })().catch(ex => {
+                    show(errFacebook);
+                    errFacebook.textContent = 'Lỗi xử lý callback Facebook.';
+                    console.error(ex);
+                });
+            }/*, { scope: 'email', return_scopes: true }*/);
+        } catch (ex) {
+            show(errFacebook);
+            errFacebook.textContent = 'FB SDK chưa sẵn sàng hoặc bị chặn.';
+            console.error(ex);
+        }
     });
 </script>
+
+
+<!-- GSI: CHỈ 1 SCRIPT & 1 INIT -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    const GSI_CLIENT_ID = '96998956369-8pvvqgj35agmp1jlon8iectgsdkhdptn.apps.googleusercontent.com';
+
+    function waitGSI() {
+        return new Promise((res, rej) => {
+            let n = 0, t = setInterval(() => {
+                n++;
+                if (window.google?.accounts?.id) {
+                    clearInterval(t);
+                    res();
+                }
+                if (n > 50) {
+                    clearInterval(t);
+                    rej(new Error('GSI not loaded'));
+                }
+            }, 100);
+        });
+    }
+
+    async function initGoogle() {
+        try {
+            await waitGSI();
+
+            // init GSI
+            google.accounts.id.initialize({
+                client_id: GSI_CLIENT_ID,
+                callback: async ({credential}) => {
+                    console.log('GSI credential received');
+                    const resp = await fetch('/api/auth/google', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({idToken: credential})
+                    });
+                    await handleAuthResult(resp, document.getElementById('errGoogle'));
+                }
+            });
+
+            // render nút icon vào chính #btnGoogle
+            const btn = document.getElementById('btnGoogle');
+            btn.innerHTML = ''; // xoá <img> tự vẽ
+            btn.style.padding = '0';
+            btn.style.border = 'none';
+            btn.style.background = 'transparent';
+            btn.style.display = 'inline-flex';
+            btn.style.alignItems = 'center';
+            btn.style.justifyContent = 'center';
+
+            google.accounts.id.renderButton(btn, {
+                type: 'icon', theme: 'outline', size: 'large', shape: 'circle'
+            });
+
+            // KHÔNG gọi prompt() để tránh im lặng không hiện
+        } catch (e) {
+            console.error(e);
+            const el = document.getElementById('errGoogle');
+            show(el);
+            el.textContent = 'Không tải được Google Identity.';
+        }
+    }
+
+    window.addEventListener('load', initGoogle);
+</script>
+<script>
+    const errLogin = document.getElementById('errLogin');
+
+
+    async function callJson(url, body){
+        return fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+            credentials: 'include'
+        });
+    }
+
+    function decodeJwtPayload(jwt){
+        try{
+            const b = (jwt||'').split('.')[1] || '';
+            const s = atob(b.replace(/-/g,'+').replace(/_/g,'/'));
+            return JSON.parse(decodeURIComponent(escape(s)));
+        }catch{ return {}; }
+    }
+
+    async function handleAuthResult(resp, errEl){
+        let text = ''; try { text = await resp.text(); } catch {}
+        if (!resp.ok) {
+            if (errEl) { show(errEl); errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.'; }
+            console.error('Auth error:', resp.status, text);
+            return false;
+        }
+        let data = {}; try { data = text ? JSON.parse(text) : {}; } catch {}
+        if (data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+        // TokenRes chỉ có 2 field → đọc claim để biết có role không
+        const p = decodeJwtPayload(data.accessToken || '');
+        const isStaff = p?.actor === 'staff' && Array.isArray(p?.roles) && p.roles.length > 0;
+
+        location.href = isStaff ? '/admin' : '/auth/complete';
+        return true;
+    }
+
+    document.getElementById('loginForm')?.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        hide(errLogin);
+        const email = e.target.email.value.trim();
+        const password = e.target.password.value;
+
+        // 1) thử đăng nhập admin
+        let resp = await callJson('/api/admin/auth/login', { email, password });
+
+        // 2) nếu không phải admin → thử customer
+        if (!resp.ok) resp = await callJson('/api/auth/login', { email, password });
+
+        await handleAuthResult(resp, errLogin);
+    });
+</script>
+
 </body>
 </html>

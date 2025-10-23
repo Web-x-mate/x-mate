@@ -3,6 +3,7 @@ package xmate.com.controller.admin.system;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,14 +33,14 @@ public class RoleController {
         model.addAttribute("q", q);
         return "system/roles/list";
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_MGMT_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("role", new Role());
         model.addAttribute("allPerms", permService.search("", PageRequest.of(0, 2000)).getContent());
         return "system/roles/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_MGMT_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@ModelAttribute("role") Role role,
                          @RequestParam(required = false, name = "permIds") Set<Long> permIds,
@@ -51,7 +52,7 @@ public class RoleController {
         ra.addFlashAttribute("success", "Tạo role thành công");
         return "redirect:/admin/system/roles";
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_MGMT_EDIT','ROLE_ADMIN')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Role r = roleService.get(id);
@@ -61,7 +62,7 @@ public class RoleController {
                 r.getPermissions() != null ? r.getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()) : Set.of());
         return "system/roles/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_MGMT_EDIT','ROLE_ADMIN')")
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
                          @ModelAttribute("role") Role role,
@@ -72,7 +73,7 @@ public class RoleController {
         ra.addFlashAttribute("success", "Cập nhật role thành công");
         return "redirect:/admin/system/roles";
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_MGMT_DELETE','ROLE_ADMIN')")
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         roleService.delete(id);

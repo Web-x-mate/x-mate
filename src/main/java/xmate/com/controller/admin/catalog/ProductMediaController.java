@@ -3,6 +3,7 @@ package xmate.com.controller.admin.catalog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,14 +47,14 @@ public class ProductMediaController {
         model.addAttribute("mediaPage", mediaPage);
         return "catalog/products/media";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_MEDIA_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(@PathVariable Long productId, Model model) {
         model.addAttribute("product", productService.get(productId));
         model.addAttribute("media", new ProductMedia());
         return "catalog/products/media-form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_MEDIA_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@PathVariable Long productId,
                          @RequestParam("mediaType") String mediaType,
@@ -81,14 +82,14 @@ public class ProductMediaController {
         ra.addFlashAttribute("success", "Đã thêm media");
         return "redirect:/admin/catalog/products/" + productId + "/media";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_MEDIA_EDIT','ROLE_ADMIN')")
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long productId, @PathVariable Long id, Model model) {
         model.addAttribute("product", productService.get(productId));
         model.addAttribute("media", mediaService.get(id));
         return "catalog/products/media-form";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_MEDIA_EDIT','ROLE_ADMIN')")
     @PostMapping("/edit/{id}")
     public String update(@PathVariable Long productId, @PathVariable Long id,
                          @RequestParam("mediaType") String mediaType,
@@ -121,7 +122,7 @@ public class ProductMediaController {
         ra.addFlashAttribute("success", "Đã cập nhật media");
         return "redirect:/admin/catalog/products/" + productId + "/media";
     }
-
+    @PreAuthorize("hasAnyAuthority('PRODUCT_MEDIA_DELETE','ROLE_ADMIN')")
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long productId, @PathVariable Long id, RedirectAttributes ra) {
         ProductMedia m = mediaService.get(id);

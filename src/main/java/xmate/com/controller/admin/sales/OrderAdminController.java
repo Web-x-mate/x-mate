@@ -4,13 +4,13 @@ package xmate.com.controller.admin.sales;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import xmate.com.entity.catalog.ProductVariant;
-import xmate.com.entity.common.OrderStatus;
-import xmate.com.entity.common.PaymentStatus;
 import xmate.com.entity.common.ShippingStatus;
 import xmate.com.entity.customer.Customer;
 import xmate.com.entity.sales.Order;
@@ -19,8 +19,13 @@ import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.service.sales.OrderService;
 
+// 🔁 Dùng enums đúng package
+import xmate.com.entity.enums.OrderStatus;
+import xmate.com.entity.enums.PaymentStatus;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -44,10 +49,9 @@ public class OrderAdminController {
                         .orElseThrow(() -> new IllegalArgumentException("Variant not found: " + it.getVariant().getId()));
                 it.setPrice(priceToLong(v.getPrice())); // convert BigDecimal/Long → long
             }
-            // Qty là int (primitive) → không check null, đảm bảo không âm
             if (it.getQty() < 0) it.setQty(0);
 
-            // lineTotal = price * qty (đều long)
+            // lineTotal = price * qty
             it.setLineTotal(it.getPrice() * (long) it.getQty());
         }
     }
@@ -62,17 +66,20 @@ public class OrderAdminController {
                         Model model) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Order> p = service.search(q, status, payment, shipping, pageable);
+
         model.addAttribute("page", p);
         model.addAttribute("q", q);
         model.addAttribute("status", status);
         model.addAttribute("payment", payment);
         model.addAttribute("shipping", shipping);
+
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentStatuses", PaymentStatus.values());
-        model.addAttribute("shippingStatuses", ShippingStatus.values());
+        model.addAttribute("shippingStatuses", ShippingStatus.values()); // List<String>
+
         return "orders/list";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')")
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("form", new OrderForm());
@@ -82,7 +89,7 @@ public class OrderAdminController {
         model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')")
     @PostMapping("/new")
     public String create(@ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         Order order = form.toOrder();
@@ -92,7 +99,7 @@ public class OrderAdminController {
         ra.addFlashAttribute("success", "Tạo đơn hàng thành công");
         return "redirect:/admin/sales/orders";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')")
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Order o = service.get(id);
@@ -103,7 +110,7 @@ public class OrderAdminController {
         model.addAttribute("shippingStatuses", ShippingStatus.values());
         return "orders/form";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')")
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id, @ModelAttribute("form") OrderForm form, RedirectAttributes ra) {
         List<OrderItem> items = form.toItems();
@@ -112,7 +119,7 @@ public class OrderAdminController {
         ra.addFlashAttribute("success", "Cập nhật đơn hàng thành công");
         return "redirect:/admin/sales/orders";
     }
-
+    @PreAuthorize("hasAnyAuthority('ORDER_DELETE','ROLE_ADMIN')")
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         service.delete(id);
@@ -123,6 +130,7 @@ public class OrderAdminController {
     private List<Customer> getAllCustomers() {
         return customerRepo.findAll(PageRequest.of(0, 200, Sort.by("id").descending())).getContent();
     }
+    
 
     // ======= DTO FORM (đồng bộ long VND) =======
     @Data
@@ -134,16 +142,20 @@ public class OrderAdminController {
         private String shippingProvider;
         private String trackingCode;
         private String noteInternal;
-        private OrderStatus status = OrderStatus.PENDING;
+
+        // ✅ Dùng enums đúng package
+        private OrderStatus status = OrderStatus.PENDING_PAYMENT;
         private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
-        private ShippingStatus shippingStatus = ShippingStatus.NOT_SHIPPED;
+
+        // ✅ shippingStatus là String để khớp với Entity Order
+        private String shippingStatus = "NOT_SHIPPED";
 
         private long discountAmount = 0L;
         private long shippingFee = 0L;
 
         // items (parallel arrays)
         private List<Long> variantIds = new ArrayList<>();
-        private List<Long> prices = new ArrayList<>();   // ✅ long thay vì BigDecimal
+        private List<Long> prices = new ArrayList<>();
         private List<Integer> qtys = new ArrayList<>();
 
         public Order toOrder() {
@@ -159,9 +171,11 @@ public class OrderAdminController {
             o.setShippingProvider(shippingProvider);
             o.setTrackingCode(trackingCode);
             o.setNoteInternal(noteInternal);
-            o.setStatus(status);
-            o.setPaymentStatus(paymentStatus);
-            o.setShippingStatus(shippingStatus);
+
+            o.setStatus(status);                 // enum
+            o.setPaymentStatus(paymentStatus);   // enum
+            o.setShippingStatus(shippingStatus); // String
+
             o.setDiscountAmount(discountAmount);
             o.setShippingFee(shippingFee);
             // subtotal/total sẽ được service tính lại từ items
@@ -182,8 +196,8 @@ public class OrderAdminController {
 
                 OrderItem it = new OrderItem();
                 it.setVariant(v);
-                it.setPrice(price);              // long
-                it.setQty(qty);                  // int
+                it.setPrice(price);
+                it.setQty(qty);
                 it.setLineTotal(price * (long) qty);
                 list.add(it);
             }
@@ -199,17 +213,19 @@ public class OrderAdminController {
             f.setShippingProvider(o.getShippingProvider());
             f.setTrackingCode(o.getTrackingCode());
             f.setNoteInternal(o.getNoteInternal());
+
             f.setStatus(o.getStatus());
             f.setPaymentStatus(o.getPaymentStatus());
-            f.setShippingStatus(o.getShippingStatus());
+            f.setShippingStatus(o.getShippingStatus()); // String
+
             f.setDiscountAmount(o.getDiscountAmount());
             f.setShippingFee(o.getShippingFee());
 
             if (o.getItems() != null) {
                 for (OrderItem it : o.getItems()) {
                     f.getVariantIds().add(it.getVariant() != null ? it.getVariant().getId() : null);
-                    f.getPrices().add(it.getPrice());   // long
-                    f.getQtys().add(it.getQty());       // int
+                    f.getPrices().add(it.getPrice());
+                    f.getQtys().add(it.getQty());
                 }
             }
             return f;
@@ -227,4 +243,6 @@ public class OrderAdminController {
         }
         return 0L;
     }
+
+
 }
