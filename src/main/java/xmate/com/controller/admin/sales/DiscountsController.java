@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import xmate.com.entity.common.DiscountKind;
+import xmate.com.entity.common.DiscountValueType;
 import xmate.com.entity.discount.Discount;
 import xmate.com.service.discount.DiscountService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,11 +24,18 @@ public class DiscountsController {
     public String list(@RequestParam(defaultValue = "") String q,
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "10") int size,
+                       @RequestParam(required = false) DiscountKind type,
+                       @RequestParam(required = false) DiscountValueType valueType,
                        Model model) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Discount> p = service.search(q, pageable);
+
+        // SỬA ĐỔI QUAN TRỌNG: Truyền 3 tham số lọc mới vào service.search()
+        Page<Discount> p = service.search(q, type, valueType, pageable);
+
         model.addAttribute("page", p);
         model.addAttribute("q", q);
+        model.addAttribute("type", type != null ? type.name() : null);
+        model.addAttribute("valueType", valueType != null ? valueType.name() : null);
         return "discounts/list";
     }
     @PreAuthorize("hasAnyAuthority('DISCOUNT_CREATE','ROLE_ADMIN')")

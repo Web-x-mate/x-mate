@@ -171,22 +171,17 @@
 </head>
 <body>
 <section layout:fragment="content">
-    <!-- Khi KHÔNG có quyền VIEW -->
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">
         Bạn không có quyền xem danh sách giảm giá.
     </div>
 
-    <!-- Khi CÓ quyền VIEW -->
     <div sec:authorize="hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">
         <h1 class="page-title mb-3 fw-bold">Danh sách giảm giá</h1>
 
-        <!-- Hàng lọc 6 ô (đồng bộ Orders) -->
         <form method="get" th:action="@{/admin/discounts}" class="filter-grid">
-            <!-- 1: Ô tìm kiếm -->
             <div class="cell">
                 <input class="form-control" type="text" name="q" th:value="${q}" placeholder=" Tìm mã hoặc JSON...">
             </div>
-            <!-- 2: (để trống dành chỗ sau này: lọc loại) -->
             <div class="cell">
                 <select class="form-select" name="type">
                     <option value="">Loại</option>
@@ -194,7 +189,6 @@
                     <option value="AUTO" th:selected="${type == 'AUTO'}">AUTO</option>
                 </select>
             </div>
-            <!-- 3: (để trống dành chỗ sau này: lọc valueType) -->
             <div class="cell">
                 <select class="form-select" name="valueType">
                     <option value="">Loại giảm giá</option>
@@ -202,21 +196,17 @@
                     <option value="PERCENT" th:selected="${valueType == 'PERCENT'}">PERCENT</option>
                 </select>
             </div>
-            <!-- 4: Tìm kiếm -->
             <div class="cell">
                 <button class="btn btn-primary w-100" type="submit">Tìm kiếm</button>
             </div>
-            <!-- 5: Đặt lại -->
             <div class="cell">
                 <a class="btn btn-secondary w-100" th:href="@{/admin/discounts}">Đặt lại</a>
             </div>
-            <!-- 6: Thêm mã giảm giá -->
             <div class="cell" sec:authorize="hasAnyAuthority('DISCOUNT_CREATE','ROLE_ADMIN')">
                 <a th:href="@{/admin/discounts/new}" class="btn btn-create w-100">Thêm mã giảm giá</a>
             </div>
         </form>
 
-        <!-- Bảng -->
         <div class="table-responsive">
             <table class="table table-hover align-middle w-100">
                 <thead class="table-light">
@@ -242,14 +232,12 @@
                     <td th:text="${d.type}">CODE</td>
                     <td th:text="${d.code}">SALE10</td>
 
-                    <!-- Value Type theo CouponType -->
                     <td th:switch="${d.valueType != null ? d.valueType.name() : ''}">
                         <span class="badge bg-success" th:case="'FIXED'">💵 FIXED</span>
                         <span class="badge bg-primary" th:case="'PERCENT'">🎯 PERCENT</span>
                         <span class="badge bg-secondary" th:case="*">—</span>
                     </td>
 
-                    <!-- Giá trị theo loại -->
                     <td th:switch="${d.valueType != null ? d.valueType.name() : ''}">
                         <span th:case="'FIXED'"
                               th:text="${#numbers.formatDecimal(d.valueAmount?:0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">50,000 ₫</span>
@@ -258,24 +246,20 @@
                         <span th:case="*">—</span>
                     </td>
 
-                    <!-- Min order -->
                     <td th:text="${#numbers.formatDecimal(d.minOrder?:0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
 
-                    <!-- Thời gian đồng bộ format với Orders -->
                     <td th:text="${d.startAt != null ? #temporals.format(d.startAt,'dd/MM/yyyy HH:mm') : ''}"></td>
                     <td th:text="${d.endAt != null ? #temporals.format(d.endAt,'dd/MM/yyyy HH:mm') : ''}"></td>
 
                     <td th:text="${d.usageLimit}">100</td>
                     <td th:text="${d.usedCount}">0</td>
 
-                    <!-- Status -->
                     <td th:switch="${d.status != null ? (d.status instanceof T(java.lang.Enum) ? d.status.name() : d.status) : ''}">
                         <span class="badge bg-success" th:case="'ACTIVE'">ACTIVE</span>
                         <span class="badge bg-secondary" th:case="*"
                               th:text="${d.status}">INACTIVE</span>
                     </td>
 
-                    <!-- Actions giống Orders -->
                     <td>
                         <div class="d-flex gap-2 justify-content-center">
                             <a th:href="@{|/admin/discounts/${d.id}/edit|}"
@@ -296,7 +280,6 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/discounts', q=${q}, type=${type}, valueType=${valueType})}"></div>
     </div>
 </section>

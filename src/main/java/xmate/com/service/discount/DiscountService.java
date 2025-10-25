@@ -2,6 +2,8 @@
 package xmate.com.service.discount;
 
 import org.springframework.data.domain.*;
+import xmate.com.entity.common.DiscountKind;
+import xmate.com.entity.common.DiscountValueType;
 import xmate.com.entity.discount.Discount;
 import xmate.com.entity.discount.DiscountUsage;
 
@@ -12,7 +14,7 @@ import java.util.Optional;
 public interface DiscountService {
 
     // CRUD
-    Page<Discount> search(String q, Pageable pageable);
+    Page<Discount> search(String q, DiscountKind type, DiscountValueType valueType, Pageable pageable);
     Discount get(Long id);
     Discount create(Discount d);
     Discount update(Long id, Discount d);
