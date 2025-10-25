@@ -1,6 +1,6 @@
 <th:block th:fragment="productCard(product)">
   <div class="product-card"
-       th:data-product-id="${product.slug}"
+       th:data-product-id="${product.id != null ? product.id : product.slug}"
        th:data-product-slug="${product.slug}"
        th:data-product-title="${product.title}"
        th:data-product-price="${product.priceForCart}"
@@ -37,16 +37,16 @@
               type="button"
               th:each="color, iter : ${product.colors}"
               th:classappend="${iter.first} ? ' is-active' : ''"
-              th:data-color-name="${color['name']}"
-              th:data-color="${color['name']}"
-              th:data-color-hex="${color['hex']}"
-              th:data-color-image="${color['image'] != null ? color['image'] : ''}"
-              th:data-variant-id="${color['variantId']}"
-              th:data-variant-price="${color['price']}"
-              th:data-variant-compare="${color['compareAt']}"
-              th:attr="data-sizes=${color['sizes'] != null ? #strings.listJoin(color['sizes'], '|') : ''}"
-              th:style="${color['style']}">
-        <span class="visually-hidden" th:text="${color['name']}">Màu</span>
+              th:data-color-name="${color.name}"
+              th:data-color="${color.name}"
+              th:data-color-hex="${color.hex}"
+              th:data-color-image="${color.image != null ? color.image : ''}"
+              th:data-variant-id="${color.variantId}"
+              th:data-variant-price="${color.price}"
+              th:data-variant-compare="${color.compareAt}"
+              th:attr="data-sizes=${color.sizes != null ? #strings.listJoin(color.sizes, '|') : ''}"
+              th:style="${color.style}">
+        <span class="visually-hidden" th:text="${color.name}">Mau</span>
       </button>
     </div>
 

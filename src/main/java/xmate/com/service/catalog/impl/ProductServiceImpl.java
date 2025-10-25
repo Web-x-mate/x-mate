@@ -13,7 +13,10 @@ import xmate.com.service.catalog.ProductService;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +73,32 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<Product> byCategory(Long categoryId, Pageable pageable) {
         return repo.findAllByCategory_Id(categoryId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> byCategories(Collection<Long> categoryIds, Pageable pageable) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return repo.findAllByCategory_IdIn(categoryIds, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Product> findBySlug(String slug) {
+        if (slug == null || slug.isBlank()) return Optional.empty();
+        return repo.findBySlug(slug);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> searchInCategories(String q, Collection<Long> categoryIds, Pageable pageable) {
+        Specification<Product> spec = productSpec(q);
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and((root, query, cb) -> root.get("category").get("id").in(categoryIds));
+        }
+        return repo.findAll(spec, pageable);
     }
 
     private Specification<Product> productSpec(String q) {

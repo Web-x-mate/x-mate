@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/client/css/category.css}"/>
+</th:block>
+
+<div layout:fragment="content"
+     th:with="activeSlug=${categorySlug != null ? categorySlug : (parent != null ? parent.slug() : '')},
+              productCount=${searchTotal != null ? searchTotal : 0}">
+    <section class="category-hero" th:if="${parent != null}">
+        <div class="container">
+            <p class="category-hero__breadcrumb">
+                <a th:href="@{/}">Trang chu</a>
+                <span>/</span>
+                <span th:text="${parent.title()}">Danh muc</span>
+            </p>
+            <h1 class="category-hero__title" th:text="${parent.title()}">Danh muc</h1>
+            <p class="category-hero__meta">
+                <span th:text="${productCount}">0</span>
+                <span>san pham</span>
+            </p>
+        </div>
+    </section>
+
+    <section class="category-children" th:if="${children != null and !children.isEmpty()}">
+        <div class="container">
+            <section class="child-cats">
+                <ul class="child-grid">
+                    <li class="child-card" th:each="child : ${children}">
+                        <a th:href="@{/category/{slug}(slug=${child.slug()})}">
+                            <div class="thumb"
+                                 th:style="'background-image:url(' + (${child.thumbnail()} != null ? child.thumbnail() : '/images/product-placeholder.svg') + ')'">
+                            </div>
+                            <h3 th:text="${child.title()}">Danh muc</h3>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </section>
+
+    <section class="category-products">
+        <div class="container">
+            <div class="products"
+                 th:if="${products != null and !products.isEmpty()}">
+                <div th:each="p : ${products}">
+                    <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
+                </div>
+            </div>
+
+            <div class="category-empty"
+                 th:if="${products == null or products.isEmpty()}">
+                <p>Chua co san pham trong danh muc nay.</p>
+            </div>
+
+            <div class="category-pagination"
+                 th:if="${pagination != null and pagination.totalPages > 1 and activeSlug != null and !#strings.isEmpty(activeSlug)}">
+                <nav class="category-pagination__nav" aria-label="Phan trang danh muc">
+                    <a class="category-pagination__control"
+                       th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.previousPage}, size=${pagination.pageSize})}"
+                       th:attr="aria-disabled=${!pagination.hasPrevious()}"
+                       th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
+                        <span>Truoc</span>
+                    </a>
+                    <ul class="category-pagination__list">
+                        <li th:each="num : ${pagination.pages}">
+                            <a class="category-pagination__page"
+                               th:text="${num}"
+                               th:href="@{/category/{slug}(slug=${activeSlug}, page=${num}, size=${pagination.pageSize})}"
+                               th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
+                            </a>
+                        </li>
+                    </ul>
+                    <a class="category-pagination__control"
+                       th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.nextPage}, size=${pagination.pageSize})}"
+                       th:attr="aria-disabled=${!pagination.hasNext()}"
+                       th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
+                        <span>Sau</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/client/js/product-card.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
+</th:block>
+</body>
+</html>
