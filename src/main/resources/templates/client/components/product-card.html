@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<body>
-
-<!-- Fragment: productCard(product) -->
 <th:block th:fragment="productCard(product)">
-
-  <!-- CARD -->
   <div class="product-card"
-       th:id="${'pc-' + product.slug}"
-       th:attr="
-         data-product-id=${product.slug},
-         data-product-slug=${product.slug},
-         data-product-title=${product.title},
-         data-product-price=${product.priceForCart},
-         data-product-image=${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}
-       ">
+       th:data-product-id="${product.slug}"
+       th:data-product-slug="${product.slug}"
+       th:data-product-title="${product.title}"
+       th:data-product-price="${product.priceForCart}"
+       th:data-product-image="${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}">
 
-    <!-- THUMB -->
     <div class="thumb-wrap">
       <div class="thumb-ratio">
         <a class="product-link"
@@ -24,12 +13,10 @@
            th:aria-label="${product.title}">
           <img class="product-thumb"
                th:src="${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}"
-               th:alt="${product.title}"
-               loading="lazy"/>
+               th:alt="${product.title}" loading="lazy"/>
         </a>
       </div>
 
-      <!-- QUICK ADD (hiển thị nếu có size) -->
       <div class="quick-add" th:if="${product.sizes != null and !product.sizes.isEmpty()}" tabindex="0">
         <div class="quick-add__title">
           <span>Thêm vào giỏ hàng</span>
@@ -40,185 +27,114 @@
                   type="button"
                   th:each="size : ${product.sizes}"
                   th:text="${size}"
-                  th:attr="data-size=${size}"></button>
+                  th:data-size="${size}"></button>
         </div>
       </div>
     </div>
 
-    <!-- SWATCHES (màu) -->
     <div class="swatches" th:if="${product.colors != null and !product.colors.isEmpty()}">
       <button class="swatch"
               type="button"
-              th:each="color, stat : ${product.colors}"
-              th:classappend="${stat.first} ? ' is-active' : ''"
-              th:attr="
-                data-color-name=${color['name']},
-                data-color=${color['name']},
-                data-color-hex=${color['hex']},
-                data-color-image=${color['image'] != null ? color['image'] : ''},
-                data-variant-id=${color['variantId']},
-                data-variant-price=${color['price']},
-                data-variant-compare=${color['compareAt']}
-              "
+              th:each="color, iter : ${product.colors}"
+              th:classappend="${iter.first} ? ' is-active' : ''"
+              th:data-color-name="${color['name']}"
+              th:data-color="${color['name']}"
+              th:data-color-hex="${color['hex']}"
+              th:data-color-image="${color['image'] != null ? color['image'] : ''}"
+              th:data-variant-id="${color['variantId']}"
+              th:data-variant-price="${color['price']}"
+              th:data-variant-compare="${color['compareAt']}"
+              th:attr="data-sizes=${color['sizes'] != null ? #strings.listJoin(color['sizes'], '|') : ''}"
               th:style="${color['style']}">
         <span class="visually-hidden" th:text="${color['name']}">Màu</span>
       </button>
     </div>
 
-    <!-- INFO -->
     <div class="info">
       <a class="title"
          th:href="@{/product/detail/{slug}(slug=${product.slug})}"
          th:text="${product.title}">Sản phẩm</a>
 
       <div class="price-row">
-        <span class="final"
-              th:if="${product.finalPriceText != null}"
-              th:text="${product.finalPriceText}">0&nbsp;₫</span>
-
-        <span class="discount-pill"
-              th:if="${product.hasDiscount and product.discountPercent > 0}"
+        <span class="final" th:if="${product.finalPriceText != null}" th:text="${product.finalPriceText}">0&nbsp;₫</span>
+        <span class="discount-pill" th:if="${product.hasDiscount and product.discountPercent > 0}"
               th:text="'-' + ${product.discountPercent} + '%'">-0%</span>
-
-        <span class="old"
-              th:if="${product.hasDiscount and product.originalPriceText != null}"
+        <span class="old" th:if="${product.hasDiscount and product.originalPriceText != null}"
               th:text="${product.originalPriceText}">0&nbsp;₫</span>
       </div>
     </div>
   </div>
 
-  <!-- JS nội tuyến: chỉ tác động card ở trên -->
+  <!-- JS: bật/tắt size theo màu + log -->
   <script>
     (function () {
-      // Lấy card theo id vừa render
-      var card = document.getElementById(/*[[${'pc-' + product.slug}]]*/ '');
-      if (!card) return;
-
-      // ===== Helpers =====
-      function toAbs(u) {
-        if (!u || typeof u !== 'string') return '';
-        u = u.trim();
-        if (!u) return '';
-        if (/^https?:\/\//i.test(u) || u.startsWith('/')) return u;
-        return '/' + u.replace(/^\/+/, '');
+      function parseSizes(attr) {
+        if (!attr) return [];
+        return attr.split('|').map(function (s) { return s.trim(); }).filter(Boolean);
       }
-      function carryAioParam(fromUrl, toUrl) {
-        try {
-          var uFrom = new URL(fromUrl, window.location.origin);
-          var uTo   = new URL(toUrl,   window.location.origin);
-          var aio   = uFrom.searchParams.get('aio');
-          if (aio && !uTo.searchParams.get('aio')) uTo.searchParams.set('aio', aio);
-          return uTo.toString();
-        } catch { return toUrl; }
+
+      function applySizesForColor(card, allowed) {
+        var btns = card.querySelectorAll('.quick-add__btn');
+        if (!btns.length) return;
+        var set = new Set(allowed);
+        btns.forEach(function (b) {
+          var s = (b.getAttribute('data-size') || '').trim();
+          var ok = set.has(s);
+          b.disabled = !ok;
+          b.classList.toggle('is-disabled', !ok);
+        });
       }
-      function swapImageSmooth(img, nextAbsUrl) {
-        var current = img.currentSrc || img.src || '';
-        var withAio = carryAioParam(current, nextAbsUrl);
-        var next = withAio + (withAio.includes('?') ? '&' : '?') + '_v=' + Date.now();
 
-        img.setAttribute('loading', 'eager');
-        img.setAttribute('fetchpriority', 'high');
-
+      function swapImageSmooth(img, url) {
+        if (!img || !url) return;
+        var next = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_v=' + Date.now();
         var pre = new Image();
-        pre.decoding = 'sync';
-        pre.fetchPriority = 'high';
-        pre.onload = function () {
-          img.style.transition = 'opacity .12s ease';
-          requestAnimationFrame(function () { img.src = next; });
-        };
-        pre.onerror = function () { console.warn('[product-card] preload error', next); };
+        pre.onload = function(){ img.src = next; };
         pre.src = next;
       }
-      function ensureFeedback() {
-        var wrap = card.querySelector('.quick-add');
-        if (!wrap) return null;
-        var node = wrap.querySelector('.quick-add__feedback');
-        if (!node) {
-          node = document.createElement('div');
-          node.className = 'quick-add__feedback';
-          wrap.appendChild(node);
-        }
-        return node;
-      }
-      function showFeedback(msg, isError) {
-        var el = ensureFeedback();
-        if (!el) return;
-        el.textContent = msg;
-        el.classList.toggle('is-error', !!isError);
-        el.classList.add('is-visible');
-        clearTimeout(el._t);
-        el._t = setTimeout(function(){ el.classList.remove('is-visible'); }, 2000);
-      }
 
-      // ===== Init trạng thái ban đầu =====
-      (function init() {
-        var img = card.querySelector('.product-thumb');
-        if (img && !img.dataset.originalSrc) {
-          img.dataset.originalSrc = img.getAttribute('src') || '';
-        }
-        var active = card.querySelector('.swatch.is-active');
-        if (active) {
-          card.setAttribute('data-selected-color', active.getAttribute('data-color') || '');
-          card.setAttribute('data-selected-variant', active.getAttribute('data-variant-id') || '');
-          var url = active.getAttribute('data-color-image') || '';
-          if (img && url) {
-            var abs = toAbs(url);
-            swapImageSmooth(img, abs);
-            card.setAttribute('data-product-image', abs);
-          }
-        }
-      })();
-
-      // ===== Click đổi màu =====
-      card.addEventListener('click', function (e) {
-        var sw = e.target.closest('.swatch');
-        if (!sw || !card.contains(sw)) return;
-
-        card.querySelectorAll('.swatch.is-active').forEach(function (x){ x.classList.remove('is-active'); });
-        sw.classList.add('is-active');
-
-        var color = sw.getAttribute('data-color') || '';
-        var vid   = sw.getAttribute('data-variant-id') || '';
-        var url   = sw.getAttribute('data-color-image') || '';
-
-        if (color) card.setAttribute('data-selected-color', color); else card.removeAttribute('data-selected-color');
-        if (vid)   card.setAttribute('data-selected-variant', vid); else card.removeAttribute('data-selected-variant');
-
-        var img = card.querySelector('.product-thumb');
-        if (img && url) {
-          var abs = toAbs(url);
-          swapImageSmooth(img, abs);
-          card.setAttribute('data-product-image', abs);
-        }
-
-        // Nếu sau này có map size theo màu, có thể filter ở đây.
-        // Ví dụ: enable/disable các .quick-add__btn theo danh sách size hợp lệ của màu đang chọn.
+      // Khởi tạo theo swatch đang active
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.product-card').forEach(function (card) {
+          var active = card.querySelector('.swatch.is-active') || card.querySelector('.swatch');
+          if (!active) return;
+          var sizes = parseSizes(active.getAttribute('data-sizes'));
+          console.log('[CARD INIT]', {
+            slug: card.getAttribute('data-product-slug'),
+            color: active.getAttribute('data-color'),
+            sizesForColor: sizes
+          });
+          applySizesForColor(card, sizes);
+        });
       });
 
-      // ===== Click size (chỉ log + hiển thị thành công/thất bại giả lập) =====
-      card.addEventListener('click', function (e) {
-        var btn = e.target.closest('.quick-add__btn');
-        if (!btn || !card.contains(btn)) return;
+      // Đổi màu → áp size
+      document.addEventListener('click', function (e) {
+        var sw = e.target.closest('.product-card .swatch');
+        if (!sw) return;
+        var card = sw.closest('.product-card');
+        card.querySelectorAll('.swatch.is-active').forEach(function (el) { el.classList.remove('is-active'); });
+        sw.classList.add('is-active');
 
-        var size = btn.getAttribute('data-size');
-        var vid  = card.getAttribute('data-selected-variant');
-        var col  = card.getAttribute('data-selected-color');
-
-        // Giả lập rule: nếu có cả variantId và size => thành công; ngược lại báo lỗi.
-        // (Bạn có thể thay bằng kiểm tra thực sự trong DB sau.)
-        var ok = !!(size && vid);
-        console.log('[QUICK ADD CHECK]', {
-          productSlug: card.getAttribute('data-product-slug'),
-          size: size, color: col, variantId: vid, ok: ok
+        // log + áp size
+        var sizes = parseSizes(sw.getAttribute('data-sizes'));
+        console.log('[SWATCH CLICK]', {
+          slug: card.getAttribute('data-product-slug'),
+          color: sw.getAttribute('data-color'),
+          sizesForColor: sizes
         });
+        applySizesForColor(card, sizes);
 
-        if (ok) showFeedback('OK: size ' + size + ' khả dụng cho màu ' + (col || ''), false);
-        else showFeedback('Không khả dụng: thiếu variant/màu/size', true);
+        // đổi ảnh
+        var img = card.querySelector('.product-thumb');
+        var url = (sw.getAttribute('data-color-image') || '').trim();
+        if (img && url) swapImageSmooth(img, url);
       });
     })();
   </script>
 
+  <!-- style nhỏ cho nút size bị disable (tuỳ theme của bạn) -->
+  <style>
+    .quick-add__btn.is-disabled { opacity: .45; cursor: not-allowed; }
+  </style>
 </th:block>
-
-</body>
-</html>

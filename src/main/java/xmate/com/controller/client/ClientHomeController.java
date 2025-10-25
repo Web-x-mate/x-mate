@@ -17,6 +17,7 @@ import xmate.com.repo.catalog.ProductMediaRepository;
 import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.service.catalog.CategoryService;
 import xmate.com.service.catalog.ProductService;
+import java.math.BigDecimal;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -109,136 +110,153 @@ public class ClientHomeController {
         return groups;
     }
 
-    private ProductCardView toProductCard(Product product) {
-    // Variants (sort by price asc để lấy rẻ nhất)
+private ProductCardView toProductCard(Product product) {
+
+    // 1) Lấy variants (giá tăng dần cho “rẻ nhất”)
     List<ProductVariant> variants = variantRepository
-            .findAllByProduct_Id(product.getId(),
-                    PageRequest.of(0, 50, Sort.by("price").ascending()))
-            .getContent();
+        .findAllByProduct_Id(product.getId(),
+            PageRequest.of(0, 200, Sort.by("price").ascending()))
+        .getContent();
 
+    // 2) Tính giá hiển thị (dùng variant rẻ nhất)
     Optional<ProductVariant> cheapest = variants.stream()
-            .filter(v -> v.getPrice() != null)
-            .min(Comparator.comparing(ProductVariant::getPrice));
+        .filter(v -> v.getPrice() != null)
+        .min(Comparator.comparing(ProductVariant::getPrice));
 
-    // Format tiền
     NumberFormat currency = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
     String finalPriceText = cheapest.map(ProductVariant::getPrice)
-            .filter(Objects::nonNull).map(currency::format).orElse(null);
+        .filter(Objects::nonNull).map(currency::format).orElse(null);
     String comparePriceText = cheapest.map(ProductVariant::getCompareAtPrice)
-            .filter(Objects::nonNull).map(currency::format).orElse(null);
+        .filter(Objects::nonNull).map(currency::format).orElse(null);
 
     boolean hasDiscount = finalPriceText != null && comparePriceText != null;
     int discountPercent = 0;
     if (hasDiscount) {
-        var price = cheapest.get().getPrice();
-        var compare = cheapest.get().getCompareAtPrice();
-        if (price != null && compare != null && compare.doubleValue() > 0) {
-            discountPercent = (int) Math.round(100 - (price.doubleValue() / compare.doubleValue() * 100));
+        var p = cheapest.get().getPrice();
+        var c = cheapest.get().getCompareAtPrice();
+        if (p != null && c != null && c.doubleValue() > 0) {
+            discountPercent = (int)Math.round(100 - (p.doubleValue() / c.doubleValue() * 100));
         }
     }
 
-    // Medias
+    // 3) Medias
     List<ProductMedia> medias = mediaRepository.findAllByProduct_IdOrderBySortOrderAsc(product.getId());
     Map<Long, List<ProductMedia>> mediaByVariant = medias.stream()
-            .filter(media -> media.getVariant() != null)
-            .collect(Collectors.groupingBy(media -> media.getVariant().getId()));
+        .filter(m -> m.getVariant() != null)
+        .collect(Collectors.groupingBy(m -> m.getVariant().getId()));
     String fallbackImage = medias.stream().findFirst()
-            .map(ProductMedia::getUrl).orElse("/images/product-placeholder.svg");
+        .map(ProductMedia::getUrl).orElse("/images/product-placeholder.svg");
 
-    // === NEW: sizes hợp lệ theo từng màu, chỉ tính từ variant có barcode !== null/blank
-    Map<String, List<String>> sizesByColorHavingBarcode = variants.stream()
-            .filter(v -> v.getColor() != null && !v.getColor().isBlank())
-            .filter(v -> v.getSize()  != null && !v.getSize().isBlank())
-            .filter(v -> v.getBarcode() != null && !v.getBarcode().isBlank())
-            .collect(Collectors.groupingBy(
-                    v -> v.getColor().trim(),
-                    Collectors.mapping(v -> v.getSize().trim(),
-                        Collectors.collectingAndThen(
-                            Collectors.toCollection(LinkedHashSet::new), // unique, giữ thứ tự
-                            list -> list.stream()
-                                    .sorted(String.CASE_INSENSITIVE_ORDER)
-                                    .toList()
-                        )
-                    )
-            ));
+    // 4) Gom size theo MÀU **chỉ lấy variant có barcode**
+    Map<String, Set<String>> sizesByColorHavingBarcode = new LinkedHashMap<>();
+    // Đồng thời gom tất cả size (để render nút), có thể lấy theo barcode hoặc tất cả tùy bạn:
+    LinkedHashSet<String> allSizes = new LinkedHashSet<>();
 
-    // Build sizes + colors
-    List<String> sizes = new ArrayList<>();
-    Set<String> seenSizes = new LinkedHashSet<>();
-    Map<String, Map<String, Object>> colorMap = new LinkedHashMap<>();
+    for (ProductVariant v : variants) {
+        String size  = Optional.ofNullable(v.getSize()).orElse("").trim();
+        String color = Optional.ofNullable(v.getColor()).orElse("").trim();
+        String bc    = Optional.ofNullable(v.getBarcode()).orElse("").trim();
 
-    for (ProductVariant variant : variants) {
-        if (variant.getSize() != null && !variant.getSize().isBlank() && seenSizes.add(variant.getSize())) {
-            sizes.add(variant.getSize());
+        if (!size.isEmpty()) allSizes.add(size);
+
+        if (!color.isEmpty() && !size.isEmpty() && !bc.isEmpty()) {
+            sizesByColorHavingBarcode
+                .computeIfAbsent(color, k -> new LinkedHashSet<>())
+                .add(size);
         }
+    }
 
-        String colorKey = Optional.ofNullable(variant.getColor()).orElse("").trim();
-        if (colorKey.isEmpty() || colorMap.containsKey(colorKey)) continue;
+    // 5) Chọn variant “đại diện” mỗi màu: ưu tiên có media, sau đó giá rẻ
+    Map<String, ProductVariant> colorRep = new LinkedHashMap<>();
+    variants.stream()
+        .sorted(Comparator
+            .<ProductVariant>comparingInt(v -> mediaByVariant.getOrDefault(v.getId(), List.of()).isEmpty() ? 1 : 0)
+            .thenComparing(v -> Optional.ofNullable(v.getPrice()).orElse(BigDecimal.ZERO)))
+        .forEach(v -> {
+            String color = Optional.ofNullable(v.getColor()).orElse("").trim();
+            if (!color.isEmpty() && !colorRep.containsKey(color)) colorRep.put(color, v);
+        });
 
-        // barcode -> HEX
-        String barcode = Optional.ofNullable(variant.getBarcode()).orElse("").trim();
+    // 6) Build color map
+    Map<String, Map<String,Object>> colorMap = new LinkedHashMap<>();
+    for (Map.Entry<String, ProductVariant> e : colorRep.entrySet()) {
+        String colorKey = e.getKey();
+        ProductVariant rep = e.getValue();
+
+        // HEX từ barcode
         String hex = "";
+        String barcode = Optional.ofNullable(rep.getBarcode()).orElse("").trim();
         if (!barcode.isEmpty()) {
-            String normalized = barcode.startsWith("#") ? barcode.substring(1) : barcode;
-            normalized = normalized.replaceAll("[^A-Fa-f0-9]", "");
-            if (!normalized.isEmpty()) {
-                normalized = normalized.length() >= 6 ? normalized.substring(0, 6)
-                        : String.format("%-6s", normalized).replace(' ', '0');
-                hex = "#" + normalized.toUpperCase(Locale.ROOT);
+            String n = barcode.startsWith("#") ? barcode.substring(1) : barcode;
+            n = n.replaceAll("[^A-Fa-f0-9]", "");
+            if (!n.isEmpty()) {
+                n = (n.length() >= 6) ? n.substring(0, 6)
+                        : String.format("%-6s", n).replace(' ', '0');
+                hex = "#" + n.toUpperCase(Locale.ROOT);
             }
         }
 
-        List<ProductMedia> variantMedias = mediaByVariant.getOrDefault(variant.getId(), List.of());
-        String imageUrl = variantMedias.stream().findFirst().map(ProductMedia::getUrl).orElse(fallbackImage);
-        String hoverUrl = variantMedias.stream().skip(1).findFirst().map(ProductMedia::getUrl).orElse(null);
+        // Ảnh đại diện màu
+        List<ProductMedia> vMedias = mediaByVariant.getOrDefault(rep.getId(), List.of());
+        String imageUrl = vMedias.stream().findFirst().map(ProductMedia::getUrl).orElse(fallbackImage);
+        String hoverUrl = vMedias.stream().skip(1).findFirst().map(ProductMedia::getUrl).orElse(null);
 
-        Map<String, Object> color = new LinkedHashMap<>();
+        // Sizes hợp lệ cho màu (chỉ từ variant có barcode)
+        List<String> sizesForColor = new ArrayList<>(sizesByColorHavingBarcode.getOrDefault(colorKey, Set.of()));
+
+        Map<String,Object> color = new LinkedHashMap<>();
         color.put("name", colorKey);
         color.put("hex", hex);
         color.put("swatchUrl", null);
         color.put("image", imageUrl);
         color.put("hoverImage", hoverUrl);
-        color.put("variantId", variant.getId());
+        color.put("variantId", rep.getId());
         color.put("style", !hex.isEmpty() ? "--swatch-color:" + hex : "--swatch-color:#1f2937");
-        color.put("price", variant.getPrice());              // để JS cập nhật giá theo variant (nếu cần)
-        color.put("compareAt", variant.getCompareAtPrice()); // để JS cập nhật giá theo variant (nếu cần)
-
-        // ⬇️ NHÉT danh sách size hợp lệ cho MÀU này (chỉ từ variant có barcode)
-        color.put("sizes", sizesByColorHavingBarcode.getOrDefault(colorKey, List.of()));
+        color.put("price", rep.getPrice());
+        color.put("compareAt", rep.getCompareAtPrice());
+        color.put("sizes", sizesForColor);
 
         colorMap.put(colorKey, color);
+
+        // ===== LOG: size theo từng màu =====
+        log.info("[HOME] {} -> color='{}' repVariant={} sizes(withBarcode)={}",
+            Optional.ofNullable(product.getSlug()).orElse(String.valueOf(product.getId())),
+            colorKey, rep.getId(), sizesForColor);
     }
 
+    // 7) Thông tin chung cho card
     String slug = Optional.ofNullable(product.getSlug()).filter(s -> !s.isBlank())
-            .orElseGet(() -> "product-" + (product.getId() != null ? product.getId() : UUID.randomUUID()));
+        .orElseGet(() -> "product-" + (product.getId() != null ? product.getId() : UUID.randomUUID()));
     String title = Optional.ofNullable(product.getName()).filter(s -> !s.isBlank()).orElse(slug);
 
     String thumbnail = fallbackImage;
     String hoverThumbnail = null;
     if (!colorMap.isEmpty()) {
-        Map<String, Object> firstColor = colorMap.values().iterator().next();
+        Map<String,Object> firstColor = colorMap.values().iterator().next();
         thumbnail = Objects.toString(firstColor.getOrDefault("image", fallbackImage), fallbackImage);
         hoverThumbnail = Optional.ofNullable(firstColor.get("hoverImage")).map(Object::toString).orElse(null);
     }
 
     ProductCardView card = new ProductCardView(
-            slug,
-            title,
-            finalPriceText,
-            comparePriceText,
-            hasDiscount,
-            discountPercent,
-            thumbnail,
-            hoverThumbnail,
-            cheapest.map(ProductVariant::getPrice).map(Number::doubleValue).orElse(0d),
-            sizes,
-            new ArrayList<>(colorMap.values())
+        slug,
+        title,
+        finalPriceText,
+        comparePriceText,
+        hasDiscount,
+        discountPercent,
+        thumbnail,
+        hoverThumbnail,
+        cheapest.map(ProductVariant::getPrice).map(Number::doubleValue).orElse(0d),
+        new ArrayList<>(allSizes),                 // render tất cả nút size
+        new ArrayList<>(colorMap.values())         // mỗi color có "sizes"
     );
 
-    log.info("[HOME] Card ready slug={} title='{}' price={} image={} sizes={} colors={}",
-            card.slug(), card.title(), card.finalPriceText(), card.thumbnail(), sizes, colorMap.keySet());
+    log.info("[HOME] Card ready slug={} sizesAll={} colors={}",
+        card.slug(), card.sizes(), colorMap.keySet());
+
     return card;
 }
+
 
 
     // ==== DTO/records for view ====
