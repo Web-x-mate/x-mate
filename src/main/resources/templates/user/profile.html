@@ -254,7 +254,7 @@
             </div>
 
             <div style="margin-top:22px">
-                <button class="btn" type="button" onclick="openModal('editModal')">CẬP NHẬT</button>
+                <button class="btn" type="button" onclick="openEditModal()">CẬP NHẬT</button>
             </div>
 
             <h2 class="h1" style="font-size:24px;margin-top:26px">Thông tin đăng nhập</h2>
@@ -280,7 +280,8 @@
        data-gender=${(me != null and me.gender != null) ? me.gender : ''},
        data-height=${(me != null and me.heightCm != null) ? me.heightCm : ''},
        data-weight=${(me != null and me.weightKg != null) ? me.weightKg : ''},
-       data-phone=${(me != null and me.phone != null) ? me.phone : ''}">
+       data-phone=${(me != null and me.phone != null) ? me.phone : ''},
+       data-authm=${authm}">
 </div>
 
 <!-- ===== Modal 1: Chỉnh sửa thông tin ===== -->

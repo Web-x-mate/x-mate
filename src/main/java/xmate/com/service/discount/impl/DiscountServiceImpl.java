@@ -6,6 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xmate.com.entity.common.DiscountKind;
+import xmate.com.entity.common.DiscountValueType;
 import xmate.com.entity.discount.*;
 import xmate.com.repo.discount.*;
 import xmate.com.service.discount.DiscountService;
@@ -22,9 +23,9 @@ public class DiscountServiceImpl implements DiscountService {
     private final DiscountUsageRepository usageRepo;
 
     @Override
-    public Page<Discount> search(String q, Pageable pageable) {
+    public Page<Discount> search(String q, DiscountKind type, DiscountValueType valueType, Pageable pageable) {
         String qq = (q == null) ? "" : q.trim();
-        return discountRepo.search(qq, pageable);
+        return discountRepo.search(qq, type, valueType, pageable);
     }
 
     @Override

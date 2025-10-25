@@ -62,9 +62,9 @@ public class GoogleAuthService {
                     });
 
             // --- phát token như cũ ---
-            String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer"));
+            String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer","authm", "google"));
             RefreshToken rt = RefreshToken.builder()
-                    .token(UUID.randomUUID().toString())
+                    .token("g." + UUID.randomUUID())
                     .customer(u)
                     .expiresAt(Instant.now().plusMillis(refreshExp))
                     .revoked(false)

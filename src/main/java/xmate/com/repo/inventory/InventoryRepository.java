@@ -10,16 +10,28 @@ import java.util.List;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
-    @Query("""
-      SELECT i FROM Inventory i
-        JOIN i.variant v
-        LEFT JOIN v.product p
-      WHERE (:q IS NULL OR :q = ''
-             OR LOWER(COALESCE(v.sku,'')) LIKE LOWER(CONCAT('%',:q,'%'))
-             OR LOWER(COALESCE(v.color,'')) LIKE LOWER(CONCAT('%',:q,'%'))
-             OR LOWER(COALESCE(v.size,''))  LIKE LOWER(CONCAT('%',:q,'%'))
-             OR LOWER(COALESCE(p.name,''))  LIKE LOWER(CONCAT('%',:q,'%')))
-    """)
+//    @Query("""
+//      SELECT i FROM Inventory i
+//        JOIN i.variant v
+//        LEFT JOIN v.product p
+//      WHERE (1=1) AND (:q IS NULL OR :q = ''
+//             OR LOWER(COALESCE(v.sku,'')) LIKE LOWER(CONCAT('%',:q,'%'))
+//             OR LOWER(COALESCE(v.color,'')) LIKE LOWER(CONCAT('%',:q,'%'))
+//             OR LOWER(COALESCE(v.size,''))  LIKE LOWER(CONCAT('%',:q,'%'))
+//             OR LOWER(COALESCE(p.name,''))  LIKE LOWER(CONCAT('%',:q,'%')))
+//    """)
+            @Query("""
+          SELECT i FROM Inventory i
+            LEFT JOIN FETCH i.variant v  
+            LEFT JOIN FETCH v.product p
+          WHERE 
+            (1=1) AND 
+            (:q IS NULL OR :q = ''
+                 OR LOWER(COALESCE(v.sku,'')) LIKE LOWER(CONCAT('%',:q,'%'))
+                 OR LOWER(COALESCE(v.color,'')) LIKE LOWER(CONCAT('%',:q,'%'))
+                 OR LOWER(COALESCE(v.size,''))  LIKE LOWER(CONCAT('%',:q,'%'))
+                 OR LOWER(COALESCE(p.name,''))  LIKE LOWER(CONCAT('%',:q,'%')))
+        """)
     Page<Inventory> search(@Param("q") String q, Pageable pageable);
 
     List<Inventory> findByVariantIdIn(List<Long> variantIds);
