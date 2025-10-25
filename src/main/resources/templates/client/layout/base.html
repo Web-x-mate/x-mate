@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" type="image/png" th:href="@{/client/images/favicon.png}"/>
+    <title th:text="${pageTitle} ?: 'X-Mate Shop'">X-Mate Shop</title>
+
+    <link rel="stylesheet" th:href="@{/client/css/app.css}"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          referrerpolicy="no-referrer"/>
+
+    <th:block layout:include="~{client/layout/fragments :: headExtras}"/>
+</head>
+<body>
+<div layout:include="~{client/layout/fragments :: alerts}"></div>
+<header layout:include="~{client/layout/fragments :: header(primaryCategories=${primaryCategories}, searchQuery=${searchQuery}, cartQuantity=${cartQuantity})}"></header>
+
+<main class="site-main">
+    <div layout:fragment="content"></div>
+</main>
+
+<footer layout:include="~{client/layout/fragments :: footer}"></footer>
+
+<script th:src="@{/client/js/header.js}"></script>
+<script th:src="@{/client/js/alerts.js}"></script>
+<th:block layout:include="~{client/layout/fragments :: bodyExtras}"/>
+</body>
+</html>

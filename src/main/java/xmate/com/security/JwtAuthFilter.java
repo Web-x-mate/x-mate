@@ -3,6 +3,7 @@ package xmate.com.security;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -32,6 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String p = request.getServletPath();
         // Static, trang public
         if (p.startsWith("/css/") || p.startsWith("/js/") || p.startsWith("/images/")
+                || p.startsWith("/client/")
                 || p.startsWith("/webjars/") || p.startsWith("/favicon")
                 || p.equals("/") || p.equals("/auth/login") || p.startsWith("/auth/register")
                 || p.startsWith("/oauth2/")) {
@@ -99,13 +101,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     authentication.setDetails(claims);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-                chain.doFilter(request, response);
             } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                clearAccessTokenCookie(response);
             }
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+        } catch (JwtException | IllegalArgumentException ex) {
+            clearAccessTokenCookie(response);
         }
+
+        chain.doFilter(request, response);
+    }
+
+    private void clearAccessTokenCookie(HttpServletResponse response) {
+        Cookie expired = new Cookie("ACCESS_TOKEN", "");
+        expired.setHttpOnly(true);
+        expired.setPath("/");
+        expired.setMaxAge(0);
+        response.addCookie(expired);
     }
 
 }
