@@ -54,12 +54,9 @@
         </div>
 
         <div class="or">Hoặc</div>
-
-        <p class="error hidden" id="errLogin">Sai email hoặc mật khẩu.</p>
-        <p class="error hidden" id="errGoogle">Đăng nhập Google thất bại.</p>
-        <p class="error hidden" id="errFacebook">Đăng nhập Facebook thất bại.</p>
-        <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập
-            lại.</p>
+        <p class="error hidden" id="errLogin"></p>
+        <p class="error hidden" id="errGoogle"></p>
+        <p class="error hidden" id="errFacebook"></p>
 
         <form method="post" id="loginForm" novalidate>
             <div class="float-field">
@@ -86,6 +83,84 @@
         </div>
     </div>
 </div>
+<!-- ===== Modal (popup) ===== -->
+<div id="appModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <span class="modal-icon" id="modalIcon">ℹ️</span>
+            <h3 class="modal-title" id="modalTitle">Thông báo</h3>
+        </div>
+        <div class="modal-body" id="modalBody">Nội dung thông báo…</div>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="modalCancel" style="display:none">Hủy</button>
+            <button type="button" class="btn btn-primary" id="modalOk">OK</button>
+        </div>
+    </div>
+</div>
+<script>
+    // Modal helpers
+    const modalEl   = document.getElementById('appModal');
+    const modalTitle= document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalIcon = document.getElementById('modalIcon');
+    const btnOk     = document.getElementById('modalOk');
+    const btnCancel = document.getElementById('modalCancel');
+    let lastFocus = null;
+
+    function openModal(
+        message,
+        options = {}
+    ) {
+        const {
+            title = 'Thông báo',
+            type = 'info',
+            okText = 'OK',
+            cancelText = null,
+            onOk = null,
+            onCancel = null,
+            useIcon = false   // <-- mặc định KHÔNG dùng icon
+        } = options;
+        lastFocus = document.activeElement;
+        modalTitle.textContent = title;
+        modalBody.textContent  = message;
+
+        const box = modalEl.firstElementChild; // .modal
+        box.classList.remove('modal--error','modal--success','modal--info','modal--noicon');
+        box.classList.add(`modal--${type}`);
+        if (!useIcon) box.classList.add('modal--noicon'); // <-- ẩn icon nếu không dùng
+
+        modalIcon.textContent = (type==='error' ? '⛔' : type==='success' ? '✅' : 'ℹ️');
+
+        btnOk.textContent = okText || 'OK';
+        btnOk.onclick = () => { closeModal(); if (typeof onOk === 'function') onOk(); };
+
+        if (cancelText) {
+            btnCancel.style.display = '';
+            btnCancel.textContent = cancelText;
+            btnCancel.onclick = () => { closeModal(); if (typeof onCancel === 'function') onCancel(); };
+        } else {
+            btnCancel.style.display = 'none';
+            btnCancel.onclick = null;
+        }
+
+        modalEl.classList.add('show');
+        modalEl.setAttribute('aria-hidden', 'false');
+        btnOk.focus();
+    }
+    function closeModal() {
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalEl.classList.contains('show')) closeModal(); });
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+
+    // shortcuts
+    const alertInfo    = (msg, opts={}) => openModal(msg, {type:'info',    title: opts.title || 'Thông báo', ...opts});
+    const alertError   = (msg, opts={}) => openModal(msg, {type:'error',   title: opts.title || 'Lỗi', ...opts});
+    const alertSuccess = (msg, opts={}) => openModal(msg, {type:'success', title: opts.title || 'Thành công', ...opts});
+</script>
+
 
 <!-- Facebook SDK -->
 <div id="fb-root"></div>
@@ -116,8 +191,23 @@
 
 <script>
     const $ = (s) => document.querySelector(s);
-    const show = el => el.classList.remove('hidden');
-    const hide = el => el.classList.add('hidden');
+    window.show = (el) => {
+        if (!el) return;
+        el.classList.remove('hidden');
+        // Nếu là 3 thẻ lỗi cũ -> bật modal thay vì hiện text
+        const id = el.id || '';
+        if (id === 'errLogin' || id === 'errGoogle' || id === 'errFacebook') {
+            // đợi 1 nhịp để đoạn errEl.textContent = ... chạy xong
+            setTimeout(() => {
+                const msg = (el.textContent || '').trim() || 'Đăng nhập thất bại.';
+                alertError(msg);
+                el.classList.add('hidden');    // ẩn lại để không nháy UI
+                el.style.display = 'none';
+            }, 0);
+        }
+    };
+    window.hide = (el) => { if (el) el.classList.add('hidden'); };
+
 
     const errFacebook = document.getElementById('errFacebook');
 
@@ -141,18 +231,18 @@
                         });
                         await handleAuthResult(resp, errFacebook);
                     } else {
-                        show(errFacebook);
-                        errFacebook.textContent = 'Đăng nhập Facebook bị hủy hoặc thất bại.';
+                        alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
                     }
                 })().catch(ex => {
-                    show(errFacebook);
-                    errFacebook.textContent = 'Lỗi xử lý callback Facebook.';
+                    alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
                     console.error(ex);
                 });
             }/*, { scope: 'email', return_scopes: true }*/);
         } catch (ex) {
-            show(errFacebook);
-            errFacebook.textContent = 'FB SDK chưa sẵn sàng hoặc bị chặn.';
+            alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
             console.error(ex);
         }
     });
@@ -191,7 +281,8 @@
                     console.log('GSI credential received');
                     const resp = await fetch('/api/auth/google', {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({idToken: credential})
+                        body: JSON.stringify({idToken: credential}),
+                        credentials: 'include'
                     });
                     await handleAuthResult(resp, document.getElementById('errGoogle'));
                 }
@@ -213,10 +304,9 @@
 
             // KHÔNG gọi prompt() để tránh im lặng không hiện
         } catch (e) {
-            console.error(e);
-            const el = document.getElementById('errGoogle');
-            show(el);
-            el.textContent = 'Không tải được Google Identity.';
+            alertError('Không tải được Google Identity.');
+
+
         }
     }
 

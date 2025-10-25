@@ -1,5 +1,5 @@
 :root {
-    --card-w: 510px;
+    --card-w: 550px;
     --radius: 16px;
     --shadow: 0 10px 30px rgba(0, 0, 0, .15);
     --gray-100: #f3f4f6;
@@ -175,7 +175,7 @@ body {
     width: 100%;
     border: 1px solid var(--gray-300);
     border-radius: 999px;
-    padding: 18px 44px 10px 16px;
+    padding: 13px 44px 10px 16px;
     font-size: 15px;
     outline: none;
     background: #fff;
@@ -281,3 +281,85 @@ a:hover {
         grid-template-columns:1fr
     }
 }
+
+/* === Modal (popup) – polished, kompat với class gắn trên .modal-overlay === */
+.modal-overlay{
+    position: fixed; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    background: rgba(17,17,17,.55);
+    backdrop-filter: blur(6px) saturate(120%);
+    z-index: 2147483647;
+
+    /* accent mặc định & theo loại */
+    --accent: #dbeafe; /* info */
+}
+.modal-overlay.show{ display: flex; }
+
+.modal-overlay.modal--error  .modal { --accent: #fed7d7; }
+.modal-overlay.modal--success.modal,
+.modal-overlay.modal--success .modal { --accent: #c7f9d4; }
+.modal-overlay.modal--info    .modal { --accent: #dbeafe; }
+
+/* khung modal */
+.modal{
+    width: 100%; max-width: 460px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #eef0f3;
+    box-shadow: 0 24px 60px rgba(0,0,0,.28);
+    overflow: hidden;
+    position: relative;
+    transform-origin: center;
+}
+/* thanh accent trên đầu */
+.modal::before{
+    content: "";
+    position: absolute; left: 0; top: 0;
+    width: 100%; height: 3px;
+    background: var(--accent);
+}
+
+/* header + body + actions */
+.modal-header{
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 18px 10px;
+}
+.modal-title{ margin: 0; font-size: 17px; font-weight: 800; color: #0b1220; }
+.modal-icon{ font-size: 18px; opacity: .95; }
+.modal-body{ padding: 6px 18px 14px; font-size: 14.5px; color: #111; line-height: 1.6; }
+.modal-actions{
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 16px 16px; border-top: 1px solid #f0f2f5;
+}
+
+/* nút */
+.btn-ghost{
+    background: #fff; color: #111; border: 1px solid #e6e8ec;
+    border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer;
+}
+.btn-ghost:hover{ background: #f7f8fb; }
+.btn-ghost:focus-visible{ outline: none; box-shadow: 0 0 0 3px rgba(39,59,208,.22); }
+.modal .btn.btn-primary{
+    border-radius: 999px; padding: 10px 16px; font-weight: 800;
+}
+.modal .btn.btn-primary:focus-visible{ outline: none; box-shadow: 0 0 0 3px rgba(17,17,17,.2); }
+
+/* Ẩn icon nếu muốn: thêm class modal--noicon vào overlay */
+.modal-overlay.modal--noicon .modal-icon{ display: none; }
+
+/* animation mở nhẹ */
+@keyframes modalIn{
+    from{ transform: translateY(10px) scale(.98); opacity: 0; }
+    to  { transform: none; opacity: 1; }
+}
+.modal-overlay.show .modal{ animation: modalIn .16s ease-out; }
+
+/* giảm chuyển động nếu user chọn reduce motion */
+@media (prefers-reduced-motion: reduce){
+    .modal-overlay{ backdrop-filter: none; }
+    .modal-overlay.show .modal{ animation: none; }
+}
+
+/* đề phòng backdrop tạo stacking context cao hơn modal (không bắt buộc) */
+.backdrop{ z-index: 200; }
