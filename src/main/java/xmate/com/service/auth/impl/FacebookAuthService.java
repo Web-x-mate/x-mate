@@ -83,9 +83,9 @@ public class FacebookAuthService {
     }
 
     private TokenRes issueTokens(Customer u) {
-        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer"));
+        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer","authm", "facebook"));
         RefreshToken rt = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
+                .token("f." + UUID.randomUUID())
                 .customer(u)
                 .expiresAt(Instant.now().plusMillis(refreshExp))
                 .revoked(false)

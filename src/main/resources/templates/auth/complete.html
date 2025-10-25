@@ -7,27 +7,7 @@
     <link th:href="@{/css/register.css}" rel="stylesheet"/>
     <meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}">
     <meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}">
-
-    <style>
-        :root { --font-ui:"Segoe UI", Roboto, Arial, sans-serif; }
-        html,body{ font-family:var(--font-ui); font-weight:400; margin:0 }
-        .backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:24px }
-        .card{ width:min(640px, calc(100% - 32px)); background:#fff; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.15); position:relative; padding:28px }
-        .close{ position:absolute; right:-14px; top:-14px; width:44px; height:44px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#000; color:#fff; border:4px solid #fff; cursor:pointer; line-height:0; font-size:0; box-shadow:0 8px 18px rgba(0,0,0,.25) }
-        .close::before,.close::after{ content:""; position:absolute; left:50%; top:50%; width:18px; height:2px; background:#fff; border-radius:2px; transform-origin:center center }
-        .close::before{ transform:translate(-50%,-50%) rotate(45deg) }
-        .close::after{ transform:translate(-50%,-50%) rotate(-45deg) }
-        .logo{ height:28px }
-        .title{ margin:12px 0 8px; font-size:44px; line-height:1.05; font-weight:600; letter-spacing:-.02em }
-        .sub{ color:#4b5563; margin:6px 0 18px; font-weight:400 }
-        .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px }
-        .inp{ height:52px; width:100%; border-radius:999px; border:1px solid #d1d5db; padding:0 16px; font-size:16px; outline:none; box-sizing:border-box }
-        .inp:read-only{ background:#f3f4f6 }
-        .mb-3{ margin-bottom:14px }
-        .btn{ width:100%; height:56px; border-radius:999px; border:0; font-weight:600; font-size:16px; cursor:not-allowed; background:#e5e5e5; color:#9a9a9a }
-        .btn.enabled{ cursor:pointer; background:#111; color:#fff }
-        @media (max-width:520px){ .row{ grid-template-columns:1fr } .title{ font-size:34px } }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/complete.css}">
 </head>
 <body>
 <div class="backdrop">
@@ -39,7 +19,7 @@
         <p class="sub">Vui lòng thêm số điện thoại để tăng cường bảo mật và nhận ưu đãi đặc biệt nhé!</p>
 
         <!-- DÙNG đường dẫn tuyệt đối để chắc chắn POST đúng -->
-        <form action="/auth/complete/phone" method="post" id="completeForm" novalidate>
+        <form action="/api/profile/complete" method="post" id="completeForm" novalidate>
             <input th:if="${_csrf != null}"
                    type="hidden"
                    th:name="${_csrf.parameterName}"
@@ -59,28 +39,205 @@
         </form>
     </div>
 </div>
-
+<!-- Modal -->
+<div id="appModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Thông báo</h3>
+        </div>
+        <div class="modal-body" id="modalBody">...</div>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="modalCancel" style="display:none">Hủy</button>
+            <button type="button" class="btn" id="modalOk">OK</button>
+        </div>
+    </div>
+</div>
 <script>
-    const form = document.getElementById('completeForm');
-    const ip   = document.getElementById('phone');
-    const btn  = document.getElementById('submitBtn');
+    (() => {
+        // ===== DOM =====
+        const form = document.getElementById('completeForm');
+        const ip   = document.getElementById('phone');
+        const btn  = document.getElementById('submitBtn');
 
-    const validPhone = v => /^\d{9,11}$/.test(v.trim());
+        const modalEl    = document.getElementById('appModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody  = document.getElementById('modalBody');
+        const btnOk      = document.getElementById('modalOk');
+        const btnCancel  = document.getElementById('modalCancel');
+        let lastFocus = null;
 
-    // Bật/tắt nút theo input
-    const toggle = () => {
-        const ok = validPhone(ip.value);
-        btn.disabled = !ok;
-        btn.classList.toggle('enabled', ok); // chỉ đổi màu
-    };
-    ip.addEventListener('input', toggle);
-    toggle();
+        // ===== CSRF =====
+        const CSRF_TOKEN  = document.querySelector('meta[name="_csrf"]')?.content;
+        const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
-    // ÉP SUBMIT để tránh bất kỳ script global nào đã preventDefault
-    btn.addEventListener('click', (e) => {
-        if (btn.disabled) { e.preventDefault(); return; } // chưa hợp lệ => không gửi
-        form.submit();                                    // gửi thật sự
-    });
+        // ===== Modal =====
+        function openModal(message, {
+            title='Thông báo', type='info', okText='OK', cancelText=null, onOk=null, onCancel=null
+        } = {}) {
+            lastFocus = document.activeElement;
+            modalTitle.textContent = title;
+            modalBody.textContent  = message;
+
+            const box = modalEl.querySelector('.modal');
+            box.classList.remove('modal--error','modal--success','modal--info');
+            box.classList.add(`modal--${type}`);
+
+            btnOk.textContent = okText || 'OK';
+            btnOk.disabled = false;
+            btnOk.setAttribute('aria-disabled','false');
+            btnOk.onclick = () => { closeModal(); if (typeof onOk === 'function') onOk(); };
+
+            if (cancelText) {
+                btnCancel.style.display = '';
+                btnCancel.textContent = cancelText;
+                btnCancel.disabled = false;
+                btnCancel.setAttribute('aria-disabled','false');
+                btnCancel.onclick = () => { closeModal(); if (typeof onCancel === 'function') onCancel(); };
+            } else {
+                btnCancel.style.display = 'none';
+                btnCancel.onclick = null;
+            }
+
+            modalEl.classList.add('show');
+            modalEl.setAttribute('aria-hidden','false');
+            btnOk.focus();
+        }
+        function closeModal(){
+            modalEl.classList.remove('show');
+            modalEl.setAttribute('aria-hidden','true');
+            if (lastFocus && lastFocus.focus) lastFocus.focus();
+        }
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && modalEl.classList.contains('show')) closeModal();
+        });
+        modalEl.addEventListener('click', e => { if (e.target === modalEl) closeModal(); });
+
+        const alertInfo    = (msg, opts={}) => openModal(msg, { type:'info',    title: opts.title || 'Thông báo', ...opts });
+        const alertError   = (msg, opts={}) => openModal(msg, { type:'error',   title: opts.title || 'Lỗi', ...opts });
+        const alertSuccess = (msg, opts={}) => openModal(msg, { type:'success', title: opts.title || 'Thành công', ...opts });
+
+        // ===== Validate & duplicate check =====
+        // Muốn đủ 10 số thì bật: dùng regex 10 số (nhớ đổi pattern input nếu cần)
+        const validPhone = v => /^\d{10}$/.test((v||'').trim());
+
+        let debounce, lastVal='', lastShownDup='', cachedOK=null;
+
+        function applyFormatState() {
+            const v = (ip.value || '').trim();
+            const ok = validPhone(v);
+            btn.disabled = !ok;
+            btn.classList.toggle('enabled', ok);
+            return ok;
+        }
+
+        // options: { showModal?: boolean, forceModal?: boolean }
+        async function checkPhone(options = {}) {
+            const { showModal = false, forceModal = false } = options;
+            const v = (ip.value || '').trim();
+
+            const okFormat = applyFormatState();
+            if (!okFormat){ cachedOK = null; return null; }
+
+            if (v === lastVal && cachedOK !== null) {
+                // Vẫn trả về cache nhưng nếu submit + forceModal và là trùng, vẫn show modal
+                if (showModal && forceModal && cachedOK === false) {
+                    alertError('Số điện thoại này đã được đăng ký. Vui lòng dùng số khác.', { title: 'Số điện thoại bị trùng' });
+                }
+                return cachedOK;
+            }
+            lastVal = v;
+
+            try{
+                const r = await fetch(`/api/profile/phone-exists?phone=${encodeURIComponent(v)}`, {
+                    method: 'GET', credentials: 'include'
+                });
+                const data = await r.json().catch(()=> ({}));
+
+                if (data.exists === true){
+                    btn.disabled = true;
+                    btn.classList.remove('enabled');
+                    if (showModal && (forceModal || lastShownDup !== v)){
+                        lastShownDup = v;
+                        alertError('Số điện thoại này đã được đăng ký. Vui lòng dùng số khác.', { title: 'Số điện thoại bị trùng' });
+                    }
+                    cachedOK = false; return false;
+                }
+                if (data.valid === false){
+                    btn.disabled = true;
+                    btn.classList.remove('enabled');
+                    if (showModal){
+                        alertError('Số điện thoại không hợp lệ.', { title: 'Không hợp lệ' });
+                    }
+                    cachedOK = false; return false;
+                }
+
+                btn.disabled = false;
+                btn.classList.add('enabled');
+                cachedOK = true; return true;
+            }catch(e){
+                console.warn('phone-exists error', e);
+                // lỗi mạng -> vẫn cho submit, BE kiểm lại
+                cachedOK = true; return true;
+            }
+        }
+
+        // ===== Events =====
+        ip.addEventListener('input', () => {
+            const ok = applyFormatState();
+            clearTimeout(debounce);
+            if (ok) debounce = setTimeout(() => checkPhone({ showModal:false }), 300);
+            else cachedOK = null;
+        });
+
+        ip.addEventListener('blur', () => { if (applyFormatState()) checkPhone({ showModal:true }); });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!applyFormatState()) return;
+
+            // ⬇️ Ép hiện modal nếu trùng, ngay cả khi đã hiện trước đó
+            const ok = await checkPhone({ showModal:true, forceModal:true });
+            if (ok === false) return;
+
+            const body = new URLSearchParams(new FormData(form));
+            btn.disabled = true;
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        ...(CSRF_TOKEN ? { [CSRF_HEADER]: CSRF_TOKEN } : {})
+                    },
+                    body,
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    alertSuccess('Cập nhật thành công!', { onOk: () => location.href = '/auth/complete/intro' });
+                } else if (res.status === 409) {
+                    alertError('Số điện thoại này đã được đăng ký. Vui lòng dùng số khác.', { title: 'Số điện thoại bị trùng' });
+                } else if (res.status === 400) {
+                    const t = await res.text().catch(()=> '');
+                    alertError(t || 'Dữ liệu không hợp lệ.', { title: 'Không hợp lệ' });
+                } else if (res.status === 401) {
+                    alertError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', { title: 'Cần đăng nhập' });
+                } else {
+                    const t = await res.text().catch(()=> '');
+                    alertError(t || 'Lỗi máy chủ. Vui lòng thử lại sau.', { title: 'Lỗi' });
+                }
+            } catch (err) {
+                console.error(err);
+                alertError('Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.', { title: 'Mạng lỗi' });
+            } finally {
+                btn.disabled = !validPhone((ip.value||'').trim());
+                btn.classList.toggle('enabled', !btn.disabled);
+            }
+        });
+
+        // Init: set UI (không gọi BE, không bật modal)
+        applyFormatState();
+    })();
 </script>
+
 </body>
 </html>

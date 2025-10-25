@@ -5,4 +5,6 @@ public interface JwtService {
     boolean isTokenValid(String token);
 
     String generateToken(String username);
+    java.util.Map<String, Object> extractClaims(String token);
+
 }

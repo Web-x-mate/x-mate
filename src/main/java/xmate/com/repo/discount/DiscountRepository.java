@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import xmate.com.entity.common.DiscountKind;
+import xmate.com.entity.common.DiscountValueType;
 import xmate.com.entity.discount.Discount;
 
 import java.time.LocalDateTime;
@@ -31,7 +32,12 @@ public interface DiscountRepository extends JpaRepository<Discount, Long>, JpaSp
       WHERE (:q IS NULL OR :q = ''
              OR LOWER(COALESCE(d.code,'')) LIKE LOWER(CONCAT('%', :q, '%'))
              OR LOWER(COALESCE(d.conditionsJson,'')) LIKE LOWER(CONCAT('%', :q, '%')))
+        AND (:type IS NULL OR :type = '' OR d.type = :type)
+        AND (:valueType IS NULL OR :valueType = '' OR d.valueType = :valueType)
     """)
-    Page<Discount> search(@Param("q") String q, Pageable pageable);
+    Page<Discount> search(@Param("q") String q,
+                          @Param("type") DiscountKind type,
+                          @Param("valueType") DiscountValueType valueType,
+                          Pageable pageable);
 
 }

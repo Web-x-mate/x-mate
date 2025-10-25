@@ -40,9 +40,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return true;
         }
         // ⬇⬇⬇ BỎ LỌC CHO TOÀN BỘ API AUTH
-        if (p.startsWith("/api/auth/")) {
+        if (p.equals("/api/auth/register")
+                || p.equals("/api/auth/login")
+                || p.equals("/api/auth/refresh")
+                || p.equals("/api/auth/google")
+                || p.equals("/api/auth/facebook")) {
             return true;
         }
+        if (p.startsWith("/api/admin/auth/")) return true;
         // Bỏ lọc cho preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
@@ -91,7 +96,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String username = jwtService.extractUsername(token);
                 if (username != null) {
                     UserDetails user = userDetailsService.loadUserByUsername(username);
+                    var claims = jwtService.extractClaims(token);
                     var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    authentication.setDetails(claims);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } else {

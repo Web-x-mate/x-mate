@@ -47,10 +47,20 @@ public class ProfilePageController {
         model.addAttribute("active", "profile"); // để sidebar highlight
         model.addAttribute("mb", null);
         model.addAttribute("wallet", null);
+        model.addAttribute("authm", getAuthm(auth));
+
         return "user/profile";
     }
 
-
+    @SuppressWarnings("unchecked")
+    private String getAuthm(Authentication auth){
+        Object d = auth.getDetails();
+        if (d instanceof java.util.Map<?,?> m) {
+            Object v = ((java.util.Map<String,Object>)m).get("authm");
+            if (v != null) return v.toString();
+        }
+        return "local";
+    }
     private String resolveEmail(Authentication auth){
         var p = auth.getPrincipal();
         if (p instanceof OAuth2User oau) {

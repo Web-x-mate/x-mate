@@ -1,20 +1,31 @@
 package xmate.com.api;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import xmate.com.dto.auth.ProfileCompleteReq;
 import xmate.com.repo.customer.CustomerRepository;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ProfileController {
     private final CustomerRepository userRepo;
+    @PostMapping(value="/profile/complete", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> completeForm(Authentication auth, @ModelAttribute ProfileCompleteReq req) {
+        return doComplete(auth, req);
+    }
 
-    @PostMapping("/profile/complete")
-    public ResponseEntity<?> complete(Authentication auth, @RequestBody ProfileCompleteReq req) {
+    @PostMapping(value="/profile/complete", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> completeJson(Authentication auth, @RequestBody ProfileCompleteReq req) {
+        return doComplete(auth, req);
+    }
+
+    public ResponseEntity<?> doComplete(Authentication auth, ProfileCompleteReq req) {
         // 1) Auth
         if (auth == null) return ResponseEntity.status(401).body("unauthorized");
         String email = resolveEmail(auth); // đừng dùng auth.getName() cho OAuth2
@@ -42,11 +53,20 @@ public class ProfileController {
             if (isBlank(incoming)) return ResponseEntity.badRequest().body("phone required");
             String norm = normalizeToE164VN(incoming);
             if (norm == null) return ResponseEntity.badRequest().body("phone invalid");
+            // CHECK trùng (không cho số đã có người dùng khác dùng)
+            if (userRepo.existsByPhone(norm)) {
+                return ResponseEntity.status(409).body("phone already in use");
+            }
             u.setPhone(norm);
         } else if (!isBlank(incoming)) {
             String norm = normalizeToE164VN(incoming);
             if (norm == null) return ResponseEntity.badRequest().body("phone invalid");
-            u.setPhone(norm);
+            if (!norm.equals(u.getPhone())) {
+                if (userRepo.existsByPhoneAndIdNot(norm, u.getId())) {
+                    return ResponseEntity.status(409).body("phone already in use");
+                }
+                u.setPhone(norm);
+            }
         }
 
         try {
@@ -80,4 +100,28 @@ public class ProfileController {
         if (s.matches("\\d{9,10}")) return "+84"+s;
         return null;
     }
+    @GetMapping("/profile/phone-exists")
+    public Map<String, Object> phoneExists(Authentication auth, @RequestParam String phone) {
+        // 1) Chuẩn hoá về E.164 (+84xxxxxxxxx). Trả "invalid" nếu không phải số VN hợp lệ
+        String norm = normalizeToE164VN(phone);
+        if (norm == null) {
+            return Map.of("valid", false, "exists", false, "reason", "invalid");
+        }
+
+        // 2) Check trùng – loại trừ chính user hiện tại nếu có
+        var me = userRepo.findByEmailIgnoreCase(resolveEmail(auth)).orElse(null);
+        boolean exists = (me == null)
+                ? userRepo.existsByPhone(norm)
+                : userRepo.existsByPhoneAndIdNot(norm, me.getId());
+
+        // 3) valid = !exists (hợp lệ để sử dụng nếu chưa bị trùng)
+        return Map.of("valid", !exists, "exists", exists, "normalized", norm);
+    }
+
+
 }
+
+
+
+
+
