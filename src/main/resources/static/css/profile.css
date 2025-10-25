@@ -58,7 +58,7 @@ body {
     border: 2px solid #111;
     border-radius: 999px;
     background: #fff;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer
 }
 
@@ -152,7 +152,7 @@ body {
     border: 0;
     background: #0b0b0f;
     color: #fff;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 18px;
     cursor: pointer
 }
@@ -383,5 +383,85 @@ body {
     outline: 2px solid #2f49f3;
     outline-offset: 2px;
     background: #eef2ff;
+}
+/* ====== Thu nhỏ modal ĐỔI MẬT KHẨU ====== */
+#pwdModal .modal {
+    width: min(520px, 92vw);
+}
+#pwdModal .modal-hd {
+    font-size: 24px;
+    padding: 20px 24px;
+}
+#pwdModal .modal-bd {
+    padding: 0 24px 18px;
+}
+#pwdModal .modal-ft {
+    padding: 16px 20px 22px;
+}
+#pwdModal .input {
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+}
+#pwdModal .btn-big {
+    padding: 14px 18px;
+    font-size: 16px;
+    border-radius: 999px;
+}
+
+/* ====== Thu nhỏ modal CẬP NHẬT THÔNG TIN ====== */
+#editModal .modal {
+    width: min(720px, 92vw);
+}
+#editModal .modal-hd {
+    font-size: 28px;
+    padding: 22px 26px;
+}
+#editModal .modal-bd {
+    padding: 0 26px 20px;
+}
+#editModal .modal-ft {
+    padding: 16px 22px 24px;
+}
+/* Thu gọn control trong edit modal */
+#editModal .input {
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+    width: 95%;
+}
+#editModal .row {
+    gap: 10px;
+}
+#editModal .field {
+    margin: 12px 0;
+}
+#editModal .slider-wrap {
+    grid-template-columns: 140px 1fr 80px;
+    gap: 12px;
+}
+#editModal .btn-big {
+    padding: 16px 20px;
+    font-size: 16px;
+}
+#pwdModal .input{
+    width: 94%;
+}
+/* Responsive cho mobile */
+@media (max-width: 480px) {
+    #pwdModal .modal,
+    #editModal .modal {
+        width: 96vw;
+    }
+    #pwdModal .modal-hd,
+    #editModal .modal-hd {
+        font-size: 20px;
+        padding: 16px 18px;
+    }
+    #pwdModal .input,
+    #editModal .input {
+        font-size: 15px;
+        padding: 10px 14px;
+    }
 }
 

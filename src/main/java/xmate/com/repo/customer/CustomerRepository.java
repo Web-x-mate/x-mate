@@ -23,6 +23,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Page<Customer> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     long countByEnabled(Boolean aTrue);
+    
+    boolean existsByPhone(String phone);
+    boolean existsByPhoneAndIdNot(String phone, Long id); // để check trùng, trừ chính user hiện tại
 
     Page<Customer> findByEmailContainingIgnoreCaseOrFullnameContainingIgnoreCaseOrderByCreatedAtDesc(
             String email, String fullname, Pageable pageable);
