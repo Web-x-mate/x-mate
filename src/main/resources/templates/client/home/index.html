@@ -33,12 +33,12 @@
     <span th:unless="${isSearch}">Chưa có sản phẩm nào.</span>
   </div>
 
-  <!-- Inline debug JS: log khi click màu & size trên nhiều card -->
+  <!-- Inline debug + SWAP ẢNH (PRELOAD để đổi ngay, không nháy) -->
   <script>
     (function () {
       console.log('[HOME] debug inline script parsed');
 
-      // Log init: có bao nhiêu cards
+      // Log init
       document.addEventListener('DOMContentLoaded', function () {
         var cards = document.querySelectorAll('.product-card');
         console.log('[HOME] DOMContentLoaded. cards=', cards.length);
@@ -47,6 +47,30 @@
           if (act) console.log('[HOME] card#' + i, 'slug=', c.getAttribute('data-product-slug'), 'activeColor=', act.getAttribute('data-color'));
         });
       });
+
+      // Helper: chuẩn hoá URL tương đối -> tuyệt đối
+      function toAbs(u){
+        if(!u || typeof u !== 'string') return '';
+        u = u.trim();
+        if (!u) return '';
+        if (/^https?:\/\//i.test(u) || u.startsWith('/')) return u;
+        return '/' + u.replace(/^\/+/, '');
+      }
+
+      // Helper: mang theo tham số 'aio' (kích thước) của ảnh hiện tại
+      function carryAioParam(fromUrl, toUrl){
+        try {
+          var uFrom = new URL(fromUrl, window.location.origin);
+          var uTo   = new URL(toUrl,   window.location.origin);
+          var aio   = uFrom.searchParams.get('aio');
+          if (aio && !uTo.searchParams.get('aio')) {
+            uTo.searchParams.set('aio', aio);
+          }
+          return uTo.toString();
+        } catch (e) {
+          return toUrl;
+        }
+      }
 
       // Event delegation
       document.addEventListener('click', function (e) {
@@ -60,7 +84,6 @@
             hex: swatch.getAttribute('data-color-hex'),
             variantId: swatch.getAttribute('data-variant-id'),
             image: swatch.getAttribute('data-color-image'),
-            hoverImage: swatch.getAttribute('data-color-hover-image'),
             price: swatch.getAttribute('data-variant-price'),
             compare: swatch.getAttribute('data-variant-compare')
           });
@@ -71,6 +94,43 @@
             swatch.classList.add('is-active');
             card1.setAttribute('data-selected-color', swatch.getAttribute('data-color') || '');
             card1.setAttribute('data-selected-variant', swatch.getAttribute('data-variant-id') || '');
+
+            // === PRELOAD & SWAP MƯỢT (đổi ngay, không nháy) ===
+            var img  = card1.querySelector('.product-thumb'); // chỉ 1 ảnh chính
+            var raw  = (swatch.getAttribute('data-color-image') || '').trim();
+            if (img && raw) {
+              var urlAbs = toAbs(raw);
+
+              // Dùng cùng tham số 'aio' với ảnh hiện tại để tránh reflow/giật
+              var currentSrc = img.currentSrc || img.src || '';
+              var urlWithAio = carryAioParam(currentSrc, urlAbs);
+
+              // Thêm cache-buster để chắc chắn nạp
+              var next = urlWithAio + (urlWithAio.includes('?') ? '&' : '?') + '_v=' + Date.now();
+
+              // Ưu tiên tải ảnh mới
+              img.setAttribute('loading', 'eager');
+              img.setAttribute('fetchpriority', 'high');
+
+              // Preload ảnh mới ở background → xong mới thay src
+              var pre = new Image();
+              pre.decoding = 'sync';
+              pre.fetchPriority = 'high';
+              pre.onload = function(){
+                // (optional) fade nhẹ cho mượt
+                img.style.transition = 'opacity .12s ease';
+                // thay src khi ảnh đã sẵn sàng → nhìn như đổi ngay
+                requestAnimationFrame(function(){
+                  img.src = next;
+                  card1.setAttribute('data-product-image', urlAbs);
+                });
+                console.log('[PRELOAD SWAP] ->', next);
+              };
+              pre.onerror = function(){
+                console.warn('[PRELOAD SWAP] load error, keep current');
+              };
+              pre.src = next;
+            }
           }
           return;
         }
@@ -94,8 +154,9 @@
 
 <!-- Bạn có thể tắt 2 file JS ngoài khi đang test inline -->
 <th:block layout:fragment="bodyExtras">
-  <script th:src="@{/client/js/product-card.js}"></script>
-  <script th:src="@{/client/js/home.js}"></script>
+  <!-- thêm version cho chắc chắn load bản mới (optional) -->
+  <script th:src="@{/client/js/product-card.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
+  <script th:src="@{/client/js/home.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
 </th:block>
 </body>
 </html>

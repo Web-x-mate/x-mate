@@ -41,10 +41,8 @@
   object-fit: cover;
   transition: opacity 0.25s ease;
 }
-.product-thumb--hover { opacity: 0; }
-.product-card:hover .product-thumb--hover { opacity: 1; }
-/* Nếu muốn ẩn ảnh chính khi hover, bỏ comment dòng dưới */
-/* .product-card:hover .product-thumb:not(.product-thumb--hover) { opacity: 0; } */
+/* KHÔNG đổi ảnh khi hover */
+.product-thumb--hover { display: none !important; }
 
 /* ====== QUICK ADD ====== */
 .quick-add {
@@ -119,18 +117,14 @@
               0 0 0 2px rgba(29, 78, 216, 0.45),
               0 6px 14px rgba(15, 23, 42, 0.18);
 }
-/* tránh nhầm viền focus mặc định với đang chọn */
 .swatch:focus, .swatch:focus-visible { outline: none; }
 
 /* ====== INFO & PRICE ====== */
 .info { display: flex; flex-direction: column; gap: 10px; }
-
 a.title { font-size: 16px; font-weight: 700; color: #0f172a; }
 a.title:hover { color: #1d4ed8; }
 
-.price-row {
-  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-}
+.price-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .price-row .final { font-weight: 800; font-size: 18px; color: #111827; }
 .discount-pill {
   font-size: 13px; font-weight: 800;

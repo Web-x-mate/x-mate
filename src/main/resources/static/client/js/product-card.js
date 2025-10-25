@@ -1,121 +1,59 @@
-//@ts-nocheck
+// @ts-nocheck
 ;(function () {
-  var cards = document.querySelectorAll('.product-card')
-  if (!cards.length) return
+  // ===== Helpers chung =====
+  function $(root, sel) { return (root || document).querySelector(sel) }
+  function $all(root, sel) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)) }
 
-  var cartBadge = document.querySelector('.cart__badge')
+  function toAbs(u) {
+    if (!u || typeof u !== 'string') return ''
+    u = u.trim()
+    if (!u) return ''
+    if (/^https?:\/\//i.test(u) || u.startsWith('/')) return u
+    return '/' + u.replace(/^\/+/, '')
+  }
 
-  function updateCartBadge(count) {
-    if (!cartBadge) {
-      cartBadge = document.querySelector('.cart__badge')
-    }
-    if (cartBadge && typeof count === 'number' && !Number.isNaN(count)) {
-      var normalized = Math.max(0, Math.floor(count))
-      if (normalized > 0) {
-        cartBadge.textContent = String(normalized)
-        cartBadge.style.display = ''
-      } else {
-        cartBadge.textContent = ''
-        cartBadge.style.display = 'none'
+  // Giữ tham số 'aio' (kích thước) từ ảnh hiện tại để tránh giật layout
+  function carryAioParam(fromUrl, toUrl) {
+    try {
+      var uFrom = new URL(fromUrl, window.location.origin)
+      var uTo = new URL(toUrl, window.location.origin)
+      var aio = uFrom.searchParams.get('aio')
+      if (aio && !uTo.searchParams.get('aio')) {
+        uTo.searchParams.set('aio', aio)
       }
+      return uTo.toString()
+    } catch (e) {
+      return toUrl
     }
+  }
+
+  function qPrimaryImg(card) {
+    return card.querySelector('.product-thumb:not(.product-thumb--hover)') || card.querySelector('.product-thumb')
   }
 
   function cacheDefaultImages(card) {
-    var primary = card.querySelector('.product-thumb:not(.product-thumb--hover)')
-    var hover = card.querySelector('.product-thumb--hover')
-    if (primary && !primary.dataset.originalSrc) {
-      primary.dataset.originalSrc = primary.getAttribute('src') || ''
+    var img = qPrimaryImg(card)
+    if (img && !img.dataset.originalSrc) {
+      img.dataset.originalSrc = img.getAttribute('src') || ''
     }
-    if (hover && !hover.dataset.originalSrc) {
-      hover.dataset.originalSrc = hover.getAttribute('src') || ''
-    }
-    if (primary) {
-      var defaultImage = primary.dataset.originalSrc || primary.getAttribute('src') || ''
-      card.dataset.defaultImage = defaultImage
-      if (!card.getAttribute('data-product-image') && defaultImage) {
-        card.setAttribute('data-product-image', defaultImage)
-      }
-    }
-    if (hover) {
-      card.dataset.defaultHover =
-        hover.dataset.originalSrc || hover.getAttribute('src') || ''
-    }
-  }
-
-  function normalizeSrc(value) {
-    return typeof value === 'string' ? value.trim() : ''
-  }
-
-  function applyColorImage(card, imageUrl, hoverImageUrl) {
-    var primary = card.querySelector('.product-thumb:not(.product-thumb--hover)')
-    var hover = card.querySelector('.product-thumb--hover')
-
-    var normalized = normalizeSrc(imageUrl)
-    var normalizedHover = normalizeSrc(hoverImageUrl)
-
-    var fallback =
-      card.dataset.defaultImage || (primary && primary.dataset.originalSrc) || ''
-    var hoverFallback =
-      card.dataset.defaultHover ||
-      (hover && hover.dataset.originalSrc) ||
-      fallback
-
-    var nextPrimary = normalized || fallback
-    if (primary && nextPrimary) {
-      primary.setAttribute('src', nextPrimary)
-    }
-    if (nextPrimary) {
-      card.setAttribute('data-product-image', nextPrimary)
-    }
-
-    if (hover) {
-      var nextHover = normalizedHover || normalized || hoverFallback || nextPrimary
-      if (nextHover) {
-        hover.setAttribute('src', nextHover)
+    if (img) {
+      var def = img.dataset.originalSrc || img.getAttribute('src') || ''
+      if (def) {
+        card.dataset.defaultImage = def
+        if (!card.getAttribute('data-product-image')) {
+          card.setAttribute('data-product-image', def)
+        }
       }
     }
   }
 
-  function setSelectedColor(card, button) {
-    var swatches = card.querySelectorAll('.swatch')
-    swatches.forEach(function (item) {
-      item.classList.remove('is-active')
-    })
-    button.classList.add('is-active')
-
-    var color = button.getAttribute('data-color') || ''
-    var variantId = button.getAttribute('data-variant-id') || ''
-    if (color) {
-      card.setAttribute('data-selected-color', color)
-    } else {
-      card.removeAttribute('data-selected-color')
-    }
-    if (variantId) {
-      card.setAttribute('data-selected-variant', variantId)
-    } else {
-      card.removeAttribute('data-selected-variant')
-    }
-
-    var colorImage = button.getAttribute('data-color-image') || ''
-    var colorHoverImage = button.getAttribute('data-color-hover-image') || ''
-    console.log('[ProductCard] Swatch selected', {
-      slug: card.getAttribute('data-product-slug') || null,
-      color: color || null,
-      variantId: variantId || null,
-      image: colorImage || null,
-      hoverImage: colorHoverImage || null,
-    })
-    applyColorImage(card, colorImage, colorHoverImage)
-  }
-
-  function getSelectedColor(card) {
-    var color = card.getAttribute('data-selected-color')
-    if (color && color.trim() !== '') {
-      return color
-    }
-    var active = card.querySelector('.swatch.is-active')
-    return active ? active.getAttribute('data-color') || null : null
+  function updateCartBadge(count) {
+    var cartBadge = document.querySelector('.cart__badge')
+    if (!cartBadge) return
+    if (typeof count !== 'number' || Number.isNaN(count)) return
+    var n = Math.max(0, Math.floor(count))
+    cartBadge.textContent = n > 0 ? String(n) : ''
+    cartBadge.style.display = n > 0 ? '' : 'none'
   }
 
   function ensureFeedbackNode(card) {
@@ -145,24 +83,91 @@
   function parseResponse(response) {
     return response
       .json()
-      .catch(function () {
-        return {}
-      })
-      .then(function (data) {
-        return { ok: response.ok, status: response.status, data: data }
-      })
+      .catch(function () { return {} })
+      .then(function (data) { return { ok: response.ok, status: response.status, data: data } })
   }
 
+  // ===== Đổi ảnh mượt: Preload rồi mới thay src =====
+  function preloadAndSwap(card, targetUrl) {
+    var img = qPrimaryImg(card)
+    if (!img || !targetUrl) return
+
+    var abs = toAbs(targetUrl)
+
+    // dùng cùng 'aio' với ảnh hiện tại để tránh reflow
+    var currentSrc = img.currentSrc || img.src || ''
+    var withAio = carryAioParam(currentSrc, abs)
+
+    // cache-buster để chắc chắn nạp
+    var next = withAio + (withAio.includes('?') ? '&' : '?') + '_v=' + Date.now()
+
+    // ưu tiên tải ảnh mới
+    img.setAttribute('loading', 'eager')
+    img.setAttribute('fetchpriority', 'high')
+
+    var pre = new Image()
+    pre.decoding = 'sync'
+    pre.fetchPriority = 'high'
+    pre.onload = function () {
+      // fade rất nhẹ (optional)
+      img.style.transition = 'opacity .12s ease'
+      // thay src khi ảnh mới đã sẵn sàng -> nhìn như đổi ngay
+      requestAnimationFrame(function () {
+        img.src = next
+        card.setAttribute('data-product-image', abs)
+      })
+      console.log('[ProductCard] PRELOAD SWAP ->', next)
+    }
+    pre.onerror = function () {
+      console.warn('[ProductCard] preload error, keep current', next)
+    }
+    pre.src = next
+  }
+
+  // ===== Chọn màu =====
+  function setSelectedColor(card, button) {
+    $all(card, '.swatch').forEach(function (item) { item.classList.remove('is-active') })
+    button.classList.add('is-active')
+
+    var color = button.getAttribute('data-color') || ''
+    var variantId = button.getAttribute('data-variant-id') || ''
+
+    if (color) card.setAttribute('data-selected-color', color)
+    else card.removeAttribute('data-selected-color')
+
+    if (variantId) card.setAttribute('data-selected-variant', variantId)
+    else card.removeAttribute('data-selected-variant')
+
+    var colorImage = (button.getAttribute('data-color-image') || '').trim()
+    console.log('[ProductCard] Swatch selected', {
+      slug: card.getAttribute('data-product-slug') || null,
+      color: color || null,
+      variantId: variantId || null,
+      image: colorImage || null
+    })
+
+    if (colorImage) {
+      preloadAndSwap(card, colorImage)
+    }
+  }
+
+  function getSelectedColor(card) {
+    var color = card.getAttribute('data-selected-color')
+    if (color && color.trim() !== '') return color
+    var active = card.querySelector('.swatch.is-active')
+    return active ? active.getAttribute('data-color') || null : null
+  }
+
+  // ===== Quick Add =====
   function handleQuickAdd(card, button) {
     var size = button.getAttribute('data-size')
     if (!size) {
-      showFeedback(card, 'Vui long chon size hop le.', true)
+      showFeedback(card, 'Vui lòng chọn size hợp lệ.', true)
       return
     }
-
     var productId = card.getAttribute('data-product-id') || ''
     if (!productId) {
-      showFeedback(card, 'Khong tim thay ma san pham.', true)
+      showFeedback(card, 'Không tìm thấy mã sản phẩm.', true)
       return
     }
 
@@ -175,36 +180,34 @@
       color: getSelectedColor(card),
       variantId: card.getAttribute('data-selected-variant') || null,
       quantity: 1,
-      image: card.getAttribute('data-product-image') || '',
+      image: card.getAttribute('data-product-image') || ''
     }
 
     button.disabled = true
     button.classList.add('is-loading')
-    showFeedback(card, '�?ang thA�m vA�o gi��? hA�ng!', false)
+    showFeedback(card, 'Đang thêm vào giỏ hàng...', false)
 
     fetch('/cart/items', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-With': 'XMLHttpRequest'
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     })
       .then(parseResponse)
       .then(function (result) {
         if (!result) return
         if (result.ok && result.data && result.data.success) {
           updateCartBadge(result.data.cartQuantity)
-          showFeedback(card, '�?A� thA�m vA�o gi��? hA�ng!', false)
+          showFeedback(card, 'Đã thêm vào giỏ hàng!', false)
         } else {
-          var message =
-            (result && result.data && result.data.message) ||
-            'Khong the them vao gio hang.'
+          var message = (result && result.data && result.data.message) || 'Không thể thêm vào giỏ hàng.'
           showFeedback(card, message, true)
         }
       })
       .catch(function () {
-        showFeedback(card, 'Co loi xay ra. Vui long thu lai.', true)
+        showFeedback(card, 'Có lỗi xảy ra. Vui lòng thử lại.', true)
       })
       .finally(function () {
         button.disabled = false
@@ -212,36 +215,45 @@
       })
   }
 
-  cards.forEach(function (card) {
+  // ===== Khởi tạo từng card =====
+  function initCard(card) {
     cacheDefaultImages(card)
+
+    // thiết lập từ swatch đang active (nếu có)
     var initial = card.querySelector('.swatch.is-active')
     if (initial) {
       var colorValue = initial.getAttribute('data-color')
-      if (colorValue) {
-        card.setAttribute('data-selected-color', colorValue)
-      }
+      if (colorValue) card.setAttribute('data-selected-color', colorValue)
       var initialVariantId = initial.getAttribute('data-variant-id')
-      if (initialVariantId) {
-        card.setAttribute('data-selected-variant', initialVariantId)
-      }
-      var initialImage = initial.getAttribute('data-color-image') || ''
-      var initialHoverImage = initial.getAttribute('data-color-hover-image') || ''
-      applyColorImage(card, initialImage, initialHoverImage)
+      if (initialVariantId) card.setAttribute('data-selected-variant', initialVariantId)
+      // KHÔNG preload ngay để giảm tải lúc page load.
+      // Nếu muốn hiện đúng ảnh màu active từ đầu, bật dòng dưới:
+      // preloadAndSwap(card, initial.getAttribute('data-color-image') || '')
     } else if (card.dataset.defaultImage) {
       card.setAttribute('data-product-image', card.dataset.defaultImage)
     }
 
-    card.querySelectorAll('.swatch').forEach(function (button) {
-      button.addEventListener('click', function () {
-        setSelectedColor(card, button)
-      })
+    // lắng nghe click swatch
+    $all(card, '.swatch').forEach(function (btn) {
+      btn.addEventListener('click', function () { setSelectedColor(card, btn) })
     })
 
-    card.querySelectorAll('.quick-add__btn').forEach(function (button) {
-      button.addEventListener('click', function () {
-        handleQuickAdd(card, button)
-      })
+    // lắng nghe quick add
+    $all(card, '.quick-add__btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { handleQuickAdd(card, btn) })
     })
-  })
+  }
+
+  // ===== Entry =====
+  function initAll() {
+    var cards = document.querySelectorAll('.product-card')
+    if (!cards.length) return
+    cards.forEach(initCard)
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll, { once: true })
+  } else {
+    initAll()
+  }
 })()
-
