@@ -1,339 +1,125 @@
-﻿footer.site-footer {
+﻿/* ===== Footer (match mẫu #2) ===== */
+footer.site-footer{
   margin-top: var(--space-6);
-  background: #0d0d11;
-  color: #f9fafb;
-  padding: 60px 0 30px;
-  font-size: 14px;
-  line-height: 1.6;
+  background:#0c0e12;   /* nền đen sâu hơn */
+  color:#fff;
+  padding:56px 0 28px;
+  font-size:14px;
+  line-height:1.65;
+}
+.site-footer a{color:inherit;opacity:.9;text-decoration:none;transition:.2s}
+.site-footer a:hover{opacity:1}
+
+/* container 1400 + 5% hai bên như mẫu */
+.site-footer section{max-width:1400px;margin:0 auto;padding:0 5%}
+
+/* ---------- FEEDBACK (trái) + CONTACTS (phải) ---------- */
+.footer-feedback{
+  display:grid;
+  grid-template-columns: 1fr auto; /* trái–phải */
+  align-items:center;
+  gap:32px;
+  padding-bottom:32px !important;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:36px !important;
+}
+.footer-feedback__content h2{
+  font-size:28px;           /* to & rõ như mẫu */
+  font-weight:800;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  margin:0 0 10px;
+}
+.footer-feedback__content p{
+  max-width:520px;
+  opacity:.85;
+  margin:0 0 16px;
 }
 
-.site-footer a {
-  color: inherit;
-  opacity: 0.85;
-  transition: opacity 0.2s ease, color 0.2s ease;
-  text-decoration: none;
+/* nút pill có mũi tên */
+.footer-feedback__button{
+  display:inline-flex;align-items:center;gap:10px;
+  height:42px;padding:0 18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.05);
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px
+}
+.footer-feedback__button::after{content:"\2192";font-size:14px;line-height:1}
+.footer-feedback__button:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35)}
+
+/* khối hotline/email xếp hàng ngang, mỗi item là “thẻ” */
+.footer-feedback__contacts{
+  display:flex;flex-wrap:wrap;justify-content:flex-end;gap:14px;
+}
+.footer-contact{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:12px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  min-width:280px;
+}
+.footer-contact__icon{
+  width:44px;height:44px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);flex-shrink:0
+}
+.footer-contact__body{display:flex;flex-direction:column;gap:2px}
+.footer-contact__label{
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  opacity:.7;font-weight:700
+}
+.footer-contact a{font-weight:800;font-size:18px;letter-spacing:.01em}
+.footer-contact__note{font-size:13px;opacity:.8}
+
+/* icon vẽ thuần CSS giữ nguyên */
+.icon-phone,.icon-mail{position:relative;display:inline-block;width:20px;height:20px}
+.icon-phone::before{content:"";position:absolute;left:6px;top:2px;width:9px;height:16px;border-radius:6px;background:#fff}
+.icon-phone::after{content:"";position:absolute;left:8px;bottom:2px;width:6px;height:3px;border-radius:2px;background:#fff}
+.icon-mail::before{content:"";position:absolute;left:0;top:4px;width:20px;height:12px;border:2px solid #fff;border-radius:3px}
+.icon-mail::after{content:"";position:absolute;left:4px;top:9px;width:12px;height:2px;background:#fff;transform:rotate(45deg)}
+
+/* ---------- CỘT LIÊN KẾT (6 cột + cột địa chỉ span 2) ---------- */
+.footer-columns{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:30px;
+  margin-bottom:36px;
+  margin-top: 36px !important;
+}
+.footer-column h3{
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  margin:0 0 14px;font-weight:800;opacity:.95
+}
+.footer-column__group + .footer-column__group{margin-top:22px}
+.footer-column ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.footer-column li{opacity:.85}
+.footer-column li:hover{opacity:1}
+
+.footer-column--wide,
+.footer-column:last-child{grid-column:span 2}
+.footer-column--wide ul{display:grid;gap:12px}
+.footer-column strong{display:block;font-weight:800;margin-bottom:4px;opacity:.95;font-size:13px}
+
+/* ---------- BOTTOM ---------- */
+.footer-bottom{
+  padding-top:22px !important;border-top:1px solid rgba(255,255,255,.08);
+  font-size:12px;opacity:.75;text-align:center
 }
 
-.site-footer a:hover {
-  opacity: 1;
-  color: #8aa8ff;
+/* ---------- Responsive ---------- */
+@media (max-width:1200px){
+  .footer-columns{grid-template-columns:repeat(3,1fr);gap:26px}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 3}
 }
-
-/* Container chính - sát 2 lề */
-.site-footer section {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 5%;
-  max-width: 1400px;
+@media (max-width:768px){
+  .footer-feedback{grid-template-columns:1fr;align-items:flex-start}
+  .footer-feedback__contacts{justify-content:flex-start}
+  .footer-contact{min-width:unset;width:100%}
+  .footer-columns{grid-template-columns:repeat(2,1fr);gap:20px}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 2}
+  .site-footer section{padding:0 20px}
 }
-
-/* Phần feedback */
-.footer-feedback {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 30px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 40px;
-}
-
-.footer-feedback__content {
-  width: 100%;
-}
-
-.footer-feedback__content h2 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.footer-feedback__content p {
-  opacity: 0.8;
-  margin-bottom: 20px;
-  max-width: 400px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.footer-feedback__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 24px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.05);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.footer-feedback__button::after {
-  content: "→";
-  font-size: 13px;
-}
-
-.footer-feedback__button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.footer-feedback__contacts {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
-
-.footer-contact {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  max-width: 280px;
-}
-
-.footer-contact__icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  flex-shrink: 0;
-}
-
-.footer-contact__body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.footer-contact__label {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
-  opacity: 0.7;
-}
-
-.footer-contact a {
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.footer-contact__note {
-  font-size: 12px;
-  color: rgba(249, 250, 251, 0.7);
-}
-
-/* Grid layout - 6 cột như hình mẫu */
-.footer-columns {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 30px;
-  margin-bottom: 40px;
-}
-
-.footer-column__group + .footer-column__group {
-  margin-top: 25px;
-}
-
-.footer-column h3 {
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 15px;
-  font-weight: 600;
-  opacity: 0.9;
-}
-
-.footer-column ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.footer-column li {
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.footer-column li:hover {
-  opacity: 1;
-}
-
-/* Cột địa chỉ chiếm 2 cột */
-.footer-column:last-child {
-  grid-column: span 2;
-}
-
-.footer-column:last-child ul {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-.footer-column:last-child li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.footer-column strong {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 4px;
-  opacity: 0.9;
-  font-size: 13px;
-}
-
-/* Phần footer bottom */
-.footer-bottom {
-  padding-top: 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12px;
-  opacity: 0.7;
-  text-align: center;
-}
-
-/* Responsive */
-@media (min-width: 768px) {
-  .footer-feedback {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  
-  .footer-feedback__content {
-    max-width: 45%;
-  }
-  
-  .footer-feedback__contacts {
-    width: auto;
-    align-items: flex-end;
-  }
-  
-  .footer-contact {
-    width: 260px;
-  }
-  
-  .site-footer section {
-    padding: 0 40px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .footer-columns {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-  }
-  
-  .footer-column:last-child {
-    grid-column: span 3;
-  }
-}
-
-@media (max-width: 768px) {
-  .footer-columns {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  
-  .footer-column:last-child {
-    grid-column: span 2;
-  }
-  
-  .footer-feedback__content h2 {
-    font-size: 20px;
-  }
-  
-  .site-footer section {
-    padding: 0 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-columns {
-    grid-template-columns: 1fr;
-  }
-  
-  .footer-column:last-child {
-    grid-column: span 1;
-  }
-  
-  .footer-feedback {
-    gap: 25px;
-  }
-  
-  .footer-feedback__content {
-    max-width: 100%;
-  }
-}
-
-/* Icon styles giữ nguyên */
-.icon-phone,
-.icon-mail {
-  position: relative;
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-}
-
-.icon-phone::before,
-.icon-phone::after,
-.icon-mail::before,
-.icon-mail::after {
-  content: "";
-  position: absolute;
-  display: block;
-}
-
-.icon-phone::before {
-  width: 9px;
-  height: 14px;
-  border-radius: 5px;
-  left: 4.5px;
-  top: 2px;
-  background: #f9fafb;
-}
-
-.icon-phone::after {
-  width: 5px;
-  height: 2px;
-  border-radius: 1px;
-  bottom: 2px;
-  left: 6.5px;
-  background: #f9fafb;
-}
-
-.icon-mail::before {
-  width: 18px;
-  height: 11px;
-  border: 2px solid #f9fafb;
-  border-radius: 2px;
-  top: 3px;
-  left: 0;
-}
-
-.icon-mail::after {
-  width: 12px;
-  height: 2px;
-  background: #f9fafb;
-  top: 8px;
-  left: 3px;
-  transform: rotate(45deg);
+@media (max-width:480px){
+  .footer-columns{grid-template-columns:1fr}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 1}
 }
