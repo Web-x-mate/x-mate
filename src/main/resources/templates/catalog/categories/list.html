@@ -1,60 +1,210 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+<!--<body>-->
+<!--<section layout:fragment="content">-->
+
+<!--    &lt;!&ndash; Khi KHÔNG có quyền VIEW &ndash;&gt;-->
+<!--    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">-->
+<!--        Bạn không có quyền xem danh mục.-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Khi CÓ quyền VIEW &ndash;&gt;-->
+<!--    <div sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">-->
+<!--        <h1 class="page-title">Categories</h1>-->
+
+
+<!--        &lt;!&ndash; Toolbar &ndash;&gt;-->
+<!--        <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">-->
+<!--            <form method="get" th:action="@{/admin/catalog/categories}" class="search-form d-flex align-items-center gap-2">-->
+<!--                <input type="text" name="q" th:value="${q}" placeholder="Search..." class="form-control" aria-label="Search categories">-->
+<!--                <button type="submit" class="btn btn-primary">Search</button>-->
+<!--            </form>-->
+
+<!--            <a th:href="@{/admin/catalog/categories/new}"-->
+<!--               class="btn btn-success"-->
+<!--               sec:authorize="hasAnyAuthority('CATEGORY_CREATE','ROLE_ADMIN')">-->
+<!--                + Thêm category-->
+<!--            </a>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Bảng &ndash;&gt;-->
+<!--        <div class="table-responsive">-->
+<!--            <table class="table table-striped table-hover align-middle w-100">-->
+<!--                <colgroup>-->
+<!--                    <col style="width: 80px;">-->
+<!--                    <col>-->
+<!--                    <col style="width: 20%;">-->
+<!--                    <col style="width: 20%;">-->
+<!--                    <col style="width: 120px;">-->
+<!--                    <col style="width: 220px;">-->
+<!--                </colgroup>-->
+<!--                <thead class="table-light">-->
+<!--                <tr>-->
+<!--                    <th>#</th>-->
+<!--                    <th>ID</th>-->
+<!--                    <th>Name</th>-->
+<!--                    <th>Slug</th>-->
+<!--                    <th>Parent</th>-->
+<!--                    <th>Active</th>-->
+<!--                    <th>Actions</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                &lt;!&ndash; th:each an toàn khi page null &ndash;&gt;-->
+<!--                <tr th:each="c,iter : ${page != null ? page.content : {}}">-->
+<!--                    <td th:text="${iter.index + 1}">1</td>-->
+<!--                    <td th:text="${c.id}">1</td>-->
+<!--                    <td th:text="${c.name}">Men</td>-->
+<!--                    <td th:text="${c.slug}">men</td>-->
+<!--                    <td th:text="${c.parent != null ? c.parent.name : '—'}">—</td>-->
+<!--                    <td>-->
+<!--                        <span th:text="${c.active} ? 'Active' : 'Inactive'"-->
+<!--                              th:class="${c.active} ? 'badge bg-success' : 'badge bg-secondary'">Active</span>-->
+<!--                    </td>-->
+<!--                    <td class="d-flex gap-2">-->
+<!--                        <a th:href="@{|/admin/catalog/categories/${c.id}/edit|}"-->
+<!--                           class="btn btn-sm btn-warning"-->
+<!--                           sec:authorize="hasAnyAuthority('CATEGORY_EDIT','ROLE_ADMIN')">Edit</a>-->
+
+<!--                        <a th:href="@{|/admin/catalog/categories/${c.id}/delete|}"-->
+<!--                           onclick="return confirm('Xóa category này?');"-->
+<!--                           class="btn btn-sm btn-danger"-->
+<!--                           sec:authorize="hasAnyAuthority('CATEGORY_DELETE','ROLE_ADMIN')">Delete</a>-->
+<!--                    </td>-->
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; Có quyền nhưng rỗng dữ liệu &ndash;&gt;-->
+<!--                <tr th:if="${page == null || #lists.isEmpty(page.content)}">-->
+<!--                    <td colspan="7" class="text-center">No data</td>-->
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Pagination &ndash;&gt;-->
+<!--        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/catalog/categories', q=${q})}"></div>-->
+<!--    </div>-->
+<!--</section>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách danh mục</title>
+    <style>
+        /* CSS Variables (Giữ nguyên) */
+        :root {
+            --primary:#007BFF;
+            --success:#28A745;
+            --warning:#FFC107;
+            --danger:#DC3545;
+            --bd:#DEE2E6;
+            --surface:#FFFFFF;
+            --text:#212529;
+            --muted:#6C757D;
+        }
+
+        /* Input Field Style (Giữ nguyên) */
+        .form-control {
+            width:100%; padding:.75rem .9rem;
+            border:1px solid var(--bd); border-radius:.75rem;
+            background:var(--surface); font-size:.95rem; color:var(--text);
+            transition:.18s ease;
+        }
+        .form-control:focus { outline:none; box-shadow:0 0 0 3px rgba(0, 123, 255, 0.4); border-color:var(--primary); }
+
+        /* Buttons Style (Giữ nguyên) */
+        .btn { font-weight:600; line-height:1.1; border:1px solid transparent; white-space:nowrap; cursor:pointer; transition:.18s ease; }
+        .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff !important; font-weight:700; padding:.4rem .9rem; border-radius:.75rem; }
+        .btn-success { background:var(--success); border-color:var(--success); color:#fff !important; font-weight:700; padding:.4rem .9rem; border-radius:.75rem; }
+        .btn-sm { font-size:.75rem; padding:.3rem .5rem; border-radius:.4rem; font-weight:700; }
+        .btn-warning { background:var(--warning); color:var(--text); border-color:var(--warning); }
+        .btn-danger { background:var(--danger); border-color:var(--danger); color:#fff; }
+
+        /* Page Title Style (Giữ nguyên) */
+        .page-title { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 1rem; }
+
+        /* Table Styling (Giữ nguyên) */
+        .table { width:100%; border-collapse:separate; border-spacing:0; margin-bottom:0;}
+        .table thead th {
+            font-size:.8rem;
+            text-transform:uppercase;
+            letter-spacing:.02em;
+            color:var(--text);
+            padding:.7rem .85rem;
+            border-bottom:1px solid var(--bd);
+            background:#F8F9FA;
+            font-weight:700;
+            white-space: nowrap;
+        }
+        .table tbody td { padding:.7rem .85rem; border-bottom:1px solid var(--bd); vertical-align:middle; font-weight:400; }
+        .table tbody tr:hover { background:#F8F9FA; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: var(--surface); }
+        .table-striped tbody tr:nth-of-type(even) { background-color: #F8F9FA; }
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
 
-    <!-- Khi KHÔNG có quyền VIEW -->
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">
         Bạn không có quyền xem danh mục.
     </div>
 
-    <!-- Khi CÓ quyền VIEW -->
     <div sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">
-        <h1 class="page-title">Categories</h1>
+        <h1 class="page-title">Danh sách danh mục</h1>
 
+        <div class="toolbar d-flex align-items-center justify-content-end gap-2 mb-3">
 
-        <!-- Toolbar -->
-        <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">
             <form method="get" th:action="@{/admin/catalog/categories}" class="search-form d-flex align-items-center gap-2">
-                <input type="text" name="q" th:value="${q}" placeholder="Search..." class="form-control" aria-label="Search categories">
-                <button type="submit" class="btn btn-primary">Search</button>
+                <input type="text" name="q" th:value="${q}" placeholder="Search..." class="form-control" style="width: 200px;" aria-label="Search categories">
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
             </form>
 
             <a th:href="@{/admin/catalog/categories/new}"
                class="btn btn-success"
                sec:authorize="hasAnyAuthority('CATEGORY_CREATE','ROLE_ADMIN')">
-                + Thêm category
+                Thêm danh mục
             </a>
         </div>
 
-        <!-- Bảng -->
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle w-100">
+
                 <colgroup>
-                    <col style="width: 80px;">
+                    <col style="width: 50px;">
+                    <col style="width: 70px;">
                     <col>
                     <col style="width: 20%;">
-                    <col style="width: 20%;">
-                    <col style="width: 120px;">
-                    <col style="width: 220px;">
+                    <col style="width: 150px;">
+                    <col style="width: 100px;">
+                    <col style="width: 170px;">
                 </colgroup>
                 <thead class="table-light">
                 <tr>
                     <th>#</th>
                     <th>ID</th>
-                    <th>Name</th>
-                    <th>Slug</th>
-                    <th>Parent</th>
-                    <th>Active</th>
-                    <th>Actions</th>
+                    <th>TÊN DANH MỤC</th>
+                    <th>URL CHUẨN HÓA</th>
+                    <th>DANH MỤC CHA</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>THAO TÁC</th>
                 </tr>
                 </thead>
                 <tbody>
-                <!-- th:each an toàn khi page null -->
                 <tr th:each="c,iter : ${page != null ? page.content : {}}">
                     <td th:text="${iter.index + 1}">1</td>
                     <td th:text="${c.id}">1</td>
@@ -62,22 +212,21 @@
                     <td th:text="${c.slug}">men</td>
                     <td th:text="${c.parent != null ? c.parent.name : '—'}">—</td>
                     <td>
-                        <span th:text="${c.active} ? 'Active' : 'Inactive'"
+                        <span th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'"
                               th:class="${c.active} ? 'badge bg-success' : 'badge bg-secondary'">Active</span>
                     </td>
                     <td class="d-flex gap-2">
                         <a th:href="@{|/admin/catalog/categories/${c.id}/edit|}"
                            class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('CATEGORY_EDIT','ROLE_ADMIN')">Edit</a>
+                           sec:authorize="hasAnyAuthority('CATEGORY_EDIT','ROLE_ADMIN')">Sửa</a>
 
                         <a th:href="@{|/admin/catalog/categories/${c.id}/delete|}"
-                           onclick="return confirm('Xóa category này?');"
+                           onclick="return confirm('Xóa danh mục này?');"
                            class="btn btn-sm btn-danger"
-                           sec:authorize="hasAnyAuthority('CATEGORY_DELETE','ROLE_ADMIN')">Delete</a>
+                           sec:authorize="hasAnyAuthority('CATEGORY_DELETE','ROLE_ADMIN')">Xóa</a>
                     </td>
                 </tr>
 
-                <!-- Có quyền nhưng rỗng dữ liệu -->
                 <tr th:if="${page == null || #lists.isEmpty(page.content)}">
                     <td colspan="7" class="text-center">No data</td>
                 </tr>
@@ -85,7 +234,6 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/catalog/categories', q=${q})}"></div>
     </div>
 </section>
