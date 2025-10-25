@@ -1,0 +1,78 @@
+/* ==== ShopBot Widget (floating) ========================================= */
+/* Reset + chống đè bởi Bootstrap/global */
+button.sb-launcher{
+    all: unset;
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: #111827 !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,.15) !important;
+    z-index: 2147483647 !important; /* max */
+    line-height: 1 !important;
+    font-size: 20px !important;
+}
+
+/* Panel */
+.sb-panel{
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 86px !important;
+    width: 360px !important;
+    max-height: 60vh !important;
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,.18) !important;
+    display: none !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 2147483647 !important;
+}
+.sb-panel.open{ display: flex !important; }
+
+.sb-header { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
+.sb-body { padding: 12px; overflow-y: auto; flex: 1; background: #fafafa; }
+.sb-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #f1f5f9; background: #fff; }
+.sb-input input{ flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; outline: none; }
+.sb-input button{ padding: 10px 14px; border: none; border-radius: 10px; background: #111827; color: #fff; cursor: pointer; }
+
+.msg{ margin: 8px 0; display: flex; }
+.msg.me{ justify-content: flex-end; }
+.bubble{
+    max-width: 80%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+}
+.msg.me .bubble{ background: #111827; color: #fff; border-color: #111827; }
+.meta{ font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+/* Loading dots */
+.dots span{
+    animation: sb-blink 1.2s infinite both;
+    font-size: 20px;
+    display: inline-block;
+    margin: 0 2px;
+}
+.dots span:nth-child(2){ animation-delay: .2s; }
+.dots span:nth-child(3){ animation-delay: .4s; }
+@keyframes sb-blink{ 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+/* Optional theme vars (tuỳ chỉnh nếu muốn)
+:root{
+  --sb-primary:#111827;
+}
+button.sb-launcher{ background: var(--sb-primary) !important; }
+.sb-input button{ background: var(--sb-primary) !important; }
+*/
