@@ -102,6 +102,7 @@ public class ClientCategoryController {
         CategoryDetailView parentView = catalogViewService.toCategoryDetail(parent);
         List<Category> children = categoryService.findChildren(parent.getId());
         List<CategoryTileView> childTiles = catalogViewService.toCategoryTiles(children);
+        List<CategoryDetailView> breadcrumb = buildBreadcrumb(parent);
 
         Set<Long> categoryIds = new LinkedHashSet<>();
         categoryIds.add(parent.getId());
@@ -151,6 +152,7 @@ public class ClientCategoryController {
         String resolvedSlug = parentView != null ? parentView.slug() : sanitizedSlug;
         model.addAttribute("categorySlug", resolvedSlug);
         model.addAttribute("children", childTiles);
+        model.addAttribute("breadcrumbTrail", breadcrumb);
         model.addAttribute("products", cards);
         model.addAttribute("pagination", pagination);
         model.addAttribute("searchTotal", totalElements);
@@ -230,6 +232,16 @@ public class ClientCategoryController {
     }
 
     private record PriceRange(double min, double max) {}
+
+    private List<CategoryDetailView> buildBreadcrumb(Category category) {
+        List<CategoryDetailView> trail = new ArrayList<>();
+        Category current = category;
+        while (current != null) {
+            trail.add(0, catalogViewService.toCategoryDetail(current));
+            current = current.getParent();
+        }
+        return trail;
+    }
 
     private void populateCategoryNotFound(Model model) {
         model.addAttribute("parent", null);

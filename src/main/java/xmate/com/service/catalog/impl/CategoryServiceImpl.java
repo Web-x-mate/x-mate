@@ -63,7 +63,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Optional<Category> findBySlug(String slug) {
         if (slug == null || slug.isBlank()) return Optional.empty();
-        return repo.findBySlug(slug);
+        Optional<Category> result = repo.findBySlug(slug);
+        result.ifPresent(this::initializeParentChain);
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -82,5 +84,13 @@ public class CategoryServiceImpl implements CategoryService {
                     cb.like(cb.lower(root.get("slug")), like)
             );
         };
+    }
+
+    private void initializeParentChain(Category category) {
+        if (category == null) return;
+        Category parent = category.getParent();
+        if (parent != null) {
+            initializeParentChain(parent);
+        }
     }
 }

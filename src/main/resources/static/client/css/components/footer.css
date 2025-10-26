@@ -11,7 +11,7 @@ footer.site-footer{
 .site-footer a:hover{opacity:1}
 
 /* container 1400 + 5% hai bên như mẫu */
-.site-footer section{margin:0 auto;padding:0 5%}
+.site-footer section{margin:0 auto;padding:0 60px}
 
 /* ---------- FEEDBACK (trái) + CONTACTS (phải) ---------- */
 .footer-feedback{

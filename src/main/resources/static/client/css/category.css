@@ -22,7 +22,7 @@ body {
   margin-bottom: 4px;
   display: flex;
   gap: 6px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .category-hero__breadcrumb a {
   color: #9ca3af;
@@ -121,7 +121,7 @@ body {
 
 .filter-card {
   border: 1px solid #e5e7eb;
-  border-radius: 24px;
+  border-radius: 10px;
   padding: 24px 20px 20px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   background: #fff;
@@ -307,6 +307,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 12px 24px;
+  font-size: 12px;
   border-radius: 999px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -323,15 +324,15 @@ body {
 
 .category-pagination__page,
 .category-pagination__control {
-  min-width: 44px;
-  height: 44px;
-  padding: 0 18px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: transparent;
   color: #0f172a;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
