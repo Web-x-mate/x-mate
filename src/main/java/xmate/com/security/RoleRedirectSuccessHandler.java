@@ -41,7 +41,7 @@ public class RoleRedirectSuccessHandler implements AuthenticationSuccessHandler 
 
         String ctx = req.getContextPath();
         if (target == null || target.isBlank()) {
-            target = isStaff ? (ctx + "/admin/dashboard") : (ctx + "/user/profile");
+            target = isStaff ? (ctx + "/admin/dashboard") : (ctx + "/home");
         }
 
         // Dọn saved request để tránh vòng lặp

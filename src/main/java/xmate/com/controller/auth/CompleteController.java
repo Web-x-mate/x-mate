@@ -27,7 +27,7 @@ public class CompleteController {
 
         // đã có phone?
         if (hasPhone(u)) {
-            if (isProfileComplete(u)) return "redirect:/user/profile";
+            if (isProfileComplete(u)) return "redirect:/home";
             return "redirect:/auth/complete/intro";
         }
 
