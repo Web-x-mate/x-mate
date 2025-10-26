@@ -18,7 +18,7 @@
     <div class="wrap">
         <a class="brand" href="/"><span class="logo">X</span> <b>Mate</b></a>
         <nav class="nav">
-            <a href="/new">New</a><a href="/men">Nam</a><a href="/women">Nữ»¯</a>
+            <a href="/new">New</a><a href="/men">Nam</a><a href="/women">Nữ</a>
             <a href="/sale" class="sale">Sale</a><a href="/cs">C&S</a>
         </nav>
         <div class="right">
@@ -52,8 +52,8 @@
                 </div>
                 <label>Địa chỉ (trước số nhà)<input id="address1" placeholder="Nhập địa chỉ"/></label>
                 <div class="two">
-                    <label>Tỉnh/Thành phố‘ <input id="city" placeholder="Chọn Tỉnh/Thành phố"/></label>
-                    <label>Ghi chúº <input id="note" placeholder="Ghi chú đơn hàng (không bắt buộc)"/></label>
+                    <label>Tỉnh/Thành phố <input id="city" placeholder="Chọn Tỉnh/Thành phố"/></label>
+                    <label>Ghi chú <input id="note" placeholder="Ghi chú đơn hàng (không bắt buộc)"/></label>
                 </div>
 
                 <div class="voucher-strip" th:if="${availableCoupons != null and !availableCoupons.isEmpty()}">
@@ -76,7 +76,7 @@
                     <button type="button" id="btnApply" class="btn outline">Áp dụng</button>
                 </div>
                 <div id="couponMsg" class="muted" style="margin-top:6px">
-                    <span class="ok" th:if="${appliedCouponCode != null}">Đã áp dụng mã giảm giá<</span>
+                    <span class="ok" th:if="${appliedCouponCode != null}">Đã áp dụng mã giảm giá</span>
                 </div>
             </form>
         </section>
@@ -124,10 +124,10 @@
                 <div class="qr-meta">
                     <div class="muted">
                         Số tiền:
-                        <b th:text="${#numbers.formatInteger(order.total,3,'POINT')} + ' Ä‘'"></b>
+                        <b th:text="${#numbers.formatInteger(order.total,3,'POINT')} + ' đ'"></b>
                     </div>
                     <div class="muted">Nội dung: <b th:text="${transferNote}">XMATE-ODRxxx</b></div>
-                    <small> class="Chuyển đúng số tiền và nội dung để được duyệt nhanh.</small>
+                    <small>Chuyển đúng số tiền và nội dung để được duyệt nhanh.</small>
                 </div>
             </div>
             <hr class="sep"/>
