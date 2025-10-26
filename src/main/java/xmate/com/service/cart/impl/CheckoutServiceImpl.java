@@ -23,7 +23,7 @@ import xmate.com.entity.customer.Customer;
 
 import xmate.com.entity.sales.Order;
 import xmate.com.entity.sales.OrderItem;
-import xmate.com.repo.cart.PaymentRepository;
+//import xmate.com.repo.cart.PaymentRepository;
 import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.customer.AddressRepository;
 import xmate.com.repo.customer.CustomerRepository;
@@ -32,7 +32,6 @@ import xmate.com.repo.sales.OrderRepository;
 import xmate.com.service.cart.CartService;
 import xmate.com.service.cart.CheckoutService;
 import xmate.com.service.cart.PricingService;
-import xmate.com.service.cart.VietQRService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -45,13 +44,12 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final PaymentRepository paymentRepository;
+//    private final PaymentRepository paymentRepository;
     private final CustomerRepository userRepository;
     private final AddressRepository addressRepository;
     private final ProductVariantRepository variantRepository;
     private final CartService cartService;
     private final PricingService pricingService;
-    private final VietQRService vietQRService;
     private final ObjectMapper objectMapper;
 
     /** Lấy customer hiện tại hoặc ném 401 để FE xử lý đăng nhập */
@@ -144,7 +142,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         payment.setAmount(total);
         payment.setStatus(PaymentStatus.UNPAID.name());
         payment.setTxnRef(savedOrder.getCode());
-        paymentRepository.save(payment);
+//        paymentRepository.save(payment);
 
         // 8) URL chuyển hướng
         String redirectUrl = (paymentMethodEnum == PaymentMethod.COD)

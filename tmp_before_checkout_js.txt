@@ -63,8 +63,8 @@
     }
 
     function getPaymentMethod() {
-        const r = document.querySelector("input[name=\"pay\"]:checked");
-        return r ? r.value.toUpperCase() : "COD";
+        const r = document.querySelector('input[name="pay"]:checked');
+        return r ? r.value.toUpperCase() : 'COD';
     }
 
     function getSelectedPayInfo() {
@@ -104,7 +104,7 @@
         } catch (e) {
             console.error(e);
             if (els.msg) els.msg.innerHTML = `<span class="err">KhÃ´ng thá»ƒ tÃ­nh toÃ¡n giÃ¡</span>`;
-            if (els.msg) els.msg.innerHTML = `<span class="err">Không thể tính toán giá</span>`;
+        } finally {
             disable(false);
         }
     }
@@ -155,7 +155,7 @@
                 newAddressCity: byId('city')?.value,
             };
             if (!payload.newAddressFullName || !payload.newAddressPhone || !payload.newAddressLine1) {
-                alert('Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ.');
+                alert('Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ Há» tÃªn, Sá»‘ Ä‘iá»‡n thoáº¡i vÃ  Äá»‹a chá»‰.');
                 return;
             }
         }
@@ -167,7 +167,7 @@
                 headers: {'Content-Type': 'application/json', 'Idempotency-Key': cryptoRandom(), ...csrfHeaders},
                 body: JSON.stringify(payload),
             });
-            if (!res.ok) throw new Error('Đặt hàng thất bại ' + res.status);
+            if (!res.ok) throw new Error('Äáº·t hÃ ng tháº¥t báº¡i ' + res.status);
             const placed = await res.json();
             if (placed.payUrl) location.href = placed.payUrl;
             else {
@@ -209,7 +209,6 @@
         updateDockPayChip();
     }));
     updatePayUI();
-    updateDockPayChip();
 
     els.pfFile?.addEventListener('change', e => {
         const f = e.target.files?.[0];
@@ -234,14 +233,14 @@
             const res = await fetch('/api/payment/proof', {method: 'POST', body: fd, headers});
             if (!res.ok) throw new Error(await res.text());
             if (els.pfStatusText) {
-                els.pfStatusText.textContent = 'Đã gửi, chờ admin duyệt';
+                els.pfStatusText.textContent = 'ÄÃ£ gá»­i â€” chá» admin duyá»‡t';
                 els.pfStatusText.classList.remove('err');
                 els.pfStatusText.classList.add('ok');
             }
         } catch (err) {
-            alert('Gửi biên lai thất bại: ' + err.message);
+            alert('Gá»­i biÃªn lai tháº¥t báº¡i: ' + err.message);
             if (els.pfStatusText) {
-                els.pfStatusText.textContent = 'Lỗi gửi. Thử lại';
+                els.pfStatusText.textContent = 'Lá»—i gá»­i. Thá»­ láº¡i';
                 els.pfStatusText.classList.add('err');
             }
         } finally {
@@ -268,5 +267,4 @@
     updateDockPayChip();
     updateVoucherNav();
 });
-
 

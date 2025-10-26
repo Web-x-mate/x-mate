@@ -2,7 +2,7 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Thanh toán - XMate</title>
+    <title>Thanh toÃ¡n - XMate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="_csrf" th:content="${_csrf?.token}">
     <meta name="_csrf_header" th:content="${_csrf?.headerName}">
@@ -98,36 +98,38 @@
         </aside>
     </div>
 
-        <hr class="spacer"/>
-    <h2>Hình thức thanh toán</h2>
+    <hr class="spacer"/>
+    <h2>HÃ¬nh thá»©c thanh toÃ¡n</h2>
     <section class="paylist">
         <label class="payitem">
             <input type="radio" name="pay" value="COD" checked>
             <div class="content">
                 <img th:src="@{/images/cod.png}" alt="COD" class="pay-logo">
-                <div><div class="title">Thanh toán khi nhận hàng</div><div class="sub">Trả tiền mặt</div></div>
+                <div><div class="title">Thanh toÃ¡n khi nháº­n hÃ ng</div><div class="sub">Tráº£ tiá»n máº·t</div></div>
             </div>
         </label>
         <label class="payitem">
             <input type="radio" name="pay" value="VIETQR">
             <div class="content">
                 <img th:src="@{/images/vnpay.png}" alt="VIETQR" class="pay-logo">
-                <div><div class="title">Chuyển khoản VietQR</div><div class="sub">Tự động điền nội dung</div></div>
+                <div><div class="title">Chuyá»ƒn khoáº£n VietQR</div><div class="sub">Tá»± Ä‘á»™ng Ä‘iá»n ná»™i dung</div></div>
             </div>
         </label>
-    </section><!-- VIETQR box (áº©n/hiá»‡n theo radio + chá»‰ render khi cÃ³ order) -->
+    </section>
+
+    <!-- VIETQR box (áº©n/hiá»‡n theo radio + chá»‰ render khi cÃ³ order) -->
     <section id="vietqrBox" class="card hidden" th:if="${order != null}">
-        <div class="hd">Chuyển khoản VietQR</div>
+        <div class="hd">Chuyá»ƒn khoáº£n VietQR</div>
         <div class="bd">
             <div class="qr-row">
                 <div class="qr"><img th:src="${qrUrl}" alt="VietQR"></div>
                 <div class="qr-meta">
                     <div class="muted">
-                        Số tiền:
+                        Sá»‘ tiá»n:
                         <b th:text="${#numbers.formatInteger(order.total,3,'POINT')} + ' Ä‘'"></b>
                     </div>
-                    <div class="muted">Nội dung: <b th:text="${transferNote}">XMATE-ODRxxx</b></div>
-                    <small> class="muTự động điền nội dung được duyệt nhanh..</small>
+                    <div class="muted">Ná»™i dung: <b th:text="${transferNote}">XMATE-ODRxxx</b></div>
+                    <small class="muted">* Chuyá»ƒn Ä‘Ãºng sá»‘ tiá»n vÃ  ná»™i dung Ä‘á»ƒ Ä‘Æ°á»£c duyá»‡t nhanh.</small>
                 </div>
             </div>
             <hr class="sep"/>
@@ -144,7 +146,7 @@
                     </div>
                 </div>
                 <button class="btn" id="pfSend" type="submit">Gá»­i biÃªn lai</button>
-                <div class="status"><b>Trạng thái:</b> <span id="pfStatusText" class="warn">ChÆ°a gá»­i</span></div>
+                <div class="status"><b>Tráº¡ng thÃ¡i:</b> <span id="pfStatusText" class="warn">ChÆ°a gá»­i</span></div>
             </form>
         </div>
     </section>
@@ -174,15 +176,4 @@
 </main>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
 

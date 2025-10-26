@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**","/auth/logout"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**","/auth/logout","/ws/**"))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // static
@@ -41,6 +41,8 @@ public class SecurityConfig {
                                 "/api/auth/facebook",
                                 "/api/admin/auth/login"
                         ).permitAll()
+                        // Webhook từ Sepay (không yêu cầu JWT)
+                        .requestMatchers(HttpMethod.POST, "/api/sepay/webhook").permitAll()
                         .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
 
                         // Các trang web yêu cầu đã đăng nhập bằng JWT
