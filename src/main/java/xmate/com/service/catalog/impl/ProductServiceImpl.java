@@ -101,6 +101,15 @@ public class ProductServiceImpl implements ProductService {
         return repo.findAll(spec, pageable);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public java.util.List<Product> listByCategories(Collection<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        return repo.findAllByCategory_IdIn(categoryIds);
+    }
+
     private Specification<Product> productSpec(String q) {
         return (root, query, cb) -> {
             if (q == null || q.isBlank()) return cb.conjunction();

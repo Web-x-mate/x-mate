@@ -6,90 +6,161 @@
 
 <body>
 <th:block layout:fragment="headExtras">
-    <link rel="stylesheet" th:href="@{/client/css/category.css}"/>
+    <link rel="stylesheet"
+          th:href="@{/client/css/category.css(v=${#dates.createNow().time})}"/>
 </th:block>
 
 <div layout:fragment="content"
-     th:with="activeSlug=${categorySlug != null ? categorySlug : (parent != null ? parent.slug() : '')},
-              productCount=${searchTotal != null ? searchTotal : 0}">
+     th:with="
+        activeSlug=${categorySlug != null ? categorySlug : (parent != null ? parent.slug() : '')},
+        productCount=${searchTotal != null ? searchTotal : 0}">
+
     <section class="category-hero" th:if="${parent != null}">
-        <div class="container">
+        <div class="container hero-container">
             <p class="category-hero__breadcrumb">
-                <a th:href="@{/}">Trang chu</a>
+                <a th:href="@{/}">Trang chủ</a>
                 <span>/</span>
-                <span th:text="${parent.title()}">Danh muc</span>
+                <span th:text="${parent.title()}">Danh mục</span>
             </p>
-            <h1 class="category-hero__title" th:text="${parent.title()}">Danh muc</h1>
-            <p class="category-hero__meta">
+            <!-- <h1 class="category-hero__title" th:text="${parent.title()}">Danh mục</h1> -->
+            <!-- <p class="category-hero__meta">
                 <span th:text="${productCount}">0</span>
-                <span>san pham</span>
-            </p>
+                <span>sản phẩm</span>
+            </p> -->
         </div>
     </section>
 
     <section class="category-children" th:if="${children != null and !children.isEmpty()}">
         <div class="container">
-            <section class="child-cats">
-                <ul class="child-grid">
-                    <li class="child-card" th:each="child : ${children}">
-                        <a th:href="@{/category/{slug}(slug=${child.slug()})}">
-                            <div class="thumb"
-                                 th:style="'background-image:url(' + (${child.thumbnail()} != null ? child.thumbnail() : '/images/product-placeholder.svg') + ')'">
-                            </div>
-                            <h3 th:text="${child.title()}">Danh muc</h3>
-                        </a>
-                    </li>
-                </ul>
-            </section>
+            <ul class="child-grid">
+                <li class="child-card" th:each="child : ${children}">
+                    <a th:href="@{/category/{slug}(slug=${child.slug()})}">
+                        <div class="thumb"
+                             th:style="|background-image:url(${child.thumbnail() != null ? child.thumbnail() : '/images/product-placeholder.svg'})|">
+                        </div>
+                        <h3 th:text="${child.title()}">Danh mục</h3>
+                    </a>
+                </li>
+            </ul>
         </div>
     </section>
 
     <section class="category-products">
         <div class="container">
-            <div class="products"
-                 th:if="${products != null and !products.isEmpty()}">
-                <div th:each="p : ${products}">
-                    <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
-                </div>
-            </div>
+            <div class="category-layout">
+                <aside class="category-filter" th:if="${activeSlug != null}">
+                    <div class="filter-card">
+                        <div class="filter-card__header">
+                            <h3>Bộ lọc</h3>
+                            <p th:text="${productCount} + ' kết quả'">0 kết quả</p>
+                        </div>
+                        <form th:action="@{/category/{slug}(slug=${activeSlug})}" method="get">
+                            <details open class="filter-section">
+                                <summary>Kích thước</summary>
+                                <div class="filter-chips">
+                                    <label class="filter-chip"
+                                           th:each="size : ${T(java.util.List).of('XS','S','M','L','XL','2XL','3XL')}">
+                                        <input type="checkbox" name="sizeFilter" th:value="${size}"
+                                               th:checked="${selectedSizes != null and #lists.contains(selectedSizes, size.toLowerCase())}"/>
+                                        <span th:text="${size}">S</span>
+                                    </label>
+                                </div>
+                            </details>
 
-            <div class="category-empty"
-                 th:if="${products == null or products.isEmpty()}">
-                <p>Chua co san pham trong danh muc nay.</p>
-            </div>
+                            <details open class="filter-section">
+                                <summary>Màu sắc</summary>
+                                <div class="filter-swatches">
+                                    <label class="filter-swatch"
+                                           th:each="color : ${T(java.util.List).of('Đen','Xám','Trắng','Be','Xanh lam','Xanh lá','Đỏ','Cam','Vàng','Tím','Nâu','Hồng')}">
+                                        <input type="checkbox" name="colorFilter" th:value="${color}"
+                                               th:checked="${selectedColors != null and #lists.contains(selectedColors, #strings.replace(color, ' ', '').toLowerCase())}"/>
+                                        <span class="filter-swatch__dot"
+                                              th:classappend="' swatch-' + ${#strings.replace(color, ' ', '').toLowerCase()}"></span>
+                                        <span class="filter-swatch__label" th:text="${color}">Đen</span>
+                                    </label>
+                                </div>
+                            </details>
 
-            <div class="category-pagination"
-                 th:if="${pagination != null and pagination.totalPages > 1 and activeSlug != null and !#strings.isEmpty(activeSlug)}">
-                <nav class="category-pagination__nav" aria-label="Phan trang danh muc">
-                    <a class="category-pagination__control"
-                       th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.previousPage}, size=${pagination.pageSize})}"
-                       th:attr="aria-disabled=${!pagination.hasPrevious()}"
-                       th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
-                        <span>Truoc</span>
-                    </a>
-                    <ul class="category-pagination__list">
-                        <li th:each="num : ${pagination.pages}">
-                            <a class="category-pagination__page"
-                               th:text="${num}"
-                               th:href="@{/category/{slug}(slug=${activeSlug}, page=${num}, size=${pagination.pageSize})}"
-                               th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
+                            <details open class="filter-section">
+                                <summary>Giá</summary>
+                                <div class="filter-checks">
+                                    <label class="filter-check">
+                                        <input type="checkbox" name="priceRange" value="0-200"
+                                               th:checked="${selectedPriceRanges != null and #lists.contains(selectedPriceRanges, '0-200')}"/>
+                                        <span>0 - 200.000đ</span>
+                                    </label>
+                                    <label class="filter-check">
+                                        <input type="checkbox" name="priceRange" value="200-300"
+                                               th:checked="${selectedPriceRanges != null and #lists.contains(selectedPriceRanges, '200-300')}"/>
+                                        <span>200.000đ - 300.000đ</span>
+                                    </label>
+                                    <label class="filter-check">
+                                        <input type="checkbox" name="priceRange" value="300-500"
+                                               th:checked="${selectedPriceRanges != null and #lists.contains(selectedPriceRanges, '300-500')}"/>
+                                        <span>300.000đ - 500.000đ</span>
+                                    </label>
+                                    <label class="filter-check">
+                                        <input type="checkbox" name="priceRange" value="500+"
+                                               th:checked="${selectedPriceRanges != null and #lists.contains(selectedPriceRanges, '500+')}"/>
+                                        <span>&gt;500.000đ</span>
+                                    </label>
+                                </div>
+                            </details>
+
+                            <div class="filter-actions">
+                                <button type="submit" class="btn-apply">Áp dụng</button>
+                                <a th:href="@{/category/{slug}(slug=${activeSlug})}" class="btn-reset">Xóa bộ lọc</a>
+                            </div>
+                        </form>
+                    </div>
+                </aside>
+
+                <div class="category-content">
+                    <div class="products" th:if="${products != null and !products.isEmpty()}">
+                        <div th:each="p : ${products}">
+                            <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
+                        </div>
+                    </div>
+
+                    <div class="category-empty" th:if="${products == null or products.isEmpty()}">
+                        <p>Chưa có sản phẩm trong danh mục này.</p>
+                    </div>
+
+                    <div class="category-pagination"
+                         th:if="${pagination != null and pagination.totalPages > 1
+                                 and activeSlug != null and !#strings.isEmpty(activeSlug)}">
+                        <nav class="category-pagination__nav" aria-label="Phân trang danh mục">
+                            <a class="category-pagination__control"
+                               th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.previousPage}, size=${pagination.pageSize})}"
+                               th:attr="aria-disabled=${!pagination.hasPrevious()}"
+                               th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
+                                <span>Trước</span>
                             </a>
-                        </li>
-                    </ul>
-                    <a class="category-pagination__control"
-                       th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.nextPage}, size=${pagination.pageSize})}"
-                       th:attr="aria-disabled=${!pagination.hasNext()}"
-                       th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
-                        <span>Sau</span>
-                    </a>
-                </nav>
+                            <ul class="category-pagination__list">
+                                <li th:each="num : ${pagination.pages}">
+                                    <a class="category-pagination__page"
+                                       th:text="${num}"
+                                       th:href="@{/category/{slug}(slug=${activeSlug}, page=${num}, size=${pagination.pageSize})}"
+                                       th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
+                                    </a>
+                                </li>
+                            </ul>
+                            <a class="category-pagination__control"
+                               th:href="@{/category/{slug}(slug=${activeSlug}, page=${pagination.nextPage}, size=${pagination.pageSize})}"
+                               th:attr="aria-disabled=${!pagination.hasNext()}"
+                               th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
+                                <span>Sau</span>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 </div>
 
 <th:block layout:fragment="bodyExtras">
-    <script th:src="@{/client/js/product-card.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
+    <script th:src="@{/client/js/product-card.js(v=${#dates.createNow().time})}"></script>
 </th:block>
 </body>
 </html>

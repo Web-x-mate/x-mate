@@ -18,4 +18,5 @@ public interface ProductService {
     Optional<Product> findBySlug(String slug);
     Page<Product> byCategories(Collection<Long> categoryIds, Pageable pageable);
     Page<Product> searchInCategories(String q, Collection<Long> categoryIds, Pageable pageable);
+    java.util.List<Product> listByCategories(Collection<Long> categoryIds);
 }

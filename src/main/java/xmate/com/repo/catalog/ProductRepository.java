@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findBySlug(String slug);
     Page<Product> findAllByCategory_Id(Long categoryId, Pageable pageable);
     Page<Product> findAllByCategory_IdIn(Collection<Long> categoryIds, Pageable pageable);
+    List<Product> findAllByCategory_IdIn(Collection<Long> categoryIds);
 }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{client/layout/base}">
+  layout:decorate="~{client/layout/base}">
 
 <body>
   <!-- HEAD EXTRAS: CSS riêng cho trang Home -->
@@ -10,12 +10,13 @@
 
   <!-- NỘI DUNG TRANG -->
   <div layout:fragment="content">
-    <div class="home-banner full-bleed">
+    <!-- chỉ hiện ở trang đầu của trang chủ -->
+    <!-- <div class="home-banner full-bleed"
+     th:if="${#request != null and #request.requestURI == (#request.contextPath + '/')}">
       <img class="home-banner__img"
           src="https://n7media.coolmate.me/uploads/October2025/Hero-Banner-rpp_63.jpg"
           alt="Hero Banner">
-    </div>
-
+    </div> -->
 
 
     <div class="search-summary" th:if="${isSearch}">
@@ -39,24 +40,23 @@
     <div class="home-pagination" th:if="${pagination != null and pagination.totalPages > 1}">
       <nav class="home-pagination__nav" aria-label="Phân trang sản phẩm">
         <a class="home-pagination__control"
-           th:href="@{/home(page=${pagination.previousPage}, size=${pagination.pageSize}, q=${searchQuery})}"
-           th:attr="aria-disabled=${!pagination.hasPrevious()}"
-           th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
+          th:href="@{/home(page=${pagination.previousPage}, size=${pagination.pageSize}, q=${searchQuery})}"
+          th:attr="aria-disabled=${!pagination.hasPrevious()}"
+          th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
           <span>Trước</span>
         </a>
         <ul class="home-pagination__list">
           <li th:each="num : ${pagination.pages}">
-            <a class="home-pagination__page"
-               th:text="${num}"
-               th:href="@{/home(page=${num}, size=${pagination.pageSize}, q=${searchQuery})}"
-               th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
+            <a class="home-pagination__page" th:text="${num}"
+              th:href="@{/home(page=${num}, size=${pagination.pageSize}, q=${searchQuery})}"
+              th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
             </a>
           </li>
         </ul>
         <a class="home-pagination__control"
-           th:href="@{/home(page=${pagination.nextPage}, size=${pagination.pageSize}, q=${searchQuery})}"
-           th:attr="aria-disabled=${!pagination.hasNext()}"
-           th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
+          th:href="@{/home(page=${pagination.nextPage}, size=${pagination.pageSize}, q=${searchQuery})}"
+          th:attr="aria-disabled=${!pagination.hasNext()}"
+          th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
           <span>Sau</span>
         </a>
       </nav>
