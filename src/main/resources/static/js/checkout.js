@@ -69,7 +69,7 @@
 
     function getSelectedPayInfo() {
         const r = document.querySelector('input[name="pay"]:checked');
-        if (!r) return {label: 'Thanh toÃ¡n khi nháº­n hÃ ng', logo: '/images/cod.png'};
+        if (!r) return {label: 'Thanh toán khi nhận hàng', logo: '/images/cod.png'};
         const item = r.closest('.payitem');
         const label = item?.querySelector('.title')?.textContent?.trim() || r.value;
         const img = item?.querySelector('.pay-logo');
@@ -103,7 +103,6 @@
             renderPricing(data, !!req.couponCode);
         } catch (e) {
             console.error(e);
-            if (els.msg) els.msg.innerHTML = `<span class="err">KhÃ´ng thá»ƒ tÃ­nh toÃ¡n giÃ¡</span>`;
             if (els.msg) els.msg.innerHTML = `<span class="err">Không thể tính toán giá</span>`;
             disable(false);
         }
@@ -118,13 +117,13 @@
 
         if (els.msg) {
             if (hadCoupon) {
-                els.msg.innerHTML = (p.discount || 0) > 0 ? `<span class="ok">ÄÃ£ Ã¡p dá»¥ng mÃ£ giáº£m giÃ¡</span>` : `<span class="err">MÃ£ giáº£m giÃ¡ khÃ´ng há»£p lá»‡</span>`;
+                els.msg.innerHTML = (p.discount || 0) > 0 ? `<span class="ok">Đã áp dụng mã giảm giá</span>` : `<span class="err">Mã giảm giá không hợp lệ!</span>`;
             } else els.msg.textContent = '';
         }
         const dockCoupon = document.getElementById('dockCoupon');
         if (dockCoupon) {
             const code = (els.coupon?.value || '').trim();
-            dockCoupon.textContent = (p.discount > 0 && code) ? code : 'chÆ°a Ã¡p dá»¥ng';
+            dockCoupon.textContent = (p.discount > 0 && code) ? code : 'Chưa áp dụng';
         }
     }
 
@@ -176,7 +175,7 @@
             }
         } catch (e) {
             console.error(e);
-            alert('Äáº·t hÃ ng tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i!');
+            alert('Đặt hàng thất bại. Vui lòng thử lại!');
         } finally {
             disable(false);
         }
@@ -249,7 +248,7 @@
         }
     });
 
-    // ===== bindings khÃ¡c =====
+    // ===== bindings khác =====
     els.btnApply?.addEventListener('click', pricing);
     els.btnPlace?.addEventListener('click', place);
     els.radios.forEach(r => r.addEventListener('change', pricing));
