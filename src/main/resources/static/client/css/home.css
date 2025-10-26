@@ -43,7 +43,7 @@ body {
 
 /* ========== SEARCH SUMMARY ========== */
 .search-summary {
-  padding: 32px 0;
+  padding: 16px 0;
   display: flex;
   justify-content: center;
   color: #f3f4f8;
@@ -52,7 +52,7 @@ body {
 .search-summary__container {
   max-width: 1180px;
   width: 100%;
-  padding: 0 48px;
+  /* padding: 0 48px; */
   display: flex;
   align-items: baseline;
   gap: 18px;
@@ -60,7 +60,7 @@ body {
 }
 
 .search-summary__title {
-  font-size: 28px;
+  font-size: 16px;
   font-weight: 800;
   margin: 0;
   color: #fff;

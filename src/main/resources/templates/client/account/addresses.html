@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+</th:block>
+
+<div layout:fragment="content" class="profile-page">
+    <!-- <section class="banner banner--simple">
+        <div class="banner-card banner-card--compact">
+            <div class="banner-left">
+                <h2>Sổ địa chỉ</h2>
+                <p class="muted">Quản lý địa chỉ nhận hàng để thanh toán nhanh hơn.</p>
+            </div>
+            <button class="btn" type="button" data-open-address-modal>Thêm địa chỉ mới</button>
+        </div>
+    </section> -->
+
+    <div class="wrap">
+        <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+        <main>
+            <div class="card">
+                <h1 class="h1">Địa chỉ của bạn</h1>
+
+                <div class="address-list"
+                     th:if="${addresses != null and !addresses.isEmpty()}">
+                    <article class="address-card"
+                             th:each="addr : ${addresses}"
+                             th:attr="
+                                data-address-id=${addr.id},
+                                data-full-name=${addr.fullName},
+                                data-phone=${addr.phone},
+                                data-line1=${addr.line1},
+                                data-city=${addr.city},
+                                data-district=${addr.district},
+                                data-ward=${addr.ward},
+                                data-is-default=${addr.default}">
+                        <header class="address-card__header">
+                            <div>
+                                <strong th:text="${addr.fullName}">Nguyễn Văn A</strong>
+                                <span class="address-card__phone" th:text="${addr.phone}">0900000000</span>
+                            </div>
+                            <span class="address-card__badge"
+                                  th:if="${addr.default}" >Mặc định</span>
+                        </header>
+                        <div class="address-card__body">
+                            <p th:text="${addr.line1}">123 Đường ABC</p>
+                            <p class="muted" th:text="${addr.ward + ', ' + addr.district + ', ' + addr.city}">
+                                Phường A, Quận B, TP.HCM
+                            </p>
+                        </div>
+                        <div class="address-card__actions">
+                            <button type="button" class="btn btn--ghost"
+                                    th:if="${!addr.default}">Chọn làm mặc định</button>
+                            <div class="address-card__links">
+                                <button type="button"
+                                        class="link-btn"
+                                        data-edit-address
+                                        th:attr="data-address-id=${addr.id}">Chỉnh sửa</button>
+                                <button type="button" class="link-btn link-btn--danger">Xóa</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="empty-block"
+                     th:if="${addresses == null or addresses.isEmpty()}">
+                    <p>Bạn chưa thêm địa chỉ nào.</p>
+                    <button class="btn" type="button" data-open-address-modal>Thêm địa chỉ mới</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="address-overlay hidden" data-address-overlay></div>
+
+    <div class="address-modal hidden" data-address-modal>
+        <button class="address-modal__close" type="button" data-close-address-modal aria-label="Đóng">×</button>
+        <div class="address-modal__title">Thêm địa chỉ mới</div>
+
+        <form class="address-form" data-address-form
+              th:action="@{/account/addresses}" method="post"
+              data-update-action="@{/account/addresses/update}">
+            <input type="hidden" name="addressId" data-address-id-field>
+
+            <div class="field-row">
+                <div class="form-group">
+                    <label for="full_name">Họ và tên</label>
+                    <input id="full_name" name="fullName" placeholder="Nguyễn Văn A" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input id="phone" name="phone" placeholder="09xxxxxxxx" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="line1">Địa chỉ</label>
+                <input id="line1" name="line1" placeholder="Số nhà, tên đường" required>
+            </div>
+
+            <div class="field-row">
+                <div class="form-group">
+                    <label for="province">Tỉnh / Thành phố</label>
+                    <select id="province" name="city" aria-label="Tỉnh / Thành phố" required>
+                        <option value="">Chọn Tỉnh / Thành phố</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="district">Quận / Huyện</label>
+                    <select id="district" name="district" aria-label="Quận / Huyện" required>
+                        <option value="">Chọn Quận / Huyện</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ward">Phường / Xã</label>
+                    <select id="ward" name="ward" aria-label="Phường / Xã" required>
+                        <option value="">Chọn Phường / Xã</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="form-check">
+                <input type="checkbox" id="is_default" name="default">
+                Đặt làm địa chỉ mặc định
+            </label>
+
+            <div class="actions">
+                <button class="btn btn--primary" type="submit">Lưu địa chỉ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+    <script th:src="@{/client/js/address.js}"></script>
+</th:block>
+</body>
+</html>

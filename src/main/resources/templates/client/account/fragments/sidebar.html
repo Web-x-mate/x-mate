@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="sidebar(active)">
+    <aside class="sidebar">
+        <nav class="side-list">
+            <a class="side-link" th:href="@{/account/profile}"
+               th:classappend="${active == 'profile'} ? ' active'">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/profile.png}" alt="">
+                    Thông tin tài khoản
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <a class="side-link" th:href="@{/account/orders}"
+               th:classappend="${active == 'orders'} ? ' active'">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/orders.avif}" alt="">
+                    Lịch sử đơn hàng
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <a class="side-link" th:href="@{/account/vouchers}"
+               th:classappend="${active == 'vouchers'} ? ' active'">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/voucher.png}" alt="">
+                    Ví Voucher
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <a class="side-link" th:href="@{/account/addresses}"
+               th:classappend="${active == 'addresses'} ? ' active'">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/address.png}" alt="">
+                    Sổ địa chỉ
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <a class="side-link" th:href="@{/account/reviews}"
+               th:classappend="${active == 'reviews'} ? ' active'">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/feedback.webp}" alt="">
+                    Đánh giá & phản hồi
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <a id="logoutBtn" class="side-link logout" href="javascript:void(0)">
+                <span class="left">
+                    <img class="icon" th:src="@{/images/logout.webp}" alt="">
+                    Đăng xuất
+                </span>
+                <span class="arrow">→</span>
+            </a>
+        </nav>
+
+        <form id="logoutForm" th:action="@{/auth/logout}" method="post" style="display:none">
+            <input th:if="${_csrf != null}"
+                   type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+        </form>
+    </aside>
+</th:block>
+</body>
+</html>

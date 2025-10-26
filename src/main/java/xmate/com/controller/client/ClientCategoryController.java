@@ -251,6 +251,7 @@ public class ClientCategoryController {
         model.addAttribute("products", List.of());
         model.addAttribute("pagination", null);
         model.addAttribute("searchTotal", 0);
+        model.addAttribute("breadcrumbTrail", List.of());
         model.addAttribute("pageTitle", "Danh muc");
     }
 }

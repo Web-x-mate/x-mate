@@ -123,7 +123,6 @@ public class ProductServiceImpl implements ProductService {
                     cb.like(cb.lower(root.get("slug")), like),
                     cb.like(cb.lower(root.get("material")), like),
                     cb.like(cb.lower(root.get("fit")), like),
-                    cb.like(cb.lower(root.get("description")), like),
                     cb.like(cb.lower(cat.get("name")), like)
             );
         };

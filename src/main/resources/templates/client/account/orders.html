@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
+</th:block>
+
+<div layout:fragment="content" class="profile-page">
+    <!-- <section class="banner banner--simple">
+        <div class="banner-card banner-card--compact">
+            <div class="banner-left">
+                <h2>Lịch sử đơn hàng</h2>
+                <p class="muted">Theo dõi các đơn hàng gần đây và trạng thái giao hàng.</p>
+            </div>
+        </div>
+    </section> -->
+
+    <div class="wrap">
+        <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+        <main>
+            <div class="card">
+                <h1 class="h1">Đơn hàng gần đây</h1>
+                <p class="muted">Tính năng này đang được cập nhật. Bạn sẽ sớm thấy danh sách chi tiết đơn hàng tại đây.</p>
+                <div class="empty-block">
+                    <p>Chưa có đơn hàng nào được ghi nhận.</p>
+                    <a class="btn" th:href="@{/}">Tiếp tục mua sắm</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+</body>
+</html>
