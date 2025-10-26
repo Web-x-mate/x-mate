@@ -1,88 +1,254 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+<!--<body>-->
+<!--<section layout:fragment="content">-->
+<!--    <h1 th:text="${variant != null and variant.id != null} ? 'Sửa Variant' : 'Thêm Variant'">Thêm Variant</h1>-->
+
+<!--    <form th:action="${variant != null and variant.id != null}-->
+<!--                      ? @{'/admin/catalog/products/' + ${product.id} + '/variants/edit/' + ${variant.id}}-->
+<!--                      : @{'/admin/catalog/products/' + ${product.id} + '/variants/new'}"-->
+<!--          method="post" class="vstack gap-3">-->
+
+<!--        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+
+<!--        <div>-->
+<!--            <label for="sku">SKU *</label>-->
+<!--            <input id="sku" name="sku" type="text" class="form-control"-->
+<!--                   th:value="${variant != null ? variant.sku : ''}" required>-->
+<!--        </div>-->
+
+<!--        <div class="d-flex gap-3">-->
+<!--            <div class="flex-1">-->
+<!--                <label for="color">Color</label>-->
+<!--                <input id="color" name="color" type="text" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.color : ''}">-->
+<!--            </div>-->
+<!--            <div class="flex-1">-->
+<!--                <label for="size">Size</label>-->
+<!--                <input id="size" name="size" type="text" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.size : ''}">-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="d-flex gap-3">-->
+<!--            <div class="flex-1">-->
+<!--                <label for="price">Price *</label>-->
+<!--                <input id="price" name="price" type="number" step="0.01" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.price : ''}" required>-->
+<!--            </div>-->
+<!--            <div class="flex-1">-->
+<!--                <label for="compareAtPrice">Compare At</label>-->
+<!--                <input id="compareAtPrice" name="compareAtPrice" type="number" step="0.01" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.compareAtPrice : ''}">-->
+<!--            </div>-->
+<!--            <div class="flex-1">-->
+<!--                <label for="cost">Cost</label>-->
+<!--                <input id="cost" name="cost" type="number" step="0.01" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.cost : ''}">-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="d-flex gap-3">-->
+<!--            <div class="flex-1">-->
+<!--                <label for="weightGram">Weight (gram)</label>-->
+<!--                <input id="weightGram" name="weightGram" type="number" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.weightGram : ''}">-->
+<!--            </div>-->
+<!--            <div class="flex-1">-->
+<!--                <label for="barcode">Barcode</label>-->
+<!--                <input id="barcode" name="barcode" type="text" class="form-control"-->
+<!--                       th:value="${variant != null ? variant.barcode : ''}">-->
+<!--            </div>-->
+<!--            <div class="flex-1">-->
+<!--                <label for="stockPolicy">Stock policy</label>-->
+<!--                <select id="stockPolicy" name="stockPolicy" class="form-select">-->
+<!--                    <option th:value="DENY"     th:selected="${variant == null or variant.stockPolicy?.name() == 'DENY'}">DENY</option>-->
+<!--                    <option th:value="CONTINUE" th:selected="${variant != null and variant.stockPolicy?.name() == 'CONTINUE'}">CONTINUE</option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="form-check">-->
+<!--            <input id="active" name="active" type="checkbox" class="form-check-input"-->
+<!--                   th:checked="${variant == null || variant.active}">-->
+<!--            <label for="active" class="form-check-label">Active</label>-->
+<!--        </div>-->
+
+<!--        <div class="d-flex gap-2">-->
+<!--            <button type="submit" class="btn btn-primary"-->
+<!--                    th:text="${variant != null and variant.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>-->
+<!--            <a th:href="@{|/admin/catalog/products/${product.id}/variants|}" class="btn btn-outline-secondary">Quay lại</a>-->
+<!--        </div>-->
+<!--    </form>-->
+<!--</section>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm / Sửa Variant</title>
+    <style>
+        :root{
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --bd:#e2e8f0;
+            --ring:#93c5fd;
+            --primary:#2563eb;
+            --primary-hover:#1d4ed8;
+            --secondary:#334155;
+            --secondary-hover:#1f2937;
+        }
+
+        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
+        .wrap{max-width:850px;margin:0 auto;padding:36px 0;}
+        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 22px;}
+
+        /* Card form */
+        form{
+            background:var(--surface);
+            border:1px solid var(--bd);
+            border-radius:16px;
+            box-shadow:0 2px 4px rgba(15,23,42,.06);
+            padding:28px 32px;
+        }
+
+        /* Labels & fields */
+        label{font-weight:700;color:var(--text);display:block;margin-bottom:.4rem;}
+        .form-control,.form-select{
+            width:100%;padding:.65rem .9rem;
+            border:1px solid var(--bd);border-radius:10px;
+            background:#fff;font-size:.95rem;color:var(--text);transition:.18s;
+        }
+        .form-control:focus,.form-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
+
+        /* Utility (phòng khi không có Bootstrap) */
+        .vstack{display:flex;flex-direction:column;}
+        .gap-3{gap:20px;}
+        .gap-2{gap:12px;}
+        .d-flex{display:flex;align-items:flex-start;}
+        .flex-1{flex:1 1 0;}
+
+        /* Hàng lưới cho các cụm field theo hàng */
+        .row-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;}
+        .row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}
+        @media (max-width:720px){.row-2,.row-3{grid-template-columns:1fr;}}
+
+        /* Checkbox */
+        .form-check{display:flex;align-items:center;gap:.55rem;}
+        .form-check-input{width:18px;height:18px;cursor:pointer;}
+        .form-check-label{font-weight:600;}
+
+        /* Actions (giữ nguyên thứ tự nút, chỉ căn phải & đồng bộ kích thước) */
+        .btn{
+            height:42px;padding:0 18px;border-radius:12px;border:1px solid transparent;
+            font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem;line-height:1;transition:.18s;
+        }
+        .btn-primary{background:var(--primary);color:#fff;}
+        .btn-primary:hover{background:var(--primary-hover);}
+        .btn-outline-secondary{background:#fff;color:var(--secondary);border:1px solid var(--bd);}
+        .btn-outline-secondary:hover{background:#f1f5f9;}
+
+        /* Căn phải nhóm nút cuối form, không ảnh hưởng nơi khác */
+        form > .d-flex.gap-2:last-child{justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:8px;}
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
-    <h1 th:text="${variant != null and variant.id != null} ? 'Sửa Variant' : 'Thêm Variant'">Thêm Variant</h1>
+    <div class="wrap">
+        <h1 class="page-title" th:text="${variant != null and variant.id != null} ? 'Sửa Variant' : 'Thêm Variant'">Thêm Variant</h1>
 
-    <form th:action="${variant != null and variant.id != null}
+        <form th:action="${variant != null and variant.id != null}
                       ? @{'/admin/catalog/products/' + ${product.id} + '/variants/edit/' + ${variant.id}}
                       : @{'/admin/catalog/products/' + ${product.id} + '/variants/new'}"
-          method="post" class="vstack gap-3">
+              method="post" class="vstack gap-3">
 
-        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-        <div>
-            <label for="sku">SKU *</label>
-            <input id="sku" name="sku" type="text" class="form-control"
-                   th:value="${variant != null ? variant.sku : ''}" required>
-        </div>
+            <!-- SKU -->
+            <div>
+                <label for="sku">SKU *</label>
+                <input id="sku" name="sku" type="text" class="form-control"
+                       th:value="${variant != null ? variant.sku : ''}" required>
+            </div>
 
-        <div class="d-flex gap-3">
-            <div class="flex-1">
-                <label for="color">Color</label>
-                <input id="color" name="color" type="text" class="form-control"
-                       th:value="${variant != null ? variant.color : ''}">
+            <!-- Color & Size -->
+            <div class="row-2">
+                <div>
+                    <label for="color">Color</label>
+                    <input id="color" name="color" type="text" class="form-control"
+                           th:value="${variant != null ? variant.color : ''}">
+                </div>
+                <div>
+                    <label for="size">Size</label>
+                    <input id="size" name="size" type="text" class="form-control"
+                           th:value="${variant != null ? variant.size : ''}">
+                </div>
             </div>
-            <div class="flex-1">
-                <label for="size">Size</label>
-                <input id="size" name="size" type="text" class="form-control"
-                       th:value="${variant != null ? variant.size : ''}">
-            </div>
-        </div>
 
-        <div class="d-flex gap-3">
-            <div class="flex-1">
-                <label for="price">Price *</label>
-                <input id="price" name="price" type="number" step="0.01" class="form-control"
-                       th:value="${variant != null ? variant.price : ''}" required>
+            <!-- Price / CompareAt / Cost -->
+            <div class="row-3">
+                <div>
+                    <label for="price">Price *</label>
+                    <input id="price" name="price" type="number" step="0.01" class="form-control"
+                           th:value="${variant != null ? variant.price : ''}" required>
+                </div>
+                <div>
+                    <label for="compareAtPrice">Compare At</label>
+                    <input id="compareAtPrice" name="compareAtPrice" type="number" step="0.01" class="form-control"
+                           th:value="${variant != null ? variant.compareAtPrice : ''}">
+                </div>
+                <div>
+                    <label for="cost">Cost</label>
+                    <input id="cost" name="cost" type="number" step="0.01" class="form-control"
+                           th:value="${variant != null ? variant.cost : ''}">
+                </div>
             </div>
-            <div class="flex-1">
-                <label for="compareAtPrice">Compare At</label>
-                <input id="compareAtPrice" name="compareAtPrice" type="number" step="0.01" class="form-control"
-                       th:value="${variant != null ? variant.compareAtPrice : ''}">
-            </div>
-            <div class="flex-1">
-                <label for="cost">Cost</label>
-                <input id="cost" name="cost" type="number" step="0.01" class="form-control"
-                       th:value="${variant != null ? variant.cost : ''}">
-            </div>
-        </div>
 
-        <div class="d-flex gap-3">
-            <div class="flex-1">
-                <label for="weightGram">Weight (gram)</label>
-                <input id="weightGram" name="weightGram" type="number" class="form-control"
-                       th:value="${variant != null ? variant.weightGram : ''}">
+            <!-- Weight / Barcode / Stock Policy -->
+            <div class="row-3">
+                <div>
+                    <label for="weightGram">Weight (gram)</label>
+                    <input id="weightGram" name="weightGram" type="number" class="form-control"
+                           th:value="${variant != null ? variant.weightGram : ''}">
+                </div>
+                <div>
+                    <label for="barcode">Barcode</label>
+                    <input id="barcode" name="barcode" type="text" class="form-control"
+                           th:value="${variant != null ? variant.barcode : ''}">
+                </div>
+                <div>
+                    <label for="stockPolicy">Stock policy</label>
+                    <select id="stockPolicy" name="stockPolicy" class="form-select">
+                        <option th:value="DENY"     th:selected="${variant == null or variant.stockPolicy?.name() == 'DENY'}">DENY</option>
+                        <option th:value="CONTINUE" th:selected="${variant != null and variant.stockPolicy?.name() == 'CONTINUE'}">CONTINUE</option>
+                    </select>
+                </div>
             </div>
-            <div class="flex-1">
-                <label for="barcode">Barcode</label>
-                <input id="barcode" name="barcode" type="text" class="form-control"
-                       th:value="${variant != null ? variant.barcode : ''}">
-            </div>
-            <div class="flex-1">
-                <label for="stockPolicy">Stock policy</label>
-                <select id="stockPolicy" name="stockPolicy" class="form-select">
-                    <option th:value="DENY"     th:selected="${variant == null or variant.stockPolicy?.name() == 'DENY'}">DENY</option>
-                    <option th:value="CONTINUE" th:selected="${variant != null and variant.stockPolicy?.name() == 'CONTINUE'}">CONTINUE</option>
-                </select>
-            </div>
-        </div>
 
-        <div class="form-check">
-            <input id="active" name="active" type="checkbox" class="form-check-input"
-                   th:checked="${variant == null || variant.active}">
-            <label for="active" class="form-check-label">Active</label>
-        </div>
+            <!-- Active -->
+            <div class="form-check">
+                <input id="active" name="active" type="checkbox" class="form-check-input"
+                       th:checked="${variant == null || variant.active}">
+                <label for="active" class="form-check-label">Active</label>
+            </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"
-                    th:text="${variant != null and variant.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
-            <a th:href="@{|/admin/catalog/products/${product.id}/variants|}" class="btn btn-outline-secondary">Quay lại</a>
-        </div>
-    </form>
+            <!-- Actions (giữ nguyên thứ tự nút) -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"
+                        th:text="${variant != null and variant.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+                <a th:href="@{|/admin/catalog/products/${product.id}/variants|}" class="btn btn-outline-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
 </section>
 </body>
 </html>

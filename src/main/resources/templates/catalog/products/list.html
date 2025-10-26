@@ -1,9 +1,217 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+<!--<body>-->
+<!--<section layout:fragment="content">-->
+
+<!--    &lt;!&ndash; Khi KHÔNG có quyền VIEW &ndash;&gt;-->
+<!--    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">-->
+<!--        Bạn không có quyền xem sản phẩm.-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Khi CÓ quyền VIEW &ndash;&gt;-->
+<!--    <div sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">-->
+<!--        <h1 class="page-title">Products</h1>-->
+
+<!--        &lt;!&ndash; Toolbar: Search + Add new &ndash;&gt;-->
+<!--        <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">-->
+<!--            <form method="get" th:action="@{/admin/catalog/products}" class="search-form d-flex align-items-center gap-2">-->
+<!--                <input type="text" name="q" th:value="${q}" class="form-control" placeholder="Search...">-->
+<!--                <button class="btn btn-primary" type="submit">Search</button>-->
+<!--            </form>-->
+
+<!--            &lt;!&ndash; Chỉ hiện khi có quyền tạo &ndash;&gt;-->
+<!--            <a th:href="@{/admin/catalog/products/new}"-->
+<!--               class="btn btn-success"-->
+<!--               sec:authorize="hasAnyAuthority('PRODUCT_CREATE','ROLE_ADMIN')">-->
+<!--                + Thêm sản phẩm-->
+<!--            </a>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Table &ndash;&gt;-->
+<!--        <div class="table-responsive">-->
+<!--            <table class="table table-striped table-hover align-middle w-100">-->
+<!--                <colgroup>-->
+<!--                    <col style="width: 80px;">-->
+<!--                    <col>-->
+<!--                    <col style="width: 20%;">-->
+<!--                    <col style="width: 120px;">-->
+<!--                    <col style="width: 120px;">-->
+<!--                    <col style="width: 320px;">-->
+<!--                </colgroup>-->
+<!--                <thead class="table-light">-->
+<!--                <tr>-->
+<!--                    <th>ID</th>-->
+<!--                    <th>Name</th>-->
+<!--                    <th>Category</th>-->
+<!--                    <th>Status</th>-->
+<!--                    <th>Gender</th>-->
+<!--                    <th>Actions</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                &lt;!&ndash; th:each an toàn khi page null &ndash;&gt;-->
+<!--                <tr th:each="p : ${page != null ? page.content : {}}">-->
+<!--                    <td th:text="${p.id}">1</td>-->
+<!--                    <td th:text="${p.name}">T-Shirt</td>-->
+<!--                    <td th:text="${p.category != null ? p.category.name : '—'}">—</td>-->
+<!--                    <td>-->
+<!--                        <span th:text="${p.status}"-->
+<!--                              th:class="${p.status?.name() == 'ACTIVE'} ? 'badge bg-success' : 'badge bg-secondary'">ACTIVE</span>-->
+<!--                    </td>-->
+<!--                    <td th:text="${p.gender}">UNISEX</td>-->
+<!--                    <td class="d-flex flex-wrap gap-2">-->
+<!--                        &lt;!&ndash; Edit &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/catalog/products/${p.id}/edit|}"-->
+<!--                           class="btn btn-sm btn-warning"-->
+<!--                           sec:authorize="hasAnyAuthority('PRODUCT_EDIT','ROLE_ADMIN')">-->
+<!--                            Edit-->
+<!--                        </a>-->
+
+<!--                        &lt;!&ndash; Delete &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/catalog/products/${p.id}/delete|}"-->
+<!--                           onclick="return confirm('Xóa sản phẩm này?');"-->
+<!--                           class="btn btn-sm btn-danger"-->
+<!--                           sec:authorize="hasAnyAuthority('PRODUCT_DELETE','ROLE_ADMIN')">-->
+<!--                            Delete-->
+<!--                        </a>-->
+
+<!--                        &lt;!&ndash; Quản lý biến thể &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/catalog/products/${p.id}/variants|}"-->
+<!--                           class="btn btn-sm btn-secondary"-->
+<!--                           sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_MANAGE','ROLE_ADMIN')">-->
+<!--                            Variants-->
+<!--                        </a>-->
+
+<!--                        &lt;!&ndash; Quản lý media &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/catalog/products/${p.id}/media|}"-->
+<!--                           class="btn btn-sm btn-outline-secondary"-->
+<!--                           sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_MANAGE','ROLE_ADMIN')">-->
+<!--                            Media-->
+<!--                        </a>-->
+<!--                    </td>-->
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; Có quyền nhưng rỗng dữ liệu &ndash;&gt;-->
+<!--                <tr th:if="${page == null || #lists.isEmpty(page.content)}">-->
+<!--                    <td colspan="6" class="text-center">No data</td>-->
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Pagination &ndash;&gt;-->
+<!--        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/catalog/products', q=${q})}"></div>-->
+<!--    </div>-->
+<!--</section>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+    <style>
+        :root{
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --bd:#e2e8f0;
+            --ring:#93c5fd;
+            --primary:#2563eb;
+            --primary-hover:#1d4ed8;
+            --success:#16a34a;
+            --success-hover:#15803d;
+            --warning:#f59e0b;
+            --danger:#ef4444;
+            --danger-hover:#dc2626;
+            --secondary:#334155;
+            --secondary-hover:#1f2937;
+        }
+
+        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
+        .wrap{max-width:1100px;margin:0 auto;padding:32px 0;}
+        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 18px;}
+
+        /* Toolbar */
+        .toolbar{gap:10px;}
+        .search-form{gap:10px;}
+        .form-control{
+            height:40px; padding:0 .9rem; border:1px solid var(--bd); border-radius:12px;
+            background:var(--surface); font-size:.95rem; color:var(--text); transition:.18s;
+            min-width:260px;
+        }
+        .form-control:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--ring);}
+
+        .btn{
+            height:40px; padding:0 14px; border-radius:12px; border:1px solid transparent;
+            font-weight:700; font-size:.9rem; display:inline-flex; align-items:center; gap:.4rem; line-height:1;
+            transition:.18s;
+        }
+        .btn-primary{background:var(--primary); color:#fff; border-color:var(--primary);}
+        .btn-primary:hover{background:var(--primary-hover); border-color:var(--primary-hover);}
+        .btn-success{background:var(--success); color:#fff; border-color:var(--success);}
+        .btn-success:hover{background:var(--success-hover); border-color:var(--success-hover);}
+
+        /* Card + Table */
+        .table-card{background:var(--surface); border:1px solid var(--bd); border-radius:16px; box-shadow:0 2px 4px rgba(15,23,42,.06);}
+        .table-responsive{max-height:70vh; overflow:auto; border-radius:16px;}
+        table{width:100%; border-collapse:separate; border-spacing:0; font-size:.95rem;}
+        thead th{
+            position:sticky; top:0; z-index:2; background:#eef2f7; color:#0f172a; border-bottom:1px solid var(--bd);
+            text-transform:uppercase; font-weight:800; font-size:.78rem; letter-spacing:.02em;
+            padding:.75rem .95rem; white-space:nowrap; text-align:center;
+        }
+        tbody td{
+            padding:.75rem .95rem; border-bottom:1px solid var(--bd); background:#fff; vertical-align:middle; text-align:center;
+        }
+        tbody tr:hover td{background:#f8fafc;}
+
+        /* Bo góc bảng */
+        thead th:first-child{border-top-left-radius:16px;}
+        thead th:last-child{border-top-right-radius:16px;}
+        tbody tr:last-child td:first-child{border-bottom-left-radius:16px;}
+        tbody tr:last-child td:last-child{border-bottom-right-radius:16px;}
+
+        /* Căn cột */
+        .col-left{text-align:left;}
+        .col-center{text-align:center;}
+        .col-right{text-align:right;}
+
+        /* Truncate text dài */
+        .truncate{display:inline-block; max-width:420px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom;}
+        .truncate-200{max-width:220px;}
+
+        /* Badge trạng thái */
+        .badge{display:inline-flex; align-items:center; gap:.35rem; font-weight:800; border-radius:.55rem; padding:.3rem .55rem; font-size:.78rem; line-height:1;}
+        .bg-success{background:var(--success); color:#fff;}
+        .bg-secondary{background:#e2e8f0; color:#0f172a;}
+
+        /* Action buttons (giữ nguyên class, chỉ tinh chỉnh) */
+        .btn-sm{
+            height:34px; padding:0 12px; border-radius:10px; font-size:.82rem; font-weight:700;
+            display:inline-flex; align-items:center; gap:.35rem;
+        }
+        .btn-warning{background:#fbbf24; color:#0f172a; border:none;}
+        .btn-warning:hover{background:var(--warning);}
+        .btn-danger{background:var(--danger); color:#fff; border:none;}
+        .btn-danger:hover{background:var(--danger-hover);}
+        .btn-secondary{background:var(--secondary); color:#fff; border:none;}
+        .btn-secondary:hover{background:var(--secondary-hover);}
+        .btn-outline-secondary{background:#fff; color:#0f172a; border:1px solid var(--bd);}
+        .btn-outline-secondary:hover{background:#f1f5f9;}
+
+        .actions{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;}
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
 
@@ -13,17 +221,16 @@
     </div>
 
     <!-- Khi CÓ quyền VIEW -->
-    <div sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">
+    <div sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')" class="wrap">
         <h1 class="page-title">Products</h1>
 
-        <!-- Toolbar: Search + Add new -->
+        <!-- Toolbar -->
         <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">
-            <form method="get" th:action="@{/admin/catalog/products}" class="search-form d-flex align-items-center gap-2">
+            <form method="get" th:action="@{/admin/catalog/products}" class="search-form d-flex align-items-center">
                 <input type="text" name="q" th:value="${q}" class="form-control" placeholder="Search...">
                 <button class="btn btn-primary" type="submit">Search</button>
             </form>
 
-            <!-- Chỉ hiện khi có quyền tạo -->
             <a th:href="@{/admin/catalog/products/new}"
                class="btn btn-success"
                sec:authorize="hasAnyAuthority('PRODUCT_CREATE','ROLE_ADMIN')">
@@ -32,75 +239,71 @@
         </div>
 
         <!-- Table -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle w-100">
-                <colgroup>
-                    <col style="width: 80px;">
-                    <col>
-                    <col style="width: 20%;">
-                    <col style="width: 120px;">
-                    <col style="width: 120px;">
-                    <col style="width: 320px;">
-                </colgroup>
-                <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Gender</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- th:each an toàn khi page null -->
-                <tr th:each="p : ${page != null ? page.content : {}}">
-                    <td th:text="${p.id}">1</td>
-                    <td th:text="${p.name}">T-Shirt</td>
-                    <td th:text="${p.category != null ? p.category.name : '—'}">—</td>
-                    <td>
-                        <span th:text="${p.status}"
-                              th:class="${p.status?.name() == 'ACTIVE'} ? 'badge bg-success' : 'badge bg-secondary'">ACTIVE</span>
-                    </td>
-                    <td th:text="${p.gender}">UNISEX</td>
-                    <td class="d-flex flex-wrap gap-2">
-                        <!-- Edit -->
-                        <a th:href="@{|/admin/catalog/products/${p.id}/edit|}"
-                           class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('PRODUCT_EDIT','ROLE_ADMIN')">
-                            Edit
-                        </a>
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle w-100">
+                    <colgroup>
+                        <col style="width:80px;">
+                        <col>
+                        <col style="width:24%;">
+                        <col style="width:120px;">
+                        <col style="width:120px;">
+                        <col style="width:320px;">
+                    </colgroup>
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th class="col-left">Name</th>
+                        <th class="col-left">Category</th>
+                        <th>Status</th>
+                        <th>Gender</th>
+                        <th class="col-right">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${page != null ? page.content : {}}">
+                        <td class="col-center" th:text="${p.id}">1</td>
+                        <td class="col-left">
+                            <span class="truncate" th:title="${p.name}" th:text="${p.name}">T-Shirt</span>
+                        </td>
+                        <td class="col-left">
+              <span class="truncate truncate-200"
+                    th:title="${p.category != null ? p.category.name : '-'}"
+                    th:text="${p.category != null ? p.category.name : '—'}">—</span>
+                        </td>
+                        <td class="col-center">
+              <span th:text="${p.status}"
+                    th:class="${p.status?.name() == 'ACTIVE'} ? 'badge bg-success' : 'badge bg-secondary'">ACTIVE</span>
+                        </td>
+                        <td class="col-center" th:text="${p.gender}">UNISEX</td>
+                        <td>
+                            <div class="actions">
+                                <a th:href="@{|/admin/catalog/products/${p.id}/edit|}"
+                                   class="btn btn-sm btn-warning"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_EDIT','ROLE_ADMIN')">Edit</a>
 
-                        <!-- Delete -->
-                        <a th:href="@{|/admin/catalog/products/${p.id}/delete|}"
-                           onclick="return confirm('Xóa sản phẩm này?');"
-                           class="btn btn-sm btn-danger"
-                           sec:authorize="hasAnyAuthority('PRODUCT_DELETE','ROLE_ADMIN')">
-                            Delete
-                        </a>
+                                <a th:href="@{|/admin/catalog/products/${p.id}/delete|}"
+                                   onclick="return confirm('Xóa sản phẩm này?');"
+                                   class="btn btn-sm btn-danger"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_DELETE','ROLE_ADMIN')">Delete</a>
 
-                        <!-- Quản lý biến thể -->
-                        <a th:href="@{|/admin/catalog/products/${p.id}/variants|}"
-                           class="btn btn-sm btn-secondary"
-                           sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_MANAGE','ROLE_ADMIN')">
-                            Variants
-                        </a>
+                                <a th:href="@{|/admin/catalog/products/${p.id}/variants|}"
+                                   class="btn btn-sm btn-secondary"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_MANAGE','ROLE_ADMIN')">Variants</a>
 
-                        <!-- Quản lý media -->
-                        <a th:href="@{|/admin/catalog/products/${p.id}/media|}"
-                           class="btn btn-sm btn-outline-secondary"
-                           sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_MANAGE','ROLE_ADMIN')">
-                            Media
-                        </a>
-                    </td>
-                </tr>
+                                <a th:href="@{|/admin/catalog/products/${p.id}/media|}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_MANAGE','ROLE_ADMIN')">Media</a>
+                            </div>
+                        </td>
+                    </tr>
 
-                <!-- Có quyền nhưng rỗng dữ liệu -->
-                <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                    <td colspan="6" class="text-center">No data</td>
-                </tr>
-                </tbody>
-            </table>
+                    <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                        <td colspan="6" class="col-center" style="padding:18px;color:var(--muted);">No data</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->

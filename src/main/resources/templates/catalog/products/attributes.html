@@ -1,9 +1,99 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">-->
+<!--<body><section layout:fragment="content">-->
+<!--  <h1 th:text="'Attributes - ' + ${product.name}">Attributes</h1>-->
+<!--  <div class="card">-->
+<!--    <p>Material: —</p>-->
+<!--    <p>Fit: —</p>-->
+<!--  </div>-->
+<!--</section></body></html>-->
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
-<body><section layout:fragment="content">
-  <h1 th:text="'Attributes - ' + ${product.name}">Attributes</h1>
-  <div class="card">
-    <p>Material: —</p>
-    <p>Fit: —</p>
-  </div>
-</section></body></html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Attributes</title>
+    <style>
+        :root {
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --bd:#e2e8f0;
+            --ring:#93c5fd;
+            --primary:#2563eb;
+        }
+
+        body {
+            font-family: "Inter", system-ui, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+
+        .page-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--bd);
+            border-radius: 16px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, .06);
+            padding: 28px 32px;
+        }
+
+        .attr-item {
+            font-size: 1rem;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--bd);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attr-item:last-child {
+            border-bottom: none;
+        }
+
+        .attr-label {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .attr-value {
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="wrap">
+        <h1 class="page-title" th:text="'Attributes - ' + ${product.name}">Attributes</h1>
+
+        <div class="card">
+            <div class="attr-item">
+                <span class="attr-label">Material:</span>
+                <span class="attr-value" th:text="${product.material != null ? product.material : '—'}">—</span>
+            </div>
+
+            <div class="attr-item">
+                <span class="attr-label">Fit:</span>
+                <span class="attr-value" th:text="${product.fit != null ? product.fit : '—'}">—</span>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
