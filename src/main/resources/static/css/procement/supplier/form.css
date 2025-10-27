@@ -1,0 +1,55 @@
+/* === Suppliers Form — flat & modern === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+/* Tokens */
+:root{
+    --bg:#f7f9fc; --surface:#ffffff; --text:#0f172a; --muted:#64748b;
+    --border:#e6eaf0; --primary:#16a34a; --danger:#ef4444;
+    --radius:8px; --radius-sm:6px; --shadow:0 1px 2px rgba(15,23,42,.08);
+    --ring:0 0 0 3px rgba(22,163,74,.15);
+}
+
+/* Base */
+html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+section[layout\:fragment="content"]{padding:20px;}
+h1{font-size:1.5rem;font-weight:700;margin:0 0 12px;}
+
+/* Form controls */
+.form-control{
+    width:100%; min-height:44px; padding:10px 12px; font-size:14px; line-height:1.4;
+    background:#fff; color:var(--text);
+    border:1px solid var(--border); border-radius:var(--radius);
+    outline:0; transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.form-control::placeholder{ color:#9ca3af; }
+.form-control:hover{ border-color:#d7dde6; }
+.form-control:focus{ border-color:#86efac; box-shadow:var(--ring); }
+textarea.form-control{ min-height:110px; resize:vertical; }
+
+/* Buttons (flat, no gradients) */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    height:42px; padding:0 14px; border-radius:var(--radius);
+    font-weight:600; line-height:1; cursor:pointer; text-decoration:none;
+    border:1px solid var(--border); background:#fff; color:var(--text);
+    transition:background .15s, border-color .15s, filter .1s;
+}
+.btn:hover{ background:#eef2f7; border-color:#d7dde6; text-decoration:none; }
+.btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,23,42,.08); }
+
+/* Primary submit */
+.btn-primary{ background:var(--primary); color:#fff; border-color:transparent; }
+.btn-primary:hover{ filter:brightness(0.97); }
+.btn-primary:focus{ box-shadow:0 0 0 3px rgba(22,163,74,.25); }
+
+/* Secondary = quay lại (trung tính, có viền) */
+.btn-secondary{
+    background:#fff; color:var(--text); border-color:var(--border);
+}
+.btn-secondary:hover{ background:#eef2f7; border-color:#d7dde6; }
+
+/* Layout helpers (fallback nếu không dùng Bootstrap) */
+.vstack{ display:flex; flex-direction:column; }
+.gap-2{ gap:.5rem; }
+.d-flex{ display:flex; }

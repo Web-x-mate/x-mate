@@ -1,0 +1,83 @@
+/* === Settings › Profile — minimal & flat === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+/* Tokens */
+:root{
+    --bg:#f7f9fc; --surface:#fff; --text:#0f172a; --muted:#64748b; --line:#e6eaf0;
+    --green:#16a34a; --green-hover:#126E34; --danger:#ef4444;
+    --radius:10px; --radius-sm:8px; --pill:9999px;
+    --shadow:0 1px 2px rgba(15,23,42,.06);
+}
+
+/* Base */
+html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+section[layout\:fragment="content"]{padding:20px;}
+h1{font-size:1.4rem;font-weight:600;margin:0 0 14px;}
+a.btn{ text-decoration:none; }
+
+/* Alerts */
+.alert{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:10px 12px;box-shadow:var(--shadow);}
+.alert-success{background:#ecfdf5;border-color:#bbf7d0;color:#065f46;}
+.alert-danger{background:#fef2f2;border-color:#fecaca;color:#991b1b;}
+
+/* Form spacing (tiện cho class space-y-3) */
+.space-y-3 > * + *{ margin-top:12px; }
+
+/* Labels & Inputs */
+label{display:block;margin:0 0 6px;color:var(--muted);font-size:.92rem;}
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"],
+input[type="date"], .form-control{
+    width:100%; height:40px; padding:0 12px; font-size:14px; color:var(--text);
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-sm);
+    outline:0; transition:border-color .15s, box-shadow .15s;
+}
+input::placeholder{color:#9ca3af;}
+input:focus, .form-control:focus{
+    border-color:#86efac; box-shadow:0 0 0 3px rgba(22,163,74,.15);
+}
+
+/* Buttons (flat) */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    height:40px; padding:0 14px; border-radius:8px; border:1px solid var(--line);
+    background:#fff; color:var(--text); font-weight:500; line-height:1;
+    cursor:pointer; transition:background .15s, border-color .15s, color .15s;
+    text-decoration:none;
+}
+.btn:hover{ background:#f2f5f9; border-color:#d7dde6; }
+
+.btn-primary{
+    background:var(--green); color:#fff; border-color:transparent;
+}
+.btn-primary:hover{ background:var(--green-hover); }
+
+.btn-secondary{
+    background:#fff; color:#0f172a; border-color:var(--line);
+}
+.btn-secondary:hover{ background:#f2f5f9; border-color:#d7dde6; }
+
+.btn-danger{
+    background:var(--danger); color:#fff; border-color:transparent;
+}
+.btn-danger:hover{ filter:brightness(.95); }
+
+/* Roles/Authorities badges */
+.badge-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.badge{
+    padding:4px 10px; border-radius:var(--pill); font-size:12px; font-weight:600;
+    border:1px solid #bbf7d0; background:#ecfdf5; color:#065f46;
+}
+.badge-muted{border-color:#e2e8f0; background:#f1f5f9; color:#334155;}
+
+/* Optional card cho block thông tin username/trạng thái */
+.profile-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; box-shadow:var(--shadow); margin-bottom:14px;
+}
+.profile-grid{display:flex;gap:24px;flex-wrap:wrap;}
+.profile-grid > div{min-width:220px}
+
+/* Small helpers */
+.mb-4{margin-bottom:16px;}

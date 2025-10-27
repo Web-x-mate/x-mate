@@ -197,85 +197,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Khách hàng</title>
-    <style>
-        :root{
-            --bg:#f8fafc;
-            --surface:#ffffff;
-            --text:#0f172a;
-            --muted:#64748b;
-            --bd:#e2e8f0;
-            --ring:#93c5fd;
-            --primary:#2563eb;
-            --primary-hover:#1d4ed8;
-            --success:#16a34a;
-            --success-hover:#15803d;
-            --warning:#fbbf24;
-            --warning-hover:#f59e0b;
-            --danger:#ef4444;
-            --danger-hover:#dc2626;
-        }
+    <link rel="stylesheet" th:href="@{/css/customers/customer/list.css}">
 
-        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
-        .wrap{max-width:1100px;margin:0 auto;padding:32px 0;}
 
-        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin-bottom:16px;}
-
-        /* Inputs & Buttons */
-        .input{
-            height:40px; min-width:280px;
-            padding:0 .9rem; border:1px solid var(--bd); border-radius:12px;
-            background:#fff; color:var(--text); font-size:.95rem; transition:.18s;
-        }
-        .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
-
-        .btn{
-            height:40px; padding:0 14px; border-radius:12px; border:1px solid transparent;
-            font-weight:700; font-size:.9rem; display:inline-flex; align-items:center; gap:.4rem;
-            color:#fff; background:var(--primary); transition:.18s;
-        }
-        .btn:hover{background:var(--primary-hover);}
-        .btn-primary{background:var(--primary);}
-        .btn-success{background:var(--success);}
-        .btn-success:hover{background:var(--success-hover);}
-        .btn-warning{background:var(--warning); color:#0f172a;}
-        .btn-warning:hover{background:var(--warning-hover);}
-        .btn-danger{background:var(--danger);}
-        .btn-danger:hover{background:var(--danger-hover);}
-
-        .btn-light{background:#eef2f7;color:var(--text);border:1px solid var(--bd);}
-        .btn-light:hover{background:#e5eaf1;}
-        .btn-sm{height:34px;padding:0 12px;border-radius:10px;font-size:.82rem;}
-
-        /* Alerts */
-        .alert{border-radius:12px;padding:.8rem 1rem;margin:.5rem 0;font-weight:600;}
-        .alert-warning{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;}
-        .alert-success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;}
-        .alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
-
-        /* Table */
-        .table-card{background:var(--surface);border:1px solid var(--bd);border-radius:16px;box-shadow:0 2px 4px rgba(15,23,42,.06);margin-top:16px;}
-        .overflow-x-auto{border-radius:16px;max-height:70vh;overflow:auto;}
-        .table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;}
-        thead th{
-            position:sticky;top:0;z-index:2;background:#eef2f7;color:#0f172a;border-bottom:1px solid var(--bd);
-            text-transform:uppercase;font-weight:800;font-size:.78rem;letter-spacing:.02em;text-align:center;
-            padding:.75rem .95rem;white-space:nowrap;
-        }
-        tbody td{
-            padding:.75rem .95rem;border-bottom:1px solid var(--bd);background:#fff;vertical-align:middle;text-align:center;
-        }
-        tbody tr:hover td{background:#f8fafc;}
-
-        .truncate{display:inline-block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;}
-
-        /* Badge Enabled/Disabled */
-        .badge{display:inline-flex;align-items:center;gap:.3rem;font-weight:800;border-radius:.55rem;padding:.28rem .55rem;font-size:.78rem;line-height:1;}
-        .badge-success{background:var(--success);color:#fff;}
-        .badge-danger{background:var(--danger);color:#fff;}
-
-        /* Footer pager */
-        .pager{display:flex;align-items:center;gap:10px;margin-top:14px;}
-    </style>
 </head>
 <body>
 <section layout:fragment="content" th:with="fmt='dd/MM/yyyy HH:mm'">
