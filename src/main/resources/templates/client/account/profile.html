@@ -6,279 +6,200 @@
 
 <body>
 <th:block layout:fragment="headExtras">
-    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
-    <!-- <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/> -->
+    <!-- <link rel="stylesheet" th:href="@{/css/profile.css}"/> -->
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
 </th:block>
 
-<div layout:fragment="content" class="profile-page">
-    <!-- <section class="banner">
-        <div class="banner-card">
-            <div class="banner-left">
-                <h2>
-                    Xin chào
-                    <span th:text="${me != null and me.fullname != null ? me.fullname : 'Bạn'}">Bạn</span>
-                </h2>
+<div layout:fragment="content"
+     th:with="customer=${user != null ? user : me},
+              fullnameText=${customer != null and customer.fullname != null and !customer.fullname.isBlank() ? customer.fullname : 'Chưa cập nhật'},
+              phoneText=${customer != null and customer.phone != null and !customer.phone.isBlank() ? customer.phone : 'Chưa cập nhật'},
+              genderKey=${customer != null and customer.gender != null ? customer.gender : ''},
+              genderLabel=${#strings.equalsIgnoreCase(genderKey,'M') ? 'Nam' : (#strings.equalsIgnoreCase(genderKey,'F') ? 'Nữ' : (#strings.equalsIgnoreCase(genderKey,'O') ? 'Không tiết lộ' : 'Không tiết lộ'))},
+              dobText=${customer != null and customer.dob != null ? #temporals.format(customer.dob,'dd/MM/yyyy') : 'Chưa cập nhật'},
+              heightText=${customer != null and customer.heightCm != null ? customer.heightCm + ' cm' : 'Chưa cập nhật'},
+              weightText=${customer != null and customer.weightKg != null ? customer.weightKg + ' kg' : 'Chưa cập nhật'},
+              addressDisplay=${'Chưa cập nhật'}">
+    <div class="account-page"
+         id="initProfile"
+         th:attr="data-dob=${customer != null and customer.dob != null ? customer.dob : ''},
+                  data-gender=${genderKey},
+                  data-height=${customer != null and customer.heightCm != null ? customer.heightCm : ''},
+                  data-weight=${customer != null and customer.weightKg != null ? customer.weightKg : ''},
+                  data-phone=${customer != null and customer.phone != null ? customer.phone : ''},
+                  data-authm=${authm},
+                  data-name=${customer != null and customer.fullname != null ? customer.fullname : ''}">
 
-                <div class="tier-row">
-                    <img class="img-slot img-badge" alt="badge hiện tại"
-                         th:if="${mb != null and mb.currentTierBadgeUrl != null}"
-                         th:src="${mb.currentTierBadgeUrl}"/>
-                    <img class="img-slot img-badge" alt="badge hiện tại"
-                         th:unless="${mb != null and mb.currentTierBadgeUrl != null}"
-                         th:src="@{/images/new.avif}"/>
-                    <span class="tier-name"
-                          th:text="${mb != null and mb.currentTierName != null ? mb.currentTierName : 'MỚI'}">MỚI</span>
-                </div>
-
-                <div class="need">
-                    <div>Chi tiêu thêm</div>
-                    <div class="money"
-                         th:text="${mb != null and mb.needMoreText != null ? mb.needMoreText : '500.000đ'}">500.000đ</div>
-                    <div>
-                        để lên hạng
-                        <img class="img-slot img-badge" alt="badge kế"
-                             th:if="${mb != null and mb.nextTierBadgeUrl != null}"
-                             th:src="${mb.nextTierBadgeUrl}"/>
-                        <img class="img-slot img-badge" alt="badge kế"
-                             th:unless="${mb != null and mb.nextTierBadgeUrl != null}"
-                             th:src="@{/images/silver.avif}"/>
-                        <strong th:text="${mb != null and mb.nextTierName != null ? mb.nextTierName : 'BẠC'}">BẠC</strong>
-                    </div>
-                </div>
-
-                <div class="meter">
-                    <div class="dot"
-                         th:style="'left:' + ( (mb != null and mb.progressPct != null) ? mb.progressPct : 35 ) + '%'"
-                         style="left:35%"></div>
-                </div>
-
-                <div class="milestones">
-                    <div class="milestone">
-                        <img class="img-slot img-badge" alt="NEW"
-                             th:if="${mb != null and mb.badgeNewUrl != null}"
-                             th:src="${mb.badgeNewUrl}"/>
-                        <img class="img-slot img-badge" alt="NEW"
-                             th:unless="${mb != null and mb.badgeNewUrl != null}"
-                             th:src="@{/images/new.avif}"/>
-                        <span>MỚI</span>
-                    </div>
-                    <div class="milestone">
-                        <img class="img-slot img-badge" alt="SILVER"
-                             th:if="${mb != null and mb.badgeSilverUrl != null}"
-                             th:src="${mb.badgeSilverUrl}"/>
-                        <img class="img-slot img-badge" alt="SILVER"
-                             th:unless="${mb != null and mb.badgeSilverUrl != null}"
-                             th:src="@{/images/silver.avif}"/>
-                        <span>BẠC</span>
-                    </div>
-                    <div class="milestone">
-                        <img class="img-slot img-badge" alt="GOLD"
-                             th:if="${mb != null and mb.badgeGoldUrl != null}"
-                             th:src="${mb.badgeGoldUrl}"/>
-                        <img class="img-slot img-badge" alt="GOLD"
-                             th:unless="${mb != null and mb.badgeGoldUrl != null}"
-                             th:src="@{/images/gold.avif}"/>
-                        <span>VÀNG</span>
-                    </div>
-                    <div class="milestone">
-                        <img class="img-slot img-badge" alt="PLATINUM"
-                             th:if="${mb != null and mb.badgePlatinumUrl != null}"
-                             th:src="${mb.badgePlatinumUrl}"/>
-                        <img class="img-slot img-badge" alt="PLATINUM"
-                             th:unless="${mb != null and mb.badgePlatinumUrl != null}"
-                             th:src="@{/images/platium.avif}"/>
-                        <span>BẠCH KIM</span>
-                    </div>
-                </div>
-
-                <div class="review-note">
-                    Hạng thành viên vừa được xét lại vào
-                    <span th:text="${(mb != null and mb.lastReviewDate != null)
-                             ? #temporals.format(mb.lastReviewDate, 'dd/MM/yyyy')
-                             : '01/10/2025'}">01/10/2025</span>,
-                    ngày xét hạng tiếp theo:
-                    <span th:text="${(mb != null and mb.nextReviewDate != null)
-                             ? #temporals.format(mb.nextReviewDate, 'dd/MM/yyyy')
-                             : '01/01/2026'}">01/01/2026</span>
-                </div>
-            </div>
-
-            <div class="banner-right">
-                <div class="wallet-title">Bạn đang có</div>
-                <div class="wallet-row">
-                    <img class="img-slot img-coin" alt="coin"
-                         th:if="${wallet != null and wallet.coinImgUrl != null}"
-                         th:src="${wallet.coinImgUrl}"/>
-                    <img class="img-slot img-coin" alt="coin"
-                         th:unless="${wallet != null and wallet.coinImgUrl != null}"
-                         th:src="@{/images/iconCoolcash.png}"/>
-                    <div class="wallet-balance">
-                        <span th:text="${wallet != null and wallet.balanceText != null ? wallet.balanceText : '0'}">0</span> Coolcash
-                    </div>
-                </div>
-                <div class="wallet-pending">
-                    Chờ:
-                    <span th:text="${wallet != null and wallet.pendingText != null ? wallet.pendingText : '0'}">0</span> Coolcash
-                    <img class="img-slot" alt="icon i" style="width:16px;height:16px;border-radius:50%"
-                         th:if="${wallet != null and wallet.infoIconUrl != null}"
-                         th:src="${wallet.infoIconUrl}"/>
-                    <img class="img-slot" alt="icon i" style="width:16px;height:16px;border-radius:50%"
-                         th:unless="${wallet != null and wallet.infoIconUrl != null}"
-                         th:src="@{/images/placeholder.png}"/>
-                </div>
-            </div>
-        </div>
-    </section> -->
-
-    <div class="wrap">
         <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
 
-        <main>
-            <div class="card">
-                <h1 class="h1">Thông tin tài khoản</h1>
-                <div class="grid">
-                    <div class="muted">Họ và tên</div>
-                    <div th:text="${me != null and me.fullname != null ? me.fullname : 'Chưa cập nhật'}">Chưa cập nhật</div>
+        <main class="account-main">
+            <div class="white-surface">
+                <div class="surface-header">
+                    <h1 class="surface-title">Thông tin tài khoản</h1>
+                </div>
 
-                    <div class="muted">Số điện thoại</div>
-                    <div th:text="${me != null and me.phone != null ? me.phone : 'Chưa cập nhật'}">Chưa cập nhật</div>
+                <div class="surface-grid">
+                    <div class="surface-panel">
+                        <h3 class="panel-title">Thông tin tài khoản</h3>
+                        <div class="info-card--flat">
+                            <dl class="info-list">
+                                <dt class="info-list__label">Họ và tên</dt>
+                                <dd class="info-list__value" th:text="${fullnameText}">Chưa cập nhật</dd>
 
-                    <div class="muted">Giới tính</div>
-                    <div th:text="${me != null and me.gender != null
-                           ? (me.gender == 'M' ? 'Nam' : (me.gender == 'F' ? 'Nữ' : (me.gender == 'O' ? 'Không tiết lộ' : 'Chưa cập nhật')))
-                           : 'Chưa cập nhật'}">Chưa cập nhật</div>
+                                <dt class="info-list__label">Số điện thoại</dt>
+                                <dd class="info-list__value" th:text="${phoneText}">Chưa cập nhật</dd>
 
-                    <div class="muted">Ngày sinh</div>
-                    <div>
-                        <span th:if="${me != null and me.dob != null}"
-                              th:text="${#temporals.format(me.dob,'dd/MM/yyyy')}">—</span>
-                        <span th:if="${!(me != null and me.dob != null)}" class="muted">
-                            Hãy cập nhật ngày sinh để chúng tôi gửi bạn 1 phần quà đặc biệt nhé
-                        </span>
+                                <dt class="info-list__label">Giới tính</dt>
+                                <dd class="info-list__value" th:text="${genderLabel}">Không tiết lộ</dd>
+
+                                <dt class="info-list__label">Ngày sinh</dt>
+                                <dd class="info-list__value" th:text="${dobText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Chiều cao</dt>
+                                <dd class="info-list__value" th:text="${heightText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Cân nặng</dt>
+                                <dd class="info-list__value" th:text="${weightText}">Chưa cập nhật</dd>
+
+                            </dl>
+                        </div>
+                        <button class="button mt-16"
+                                type="button"
+                                data-open="#modal-info"
+                                onclick="openEditModal(); return false;">
+                            Cập nhật
+                        </button>
                     </div>
 
-                    <div class="muted">Chiều cao</div>
-                    <div th:text="${me != null and me.heightCm != null ? me.heightCm + ' cm' : 'Chưa cập nhật'}">Chưa cập nhật</div>
+                    <div class="surface-panel">
+                        <h3 class="panel-title">Thông tin đăng nhập</h3>
+                        <div class="info-card--flat">
+                            <dl class="info-list">
+                                <dt class="info-list__label">Email</dt>
+                                <dd class="info-list__value"
+                                    th:text="${customer != null and customer.email != null ? customer.email : 'Chưa cập nhật'}">
+                                    Chưa cập nhật
+                                </dd>
 
-                    <div class="muted">Cân nặng</div>
-                    <div th:text="${me != null and me.weightKg != null ? me.weightKg + ' kg' : 'Chưa cập nhật'}">Chưa cập nhật</div>
-                </div>
-
-                <div style="margin-top:22px">
-                    <button class="btn" type="button" onclick="openEditModal()">CẬP NHẬT</button>
-                </div>
-
-                <h2 class="h1" style="font-size:24px;margin-top:26px">Thông tin đăng nhập</h2>
-                <div class="grid">
-                    <div class="muted">Email</div>
-                    <div th:text="${me != null and me.email != null ? me.email : '—'}">—</div>
-
-                    <div class="muted">Mật khẩu</div>
-                    <div>************</div>
-                </div>
-
-                <div style="margin-top:16px">
-                    <button class="btn" type="button" onclick="openModal('pwdModal')">CẬP NHẬT</button>
+                                <dt class="info-list__label">Mật khẩu</dt>
+                                <dd class="info-list__value">●●●●●●●●●</dd>
+                            </dl>
+                        </div>
+                        <button class="button mt-16"
+                                type="button"
+                                data-open="#modal-password"
+                                onclick="openPasswordModal(); return false;">
+                            Cập nhật
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="initProfile"
-         th:attr="
-           data-dob=${(me != null and me.dob != null) ? #temporals.format(me.dob,'yyyy-MM-dd') : ''},
-           data-gender=${(me != null and me.gender != null) ? me.gender : ''},
-           data-height=${(me != null and me.heightCm != null) ? me.heightCm : ''},
-           data-weight=${(me != null and me.weightKg != null) ? me.weightKg : ''},
-           data-phone=${(me != null and me.phone != null) ? me.phone : ''},
-           data-authm=${authm}">
-    </div>
-
-    <div id="editModal" class="modal-backdrop" aria-hidden="true">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-            <button class="modal-close" onclick="closeModal('editModal')">×</button>
-            <div class="modal-hd" id="editTitle">Chỉnh sửa thông tin tài khoản</div>
-
-            <div class="modal-bd">
-                <div class="field">
-                    <label class="hint">Họ và tên</label>
-                    <input class="input" id="m_fullname" th:value="${me != null and me.fullname != null ? me.fullname : ''}" readonly>
-                    <div class="hint">(*) Endpoint hiện không cập nhật họ tên</div>
-                </div>
-
-                <div class="field">
-                    <div class="row">
-                        <select class="input" id="m_d" aria-label="Ngày">
-                            <option value="">Ngày</option>
-                            <option th:each="d : ${#numbers.sequence(1,31)}" th:value="${d}" th:text="${d}"></option>
-                        </select>
-                        <select class="input" id="m_m" aria-label="Tháng">
-                            <option value="">Tháng</option>
-                            <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:text="${m}"></option>
-                        </select>
-                        <div th:with="now=${#temporals.createNow()}, cur=${#temporals.year(now)}">
-                            <select class="input" id="m_y" aria-label="Năm">
-                                <option value="">Năm</option>
-                                <option th:each="y : ${#numbers.sequence(cur, 1900, -1)}" th:value="${y}" th:text="${y}"></option>
-                            </select>
-                        </div>
+    <div class="modal" id="modal-info" aria-hidden="true">
+        <div class="modal__overlay" data-close></div>
+        <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-info-title">
+            <button class="modal__close" type="button" data-close aria-label="Đóng">×</button>
+            <div class="form-card">
+                <h2 id="modal-info-title">Chỉnh sửa thông tin tài khoản</h2>
+                <div class="form">
+                    <div class="form-group">
+                        <label for="m_fullname">Họ và tên</label>
+                        <input id="m_fullname"
+                               type="text"
+                               readonly
+                               th:value="${customer != null and customer.fullname != null ? customer.fullname : ''}">
+                        <span class="form-hint">Thông tin này không thể thay đổi trực tiếp.</span>
                     </div>
-                </div>
 
-                <div class="field">
-                    <div class="radio-row">
-                        <label><input type="radio" name="m_gender" value="M"> Nam</label>
-                        <label><input type="radio" name="m_gender" value="F"> Nữ</label>
-                        <label><input type="radio" name="m_gender" value="O"> Không tiết lộ</label>
+                    <div class="form-group">
+                        <label for="m_dob">Ngày sinh</label>
+                        <input id="m_dob"
+                               type="date"
+                               th:value="${customer != null and customer.dob != null ? customer.dob : ''}">
                     </div>
-                </div>
 
-                <div class="field">
-                    <label class="hint">Số điện thoại</label>
-                    <input class="input" id="m_phone" placeholder="VD: 0812345678"
-                           th:value="${me != null and me.phone != null ? me.phone : ''}">
-                </div>
+                    <div class="form-group">
+                        <label for="m_gender">Giới tính</label>
+                        <select id="m_gender">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="M" th:selected="${#strings.equalsIgnoreCase(genderKey,'M')}">Nam</option>
+                            <option value="F" th:selected="${#strings.equalsIgnoreCase(genderKey,'F')}">Nữ</option>
+                            <option value="O" th:selected="${#strings.equalsIgnoreCase(genderKey,'O')}">Không tiết lộ</option>
+                        </select>
+                    </div>
 
-                <div class="field slider-wrap">
-                    <div>Chiều cao</div>
-                    <input type="range" min="120" max="210" step="1" class="slider" id="m_h">
-                    <div><span id="m_h_out">0</span>cm</div>
-                </div>
-                <div class="field slider-wrap">
-                    <div>Cân nặng</div>
-                    <input type="range" min="35" max="140" step="1" class="slider" id="m_w">
-                    <div><span id="m_w_out">0</span>kg</div>
-                </div>
+                    <div class="form-group">
+                        <label for="m_phone">Số điện thoại</label>
+                        <input id="m_phone"
+                               type="tel"
+                               placeholder="Ví dụ: 0912345678"
+                               th:value="${customer != null and customer.phone != null ? customer.phone : ''}">
+                    </div>
 
-                <div id="m_err" class="hint" style="color:#dc2626;display:none"></div>
-            </div>
+                    <div class="form-group form-group--inline">
+                        <label for="m_height">Chiều cao (cm)</label>
+                        <input id="m_height"
+                               type="number"
+                               inputmode="numeric"
+                               min="120"
+                               max="220"
+                               th:value="${customer != null and customer.heightCm != null ? customer.heightCm : ''}">
+                    </div>
 
-            <div class="modal-ft">
-                <button class="btn-big" onclick="submitEdit()">CẬP NHẬT THÔNG TIN →</button>
+                    <div class="form-group form-group--inline">
+                        <label for="m_weight">Cân nặng (kg)</label>
+                        <input id="m_weight"
+                               type="number"
+                               inputmode="numeric"
+                               min="35"
+                               max="200"
+                               th:value="${customer != null and customer.weightKg != null ? customer.weightKg : ''}">
+                    </div>
+
+                    <div id="m_err" class="form-error" style="display:none;"></div>
+
+                    <button type="button"
+                            class="button button--primary w-full mt-16"
+                            onclick="submitEdit()">
+                        Cập nhật thông tin
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="pwdModal" class="modal-backdrop" aria-hidden="true">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
-            <button class="modal-close" onclick="closeModal('pwdModal')">×</button>
-            <div class="modal-hd" id="pwdTitle">Chỉnh sửa thông tin tài khoản</div>
+    <div class="modal" id="modal-password" aria-hidden="true">
+        <div class="modal__overlay" data-close></div>
+        <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-password-title">
+            <button class="modal__close" type="button" data-close aria-label="Đóng">×</button>
+            <div class="form-card">
+                <h2 id="modal-password-title">Đổi mật khẩu</h2>
+                <div class="form">
+                    <div class="form-group" id="old-password-group">
+                        <label for="p_old">Mật khẩu cũ</label>
+                        <input id="p_old" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại">
+                    </div>
 
-            <div class="modal-bd">
-                <div class="field">
-                    <input class="input" id="p_old" type="password" placeholder="Mật khẩu cũ">
-                </div>
-                <div class="field">
-                    <input class="input" id="p_new" type="password" placeholder="Mật khẩu mới">
-                </div>
-                <div class="field">
-                    <input class="input" id="p_new2" type="password" placeholder="Nhập lại mật khẩu">
-                </div>
-                <div id="p_err" class="hint" style="color:#dc2626;display:none"></div>
-            </div>
+                    <div class="form-group">
+                        <label for="p_new">Mật khẩu mới</label>
+                        <input id="p_new" type="password" autocomplete="new-password" placeholder="Nhập mật khẩu mới">
+                    </div>
 
-            <div class="modal-ft">
-                <button class="btn-big" onclick="submitChangePassword()">CẬP NHẬT MẬT KHẨU</button>
+                    <div class="form-group">
+                        <label for="p_new2">Nhập lại mật khẩu</label>
+                        <input id="p_new2" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <div id="p_err" class="form-error" style="display:none;"></div>
+
+                    <button type="button"
+                            class="button button--primary w-full mt-16"
+                            onclick="submitChangePassword()">
+                        Cập nhật mật khẩu
+                    </button>
+                </div>
             </div>
         </div>
     </div>

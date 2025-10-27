@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -6,8 +6,6 @@
 
 <body>
 <th:block layout:fragment="headExtras">
-    <!-- Đảm bảo base layout có <meta charset="UTF-8"> -->
-    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
     <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
 </th:block>
 
@@ -24,17 +22,19 @@
                 </button>
             </div>
 
-            <div th:if="${addressMessage != null}" class="alert alert--success" th:text="${addressMessage}"></div>
+            <div th:if="${addressMessage != null}"
+                 class="alert alert--success"
+                 th:text="${addressMessage}"></div>
 
             <h4 class="address-header">Sổ địa chỉ</h4>
 
             <div class="empty-state"
-                 th:if="${addresses == null or addresses.isEmpty()}">
+                 th:if="${addresses == null || addresses.isEmpty()}">
                 Bạn chưa có địa chỉ nào!
             </div>
 
             <div class="address-list"
-                 th:if="${addresses != null and !addresses.isEmpty()}">
+                 th:if="${addresses != null && !addresses.isEmpty()}">
                 <div class="address-card"
                      th:each="addr : ${addresses}"
                      th:attr="data-address-id=${addr.id},
@@ -46,30 +46,31 @@
                               data-district=${addr.district},
                               data-ward=${addr.ward},
                               data-is-default=${addr.defaultAddress}">
-                    <div class="address-card__band">
-                        <div>
-                            <div class="address-card__name"
-                                 th:text="${addr.fullName}">Nguyễn Văn A</div>
-                            <div class="address-card__phone"
-                                 th:text="${addr.phone}">0909123456</div>
+
+                    <div class="address-card__header">
+                        <div class="address-card__heading">
+                            <span class="address-card__name"
+                                  th:text="${addr.fullName}">Nguyễn Văn A</span>
+                            <span class="address-badge"
+                                  th:if="${addr.defaultAddress}">MẶC ĐỊNH</span>
                         </div>
-                        <span class="address-badge"
-                              th:if="${addr.defaultAddress}">MẶC ĐỊNH</span>
                     </div>
 
-                    <div class="address-card__body">
-                        <div class="address-card__line"
-                             th:text="${addr.line1}">123 Nguyễn Văn Cừ</div>
-                        <div class="address-card__line"
-                             th:if="${addr.line2 != null and !addr.line2.isBlank()}"
-                             th:text="${addr.line2}">Tòa nhà ABC</div>
-                        <div class="address-card__line"
-                             th:text="${addr.ward + ', ' + addr.district + ', ' + addr.city}">
+                    <div class="address-card__details">
+                        <span class="address-card__meta"
+                              th:text="${addr.phone}">0909123456</span>
+                        <span class="address-card__line"
+                              th:text="${addr.line1}">123 Nguyễn Văn Cừ</span>
+                        <span class="address-card__line"
+                              th:if="${addr.line2 != null and !addr.line2.isBlank()}"
+                              th:text="${addr.line2}">Tòa nhà ABC</span>
+                        <span class="address-card__line"
+                              th:text="${addr.ward + ', ' + addr.district + ', ' + addr.city}">
                             Phường 2, Quận 5, TP. Hồ Chí Minh
-                        </div>
+                        </span>
                     </div>
 
-                    <div class="address-card__action-row">
+                    <div class="address-card__actions">
                         <button type="button"
                                 class="address-card__action"
                                 data-edit-address
@@ -84,12 +85,14 @@
                                          data-is-default=${addr.defaultAddress}">
                             Chỉnh sửa
                         </button>
-                        <form th:action="@{/account/addresses/{id}/delete(id=${addr.id})}"
-                              method="post"
-                              th:if="${!addr.defaultAddress}"
-                              class="address-card__form-inline">
+                        <span class="address-card__divider"
+                              th:if="${!addr.defaultAddress}">|</span>
+                        <form th:if="${!addr.defaultAddress}"
+                              th:action="@{/account/addresses/{id}/delete(id=${addr.id})}"
+                              method="post">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <button type="submit" class="address-card__action address-card__action--danger">
+                            <button type="submit"
+                                    class="address-card__action address-card__action--danger">
                                 Xóa
                             </button>
                         </form>
@@ -115,13 +118,14 @@
     <div class="address-modal hidden"
          role="dialog"
          aria-modal="true"
-         data-address-modal th:attr="data-auto-open=${showAddressModal != null ? showAddressModal : false}">
+         data-address-modal
+         th:attr="data-auto-open=${showAddressModal != null ? showAddressModal : false}">
         <button class="address-modal__close"
                 type="button"
                 aria-label="Đóng"
-                data-close-address-modal>×
+                data-close-address-modal>x
         </button>
-        <h2 class="address-modal__title">Thêm Địa Chỉ</h2>
+        <h2 class="address-modal__title">Thêm địa chỉ</h2>
         <form class="address-form"
               data-address-form
               th:action="@{/account/addresses}"
@@ -133,7 +137,7 @@
 
             <div class="form-group form-group--inline">
                 <label for="full_name">Họ và tên</label>
-                <input id="full_name" th:field="*{fullName}" placeholder="Nhập họ tên" required>
+                <input id="full_name" th:field="*{fullName}" placeholder="Nhập họ và tên" required>
                 <span class="form-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Lỗi</span>
             </div>
 

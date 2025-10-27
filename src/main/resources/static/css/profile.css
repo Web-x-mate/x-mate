@@ -68,8 +68,8 @@ body {
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    /* background: rgba(0, 0, 0, .55); */
-    display: flex;
+    background: rgba(0, 0, 0, .55);
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 9999999999;
@@ -529,33 +529,18 @@ body.modal-open {
     color: #111;
 }
 
-/* ===== Modal overlay chuẩn, không làm mờ nội dung bên trong ===== */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
 .modal-backdrop.is-active,
 .modal-backdrop[aria-hidden="false"] {
     display: flex;
-    opacity: 1 !important;
-    background: #fff !important;
 }
 
-/* LỚP NỀN (overlay) – tách riêng để không ảnh hưởng con */
-.modal-backdrop::before {
+/* .modal-backdrop::before {
     content: "";
     position: absolute;
     inset: 0;
     background: rgba(15, 23, 42, .55);
-    /* nền tối */
     backdrop-filter: blur(2px);
-    /* tuỳ chọn: làm mờ hậu cảnh */
-}
+} */
 
 /* Panel modal nằm TRÊN overlay */
 .modal {
@@ -703,3 +688,35 @@ body.modal-open {
 .modal-backdrop[data-address-overlay] {
     z-index: 1300
 }
+
+/* Panel modal */
+.modal {
+  position: relative;
+  z-index: 1;                    /* nằm trên overlay */
+  width: min(920px, 92vw);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+
+/* Khi mở modal khoá scroll nền */
+body.modal-open { overflow: hidden; }
+
+/* Thu nhỏ modal ĐỔI MẬT KHẨU */
+#pwdModal .modal { width: min(520px, 92vw); }
+#pwdModal .modal-hd { font-size: 24px; padding: 20px 24px; }
+#pwdModal .modal-bd { padding: 0 24px 18px; }
+#pwdModal .modal-ft { padding: 16px 20px 22px; }
+#pwdModal .input   { padding: 12px 16px; font-size: 16px; border-radius: 12px; width: 94%; }
+#pwdModal .btn-big { padding: 14px 18px; font-size: 16px; border-radius: 999px; }
+
+/* Thu nhỏ modal CẬP NHẬT THÔNG TIN */
+#editModal .modal { width: min(720px, 92vw); }
+#editModal .modal-hd { font-size: 28px; padding: 22px 26px; }
+#editModal .modal-bd { padding: 0 26px 20px; }
+#editModal .modal-ft { padding: 16px 22px 24px; }
+#editModal .input   { padding: 12px 16px; font-size: 16px; border-radius: 12px; width: 95%; }
+#editModal .row     { gap: 10px; }
+#editModal .field   { margin: 12px 0; }
+#editModal .slider-wrap { grid-template-columns: 140px 1fr 80px; gap: 12px; }

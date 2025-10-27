@@ -112,7 +112,7 @@
                         <div class="order-card__totals">
                             <div class="order-card__summary-row">
                                 <span>Tạm tính</span>
-                                <span th:text="${order.totals != null ? order.totals.subtotalText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.subtotalText() : '0 ₫'}">0&nbsp;₫</span>
                             </div>
                             <div class="order-card__summary-row"
                                     th:if="${order.hasDiscount}">
@@ -124,11 +124,11 @@
 
                             <div class="order-card__summary-row">
                                 <span>Phí vận chuyển</span>
-                                <span th:text="${order.totals != null ? order.totals.shippingText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.shippingText() : '0 ₫'}">0&nbsp;₫</span>
                             </div>
                             <div class="order-card__summary-row is-total">
                                 <span>Tổng cộng</span>
-                                <span th:text="${order.totals != null ? order.totals.totalText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.totalText() : '0 ₫'}">0&nbsp;₫</span>
                             </div>
                         </div>
                     </div>

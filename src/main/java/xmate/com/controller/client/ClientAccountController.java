@@ -16,6 +16,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import xmate.com.controller.client.support.ClientCatalogViewService;
 import xmate.com.controller.client.support.ClientOrderViewService;
 import xmate.com.controller.client.view.OrderHistoryView;
 import xmate.com.dto.address.AccountAddressForm;
@@ -45,6 +46,7 @@ public class ClientAccountController {
     private final ClientOrderViewService clientOrderViewService;
     private final ObjectMapper objectMapper;
     private final AddressService addressService;
+    private final ClientCatalogViewService catalogViewService;
 
     /** Trim toàn bộ String ("" -> null) để @NotBlank hoạt động chuẩn */
     @InitBinder
@@ -243,6 +245,9 @@ public class ClientAccountController {
         model.addAttribute("user", me);
         model.addAttribute("active", active);
         model.addAttribute("authm", extractAuthMethod(auth));
+        model.addAttribute("primaryCategories", catalogViewService.buildPrimaryNav());
+        model.addAttribute("searchQuery", null);
+        model.addAttribute("cartQuantity", 0);
     }
 
     private String extractAuthMethod(Authentication auth) {

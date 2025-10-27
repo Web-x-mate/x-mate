@@ -6,32 +6,24 @@
 
 <body>
 <th:block layout:fragment="headExtras">
-    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
 </th:block>
 
-<div layout:fragment="content" class="profile-page">
-    <!-- <section class="banner banner--simple">
-        <div class="banner-card banner-card--compact">
-            <div class="banner-left">
-                <h2>Đánh giá & phản hồi</h2>
-                <p class="muted">Xem lại các nhận xét bạn đã gửi cho sản phẩm.</p>
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Danh gia & phan hoi</h1>
+            </div>
+
+            <div class="empty-state">
+                <p>Ban chua gui danh gia nao.</p>
+                <p class="muted">Sau khi mua hang, hay de lai cam nhan de chung toi phuc vu tot hon.</p>
             </div>
         </div>
-    </section> -->
-
-    <div class="wrap">
-        <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
-
-        <main>
-            <div class="card">
-                <h1 class="h1">Nhận xét của bạn</h1>
-                <div class="empty-block">
-                    <p>Bạn chưa gửi đánh giá nào.</p>
-                    <p class="muted">Sau khi mua hàng, hãy để lại cảm nhận để chúng tôi phục vụ tốt hơn.</p>
-                </div>
-            </div>
-        </main>
-    </div>
+    </main>
 </div>
 
 <th:block layout:fragment="bodyExtras">
