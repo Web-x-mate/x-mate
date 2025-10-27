@@ -1,65 +1,147 @@
+
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm / Sửa Media</title>
+    <style>
+        :root{
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --bd:#e2e8f0;
+            --ring:#93c5fd;
+            --primary:#2563eb;
+            --primary-hover:#1d4ed8;
+            --success:#16a34a;
+            --success-hover:#15803d;
+            --secondary:#334155;
+            --secondary-hover:#1f2937;
+        }
+
+        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
+        .wrap{max-width:700px;margin:0 auto;padding:36px 0;}
+        .page-title{
+            font-size:1.9rem;font-weight:800;color:var(--text);
+            text-align:center;margin-bottom:1.5rem;
+        }
+
+        form{
+            background:var(--surface);
+            border:1px solid var(--bd);
+            border-radius:16px;
+            box-shadow:0 2px 4px rgba(15,23,42,.06);
+            padding:28px 32px;
+            display:flex;
+            flex-direction:column;
+            gap:20px;
+        }
+
+        label{font-weight:700;color:var(--text);display:block;margin-bottom:.4rem;}
+        .form-control,.form-select{
+            width:100%;padding:.65rem .9rem;
+            border:1px solid var(--bd);border-radius:10px;
+            background:var(--surface);font-size:.95rem;color:var(--text);
+            transition:.18s;
+        }
+        .form-control:focus,.form-select:focus{
+            border-color:var(--primary);
+            box-shadow:0 0 0 3px var(--ring);
+            outline:none;
+        }
+
+        .form-check{display:flex;align-items:center;gap:.55rem;}
+        .form-check-input{width:18px;height:18px;cursor:pointer;}
+        .form-check-label{font-weight:600;}
+
+        small{font-size:.85rem;color:var(--muted);}
+        a.link-inline{color:var(--primary);text-decoration:none;}
+        a.link-inline:hover{text-decoration:underline;}
+
+        /* Buttons */
+        .btn{
+            height:42px;padding:0 18px;
+            border-radius:12px;border:1px solid transparent;
+            font-weight:700;font-size:.9rem;
+            display:inline-flex;align-items:center;gap:.4rem;
+            line-height:1;transition:.18s;
+        }
+        .btn-primary{background:var(--primary);color:#fff;}
+        .btn-primary:hover{background:var(--primary-hover);}
+        .btn-outline-secondary{background:#fff;color:var(--secondary);border:1px solid var(--bd);}
+        .btn-outline-secondary:hover{background:#f1f5f9;}
+
+        .actions{display:flex;justify-content:flex-end;gap:12px;margin-top:12px;}
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
-    <h1 th:text="${media != null and media.id != null} ? 'Sửa Media' : 'Thêm Media'">Thêm Media</h1>
+    <div class="wrap">
+        <h1 class="page-title" th:text="${media != null and media.id != null} ? 'Sửa Media' : 'Thêm Media'">Thêm Media</h1>
 
-    <form th:action="${media != null and media.id != null}
+        <form th:action="${media != null and media.id != null}
                       ? @{'/admin/catalog/products/' + ${product.id} + '/media/edit/' + ${media.id}}
                       : @{'/admin/catalog/products/' + ${product.id} + '/media/new'}"
-          method="post" enctype="multipart/form-data" class="vstack gap-3">
+              method="post" enctype="multipart/form-data" class="vstack gap-3">
 
-        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-        <div>
-            <label for="mediaType">Media type</label>
-            <select id="mediaType" name="mediaType" class="form-select" required>
-                <option th:value="IMAGE"
-                        th:selected="${media == null or media.mediaType?.name() == 'IMAGE'}">IMAGE</option>
-                <option th:value="VIDEO"
-                        th:selected="${media != null and media.mediaType?.name() == 'VIDEO'}">VIDEO</option>
-            </select>
-        </div>
+            <!-- Media type -->
+            <div>
+                <label for="mediaType">Media type</label>
+                <select id="mediaType" name="mediaType" class="form-select" required>
+                    <option th:value="IMAGE"
+                            th:selected="${media == null or media.mediaType?.name() == 'IMAGE'}">IMAGE</option>
+                    <option th:value="VIDEO"
+                            th:selected="${media != null and media.mediaType?.name() == 'VIDEO'}">VIDEO</option>
+                </select>
+            </div>
 
-        <div>
-            <label for="file">File</label>
-            <input id="file" name="file" type="file" class="form-control"
-                   th:required="${media == null}">
-            <small th:if="${media != null}">
-                Ảnh hiện tại:
-                <a th:href="${media.url}" th:text="${media.url}" target="_blank" rel="noopener">link</a>
-                (để trống nếu không muốn thay)
-            </small>
-        </div>
+            <!-- File -->
+            <div>
+                <label for="file">File</label>
+                <input id="file" name="file" type="file" class="form-control" th:required="${media == null}">
+                <small th:if="${media != null}">
+                    Ảnh hiện tại:
+                    <a class="link-inline" th:href="${media.url}" th:text="${media.url}" target="_blank" rel="noopener">link</a>
+                    (để trống nếu không muốn thay)
+                </small>
+            </div>
 
-        <div>
-            <label for="variantId">Variant ID (tùy chọn)</label>
-            <input id="variantId" name="variantId" type="number" class="form-control"
-                   th:value="${media != null and media.variant != null} ? ${media.variant.id} : ''"
-                   placeholder="Gắn ảnh theo variant (nếu có)">
-        </div>
+            <!-- Variant ID -->
+            <div>
+                <label for="variantId">Variant ID (tùy chọn)</label>
+                <input id="variantId" name="variantId" type="number" class="form-control"
+                       th:value="${media != null and media.variant != null} ? ${media.variant.id} : ''"
+                       placeholder="Gắn ảnh theo variant (nếu có)">
+            </div>
 
-        <div class="form-check">
-            <input class="form-check-input" id="primary" name="primary" type="checkbox"
-                   th:checked="${media != null ? media.primary : false}">
-            <label for="primary" class="form-check-label">Primary</label>
-        </div>
+            <!-- Primary -->
+            <div class="form-check">
+                <input class="form-check-input" id="primary" name="primary" type="checkbox"
+                       th:checked="${media != null ? media.primary : false}">
+                <label for="primary" class="form-check-label">Primary</label>
+            </div>
 
-        <div>
-            <label for="sortOrder">Sort order</label>
-            <input id="sortOrder" name="sortOrder" type="number" class="form-control"
-                   th:value="${media != null ? media.sortOrder : 0}">
-        </div>
+            <!-- Sort order -->
+            <div>
+                <label for="sortOrder">Sort order</label>
+                <input id="sortOrder" name="sortOrder" type="number" class="form-control"
+                       th:value="${media != null ? media.sortOrder : 0}">
+            </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"
-                    th:text="${media != null and media.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
-            <a th:href="@{|/admin/catalog/products/${product.id}/media|}" class="btn btn-outline-secondary">Quay lại</a>
-        </div>
-    </form>
+            <!-- Actions -->
+            <div class="actions">
+                <button type="submit" class="btn btn-primary"
+                        th:text="${media != null and media.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+                <a th:href="@{|/admin/catalog/products/${product.id}/media|}" class="btn btn-outline-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
 </section>
 </body>
 </html>

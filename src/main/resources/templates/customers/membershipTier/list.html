@@ -4,6 +4,9 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/customers/membershiptier/list.css}">
+</head>
 <body>
 <section layout:fragment="content">
 
@@ -21,7 +24,7 @@
             <a class="btn btn-primary"
                th:href="@{/admin/membership-tiers/new}"
                sec:authorize="hasAnyAuthority('MEMBERSHIP_TIER_CREATE','ROLE_ADMIN')">
-                Tạo tier
+                Tạo Tier
             </a>
         </div>
 

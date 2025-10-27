@@ -1,0 +1,139 @@
+/* === System › Activity Logs — List (flat & modern) === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+/* Tokens */
+:root{
+    --bg:#f7f9fc; --surface:#ffffff; --text:#0f172a; --muted:#64748b;
+    --border:#e6eaf0; --link:#2563eb;
+    --primary:#16a34a;
+    --radius:8px; --radius-sm:6px;
+    --shadow:0 1px 2px rgba(15,23,42,.08);
+    --neutral-hover:#126E34; --neutral-hover-bd:#d7dde6;
+    --ring:0 0 0 3px rgba(22,163,74,.15);
+}
+
+/* Base */
+html,body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+section[layout\:fragment="content"]{ padding:20px; }
+h1{ font-size:1.5rem; font-weight:700; margin:0 0 12px; }
+a{ color:var(--link); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+
+/* Grid helpers (fallback nếu không dùng full Bootstrap) */
+.row{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.g-2{ gap:.5rem; } .mb-3{ margin-bottom:1rem; }
+.col-md-4{ flex:1 1 280px; min-width:240px; }
+.col-md-3{ flex:1 1 220px; min-width:200px; }
+.col-md-2{ flex:0 0 160px; }
+.d-grid{ display:grid; } /* để nút Filter full-width trong cột */
+
+.table-responsive{ overflow:auto; border-radius:var(--radius); }
+.text-center{ text-align:center; }
+
+/* Inputs */
+.form-control,.form-select{
+    height:40px; padding:0 12px; font-size:14px; line-height:1.4;
+    background:#fff; color:var(--text);
+    border:1px solid var(--border); border-radius:var(--radius);
+    outline:0; transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.form-control::placeholder{ color:#9ca3af; }
+.form-control:hover,.form-select:hover{ border-color:var(--neutral-hover-bd); }
+.form-control:focus,.form-select:focus{ border-color:#86efac; box-shadow:var(--ring); }
+
+/* Buttons — phẳng, không gradient */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:10px 14px; border-radius:var(--radius); font-weight:600; line-height:1;
+    border:1px solid var(--border); background:#fff; color:var(--text);
+    transition:background .15s, border-color .15s, filter .1s; cursor:pointer; text-decoration:none;
+}
+a.btn, a.btn:link, a.btn:visited{ text-decoration:none; color:inherit; }
+.btn:hover{ background:var(--neutral-hover); border-color:var(--neutral-hover-bd); text-decoration:none; }
+.btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(15,23,42,.08); }
+.btn-primary{ background:var(--primary); color:#fff; border-color:transparent; }
+.btn-primary:hover{ filter:brightness(0.95); }
+
+/* Alerts (nếu có) */
+.alert{
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    border-radius:var(--radius); padding:12px 14px; box-shadow:var(--shadow);
+}
+.alert-warning{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
+
+/* Table */
+.table{
+    width:100%; border-collapse:separate; border-spacing:0; font-size:14px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden;
+}
+.table thead th{
+    position:sticky; top:0; z-index:1; background:#f3f6fb; color:var(--muted);
+    font-weight:600; font-size:12px; letter-spacing:.02em; text-align:left;
+    padding:12px 14px; border-bottom:1px solid var(--border);
+}
+.table-light th{ background:#f3f6fb; }
+.table.align-middle td{ vertical-align:middle; }
+.table tbody td{
+    padding:12px 14px; color:var(--text); border-bottom:1px solid var(--border);
+    white-space:nowrap; /* logs thường ngắn, giữ gọn hàng */
+}
+.table tbody tr:hover td{ background:#eef2f7; }
+.table tbody tr:last-child td{ border-bottom:none; }
+
+/* Entity cột: gom #id gọn gàng (không cần đổi HTML) */
+.table tbody td:nth-child(3) span{ margin-right:2px; }
+
+/* === Pagination (flat & modern) === */
+.pagination{
+    display:flex; gap:8px; flex-wrap:wrap;
+    list-style:none; padding:0; margin:16px 0 0; justify-content:center;
+}
+.pagination .page-item{ display:flex; }
+.pagination .page-link{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:36px; height:36px; padding:0 12px;
+    font-weight:600; font-size:13px; line-height:1;
+    color:var(--text); background:#fff; border:1px solid var(--border);
+    border-radius:var(--radius); text-decoration:none;
+    transition:background .15s, border-color .15s, color .15s;
+}
+.pagination .page-link:hover{
+    background:var(--neutral-hover); border-color:var(--neutral-hover-bd); text-decoration:none;
+}
+.pagination .page-item.active .page-link,
+.pagination .page-link[aria-current="page"], .pagination .page-link.current{
+    background:var(--primary); color:#fff; border-color:transparent;
+}
+.pagination .page-item.disabled .page-link{
+    color:#9ca3af; pointer-events:none; background:#f1f5f9; border-color:var(--border);
+}
+
+/* Fallback pager đơn giản */
+.pager{
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:16px;
+}
+.pager a, .pager span{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:36px; height:36px; padding:0 12px;
+    font-weight:600; font-size:13px; line-height:1;
+    border:1px solid var(--border); border-radius:var(--radius);
+}
+.pager a{ background:#fff; color:var(--text); text-decoration:none; }
+.pager a:hover{ background:var(--neutral-hover); border-color:var(--neutral-hover-bd); }
+.pager .active, .pager .is-active{ background:var(--primary); color:#fff; border-color:transparent; }
+.pager .disabled, .pager a[aria-disabled="true"]{
+    background:#f1f5f9; color:#9ca3af; pointer-events:none; border-color:var(--border);
+}
+
+/* Responsive */
+@media (max-width:768px){
+    section[layout\:fragment="content"]{ padding:16px; }
+    .table thead th, .table tbody td{ padding:10px 12px; }
+    .pagination .page-link, .pager a, .pager span{
+        min-width:34px; height:34px; padding:0 10px; font-size:12px;
+    }
+}

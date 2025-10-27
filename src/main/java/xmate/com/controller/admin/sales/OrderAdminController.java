@@ -19,7 +19,6 @@ import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.service.sales.OrderService;
 
-// 🔁 Dùng enums đúng package
 import xmate.com.entity.enums.OrderStatus;
 import xmate.com.entity.enums.PaymentStatus;
 
