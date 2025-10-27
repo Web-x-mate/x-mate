@@ -492,12 +492,21 @@ main.account-main {
 }
 
 /* ===== Modal Base ===== */
-.modal { position: fixed; inset: 0; display: none; z-index: 1000; }
-.modal.is-open { display: block; }
-.modal__overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); animation: fadeIn .18s ease; }
+.modal { position: fixed; inset: 0; display: none; z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+.modal.is-open { display: flex; }
+.modal__overlay{
+  /* position:absolute; */
+  inset:0;
+  /* background:rgba(15,23,42,0.35); */
+  /* backdrop-filter:blur(4px); */
+  z-index:0;
+  animation:fadeIn .18s ease;
+    justify-content: center;
+  align-items: center;
+}
 .modal__dialog {
-  position: relative; max-width: 720px; width: calc(100% - 32px);
-  margin: 48px auto; background: #fff; border-radius: 16px;
+  position: relative; z-index: 1; max-width: 720px; width: 100%;
+  background: #fff; border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,.15); overflow: hidden;
   animation: slideUp .2s ease;
 }
@@ -628,13 +637,6 @@ body.modal-lock { overflow: hidden; }
   display: flex;                  /* flex giúp căn giữa */
 }
 
-/* Làm mờ nền + blur nhẹ */
-.modal__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-}
 
 /* Hộp modal hiển thị chính giữa */
 .modal__dialog {
@@ -968,7 +970,7 @@ body.modal-open { overflow: hidden; }
   position: fixed;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: min(92vw, 640px);
+  width: min(92vw, 720px);
   max-height: 100vh;
   overflow: auto;
   background: #fff;
@@ -1649,4 +1651,10 @@ button.btn-pill {
   border-color:#111;
   box-shadow:0 0 0 2px rgba(17,17,17,0.08);
   outline:none;
+}
+
+
+#modal-info {
+  justify-content: center;
+  align-items: center;
 }

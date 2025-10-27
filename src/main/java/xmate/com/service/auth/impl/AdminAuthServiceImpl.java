@@ -45,9 +45,10 @@ public class AdminAuthServiceImpl implements IAdminAuthService {
                 "roles", roles
         ));
         // đơn giản: không cấp refresh cho admin (an toàn hơn); nếu muốn có, tạo bảng admin_refresh_tokens riêng
-        return new TokenRes(access, null);
+        return new TokenRes(access, null, null);
     }
 
     private static String norm(String s){ return s==null?null:s.trim().toLowerCase(); }
 }
+
 

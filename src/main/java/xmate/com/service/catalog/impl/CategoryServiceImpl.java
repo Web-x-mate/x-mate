@@ -11,6 +11,9 @@ import xmate.com.entity.catalog.Category;
 import xmate.com.repo.catalog.CategoryRepository;
 import xmate.com.service.catalog.CategoryService;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -56,6 +59,22 @@ public class CategoryServiceImpl implements CategoryService {
         return repo.findAll(categorySpec(q), pageable);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Category> findBySlug(String slug) {
+        if (slug == null || slug.isBlank()) return Optional.empty();
+        Optional<Category> result = repo.findBySlug(slug);
+        result.ifPresent(this::initializeParentChain);
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Category> findChildren(Long parentId) {
+        if (parentId == null) return List.of();
+        return repo.findByParent_Id(parentId);
+    }
+
     private Specification<Category> categorySpec(String q) {
         return (root, query, cb) -> {
             if (q == null || q.isBlank()) return cb.conjunction();
@@ -65,5 +84,13 @@ public class CategoryServiceImpl implements CategoryService {
                     cb.like(cb.lower(root.get("slug")), like)
             );
         };
+    }
+
+    private void initializeParentChain(Category category) {
+        if (category == null) return;
+        Category parent = category.getParent();
+        if (parent != null) {
+            initializeParentChain(parent);
+        }
     }
 }

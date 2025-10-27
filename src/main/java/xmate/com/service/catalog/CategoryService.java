@@ -2,7 +2,11 @@ package xmate.com.service.catalog;
 // src/main/java/xmate/com/service/CategoryService.java
 
 import xmate.com.entity.catalog.Category;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface CategoryService {
     Category create(Category c);
@@ -12,4 +16,6 @@ public interface CategoryService {
 
     Page<Category> list(Pageable pageable);
     Page<Category> search(String q, Pageable pageable);
+    Optional<Category> findBySlug(String slug);
+    List<Category> findChildren(Long parentId);
 }

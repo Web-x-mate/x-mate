@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+</th:block>
+
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Danh gia & phan hoi</h1>
+            </div>
+
+            <div class="empty-state">
+                <p>Ban chua gui danh gia nao.</p>
+                <p class="muted">Sau khi mua hang, hay de lai cam nhan de chung toi phuc vu tot hon.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+</body>
+</html>

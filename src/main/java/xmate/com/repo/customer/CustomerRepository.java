@@ -18,6 +18,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByPhone(String phone);
     Optional<Customer> findByEmailIgnoreCase(String email);
     Optional<Customer> findByOauthProviderAndOauthSubject(String provider, String subject);
+    Optional<Customer> findByTokenUser(String tokenUser);
 
 
     Page<Customer> findAllByOrderByCreatedAtDesc(Pageable pageable);

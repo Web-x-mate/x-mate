@@ -1,8 +1,10 @@
 package xmate.com.service.catalog;
-import org.springframework.data.domain.Page; import org.springframework.data.domain.Pageable;
-
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import xmate.com.entity.catalog.Product;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public interface ProductService {
     Product create(Product p);
@@ -13,4 +15,8 @@ public interface ProductService {
     Page<Product> list(Pageable pageable);
     Page<Product> search(String q, Pageable pageable);
     Page<Product> byCategory(Long categoryId, Pageable pageable);
+    Optional<Product> findBySlug(String slug);
+    Page<Product> byCategories(Collection<Long> categoryIds, Pageable pageable);
+    Page<Product> searchInCategories(String q, Collection<Long> categoryIds, Pageable pageable);
+    java.util.List<Product> listByCategories(Collection<Long> categoryIds);
 }

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+</th:block>
+
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Lịch sử đơn hàng</h1>
+            </div>
+
+            <div class="empty-state"
+                 th:if="${orders == null or orders.isEmpty()}">
+                Bạn chưa có đơn hàng nào.
+            </div>
+
+            <div class="order-history"
+                 th:if="${orders != null and !orders.isEmpty()}">
+                <article class="order-card"
+                         th:each="order : ${orders}">
+                    <div class="order-card__header">
+                        <div class="order-card__title">
+                            <span class="order-card__code"
+                                  th:text="${order.shortCode}">ORD-0001</span>
+                            <span class="status-chip"
+                                  th:classappend="${order.statusClass != null} ? ' ' + ${order.statusClass} : ''"
+                                  th:text="${order.statusLabel}">Chờ thanh toán</span>
+                        </div>
+                        <div class="order-card__meta">
+                            <span class="order-card__meta-item">
+                                Ngày đặt:
+                                <span th:text="${order.createdAtText != null ? order.createdAtText : 'Chưa cập nhật'}">01/01/2025 10:00</span>
+                            </span>
+                            <span class="order-card__meta-item"
+                                  th:text="'Thanh toán: ' + (order.paymentLabel != null ? order.paymentLabel : 'Chưa cập nhật')">
+                                Thanh toán: Chưa thanh toán
+                            </span>
+                            <span class="order-card__meta-item"
+                                  th:text="${order.quantityTotal} + ' sản phẩm'">0 sản phẩm</span>
+                        </div>
+                    </div>
+
+                    <div th:if="${order.items != null and !order.items.isEmpty()}">
+                        <ul class="order-card__items">
+                            <li class="order-item"
+                                th:each="item : ${order.items}">
+                                <img class="order-item__thumb"
+                                     th:src="${item.thumbnail}"
+                                     th:alt="${item.title != null ? item.title : 'Sản phẩm'}"
+                                     alt="Sản phẩm">
+                                <div class="order-item__body">
+                                    <a class="order-item__title"
+                                       th:if="${item.slug != null}"
+                                       th:href="@{/product/detail/{slug}(slug=${item.slug})}"
+                                       th:text="${item.title}">Tên sản phẩm</a>
+                                    <span class="order-item__title"
+                                          th:if="${item.slug == null}"
+                                          th:text="${item.title}">Tên sản phẩm</span>
+
+                                    <div class="order-item__meta"
+                                         th:if="${item.color != null or item.size != null}">
+                                        <span class="order-item__meta-chip"
+                                              th:if="${item.color != null}"
+                                              th:text="'Màu: ' + ${item.color}">Màu</span>
+                                        <span class="order-item__meta-chip"
+                                              th:if="${item.size != null}"
+                                              th:text="'Size: ' + ${item.size}">Size</span>
+                                    </div>
+
+                                    <div class="order-item__pricing">
+                                        <span class="order-item__price"
+                                              th:text="${item.priceText}">0&nbsp;₫</span>
+                                        <span class="order-item__quantity"
+                                              th:text="'x' + ${item.quantity}">x1</span>
+                                        <span class="order-item__line"
+                                              th:text="${item.lineTotalText}">0&nbsp;₫</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="order-card__empty"
+                         th:if="${order.items == null or order.items.isEmpty()}">
+                        Chưa có sản phẩm cho đơn hàng này.
+                    </div>
+
+                    <div class="order-card__footer">
+                        <div class="order-card__shipping">
+                            <strong>Giao tới</strong>
+                            <span class="order-card__recipient"
+                                  th:text="${order.shipping != null and order.shipping.recipient() != null ? order.shipping.recipient() : 'Chưa cập nhật'}">
+                                Người nhận
+                            </span>
+                            <span class="order-card__address"
+                                  th:text="${order.shipping != null and order.shipping.address() != null ? order.shipping.address() : 'Chưa cập nhật'}">
+                                Địa chỉ
+                            </span>
+                            <span class="order-card__note"
+                                  th:if="${order.note != null}"
+                                  th:text="'Ghi chú: ' + ${order.note}">Ghi chú</span>
+                        </div>
+                        <div class="order-card__totals">
+                            <div class="order-card__summary-row">
+                                <span>Tạm tính</span>
+                                <span th:text="${order.totals != null ? order.totals.subtotalText() : '0 ₫'}">0&nbsp;₫</span>
+                            </div>
+                            <div class="order-card__summary-row"
+                                    th:if="${order.hasDiscount}">
+                                <span>Giảm giá</span>
+                                <span class="order-card__discount"
+                                        th:with="disc=${order.totals != null ? order.totals.discountText() : '0 ₫'}"
+                                        th:text="${'- ' + disc}">- 0 ₫</span>
+                            </div>
+
+                            <div class="order-card__summary-row">
+                                <span>Phí vận chuyển</span>
+                                <span th:text="${order.totals != null ? order.totals.shippingText() : '0 ₫'}">0&nbsp;₫</span>
+                            </div>
+                            <div class="order-card__summary-row is-total">
+                                <span>Tổng cộng</span>
+                                <span th:text="${order.totals != null ? order.totals.totalText() : '0 ₫'}">0&nbsp;₫</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+</body>
+</html>
