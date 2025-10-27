@@ -37,9 +37,9 @@ public class PricingServiceImpl implements PricingService {
             Optional<Discount> oc = couponRepo.findByCodeIgnoreCase(couponCode);
             if (oc.isPresent() && subtotal.signum() > 0) {
                 Discount c = oc.get();
-//                if (isDiscountActiveNow(c) && passMinSubtotal(c, subtotal) && passUsageLimit(c)) {
-//                    discount = calcDiscountAmount(c, subtotal);
-//                }
+                if (isDiscountActiveNow(c) && passMinSubtotal(c, subtotal) && passUsageLimit(c)) {
+                    discount = calcDiscountAmount(c, subtotal);
+                }
             }
         }
 
@@ -52,6 +52,38 @@ public class PricingServiceImpl implements PricingService {
     }
 
     // ------- helpers (giữ nguyên các hàm isDiscountActiveNow/pass*/calcDiscountAmount) -------
+
+    // ------- helpers -------
+
+    private boolean isDiscountActiveNow(Discount d) {
+        if (d == null) return false;
+        return d.isActiveNow();
+    }
+
+    private boolean passMinSubtotal(Discount d, BigDecimal subtotal) {
+        if (d == null) return false;
+        BigDecimal min = d.getMinOrder() == null ? BigDecimal.ZERO : d.getMinOrder();
+        BigDecimal base = subtotal == null ? BigDecimal.ZERO : subtotal;
+        return base.compareTo(min) >= 0;
+    }
+
+    private boolean passUsageLimit(Discount d) {
+        if (d == null) return false;
+        if (d.getUsageLimit() == null) return true;
+        Integer used = d.getUsedCount() == null ? 0 : d.getUsedCount();
+        return used < d.getUsageLimit();
+    }
+
+    private BigDecimal calcDiscountAmount(Discount d, BigDecimal baseAmount) {
+        if (d == null) return BigDecimal.ZERO;
+        BigDecimal base = baseAmount == null ? BigDecimal.ZERO : baseAmount;
+        if (base.signum() <= 0) return BigDecimal.ZERO;
+
+        BigDecimal off = d.calcDiscount(base);
+        if (off.compareTo(base) > 0) off = base;
+        if (off.signum() < 0) off = BigDecimal.ZERO;
+        return off.setScale(0, RoundingMode.HALF_UP);
+    }
 
     private Long currentUserId() {
         var auth = SecurityContextHolder.getContext().getAuthentication();

@@ -31,7 +31,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         WHERE DATE(o.created_at) BETWEEN :from AND :to
         GROUP BY p.name, pv.color, pv.size, pv.sku
         ORDER BY SUM(oi.qty) DESC
-        LIMIT :top
         """, nativeQuery = true)
     List<TopVariantRow> topVariantsByQty(@Param("from") LocalDate from,
                                          @Param("to") LocalDate to,

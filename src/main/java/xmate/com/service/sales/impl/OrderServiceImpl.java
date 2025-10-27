@@ -26,11 +26,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Page<Order> search(String q, String status, String payment, String shipping, Pageable pageable) {
-        xmate.com.entity.common.OrderStatus st = parseEnum(status, xmate.com.entity.common.OrderStatus.class);
-        xmate.com.entity.common.PaymentStatus pay = parseEnum(payment, xmate.com.entity.common.PaymentStatus.class);
+        xmate.com.entity.enums.OrderStatus   st   = parseEnum(status,  xmate.com.entity.enums.OrderStatus.class);
+        xmate.com.entity.enums.PaymentStatus pay  = parseEnum(payment, xmate.com.entity.enums.PaymentStatus.class);
         xmate.com.entity.common.ShippingStatus ship = parseEnum(shipping, xmate.com.entity.common.ShippingStatus.class);
         return orderRepo.search(q, st, pay, ship, pageable);
     }
+
 
     // helper generic
     private static <E extends Enum<E>> E parseEnum(String raw, Class<E> type) {

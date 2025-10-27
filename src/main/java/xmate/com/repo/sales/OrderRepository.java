@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import xmate.com.entity.customer.Customer;
 import xmate.com.entity.sales.Order;
-import xmate.com.entity.common.OrderStatus;
-import xmate.com.entity.common.PaymentStatus;
+import xmate.com.entity.enums.OrderStatus;
+import xmate.com.entity.enums.PaymentStatus;
 import xmate.com.entity.common.ShippingStatus;
 
 import java.math.BigDecimal;
@@ -103,7 +103,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
         FROM orders o
         LEFT JOIN customers c ON c.id = o.customer_id
         ORDER BY o.created_at DESC
-        LIMIT :limit
+
         """, nativeQuery = true)
     List<RecentOrderRow> recent(@Param("limit") int limit);
 

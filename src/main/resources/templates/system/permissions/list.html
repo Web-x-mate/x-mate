@@ -5,6 +5,9 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/system/permissions/list.css}">
+</head>
 <body>
 <section layout:fragment="content">
     <!-- Khi KHÔNG có quyền VIEW -->

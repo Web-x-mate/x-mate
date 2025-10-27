@@ -6,6 +6,9 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <body>
+<head>
+    <link rel="stylesheet" th:href="@{/css/procement/PO/list.css}">
+</head>
 <section layout:fragment="content">
     <!-- Khi KHÔNG có quyền VIEW -->
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">
