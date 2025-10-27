@@ -1,110 +1,4 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="vi"-->
-<!--      xmlns:th="http://www.thymeleaf.org"-->
-<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
-<!--      layout:decorate="~{layout/main}">-->
-<!--<body>-->
-<!--<section layout:fragment="content">-->
-<!--    <h1 th:text="${product != null and product.id != null} ? 'Sửa sản phẩm' : 'Tạo mới sản phẩm'">-->
-<!--        Tạo mới sản phẩm-->
-<!--    </h1>-->
 
-<!--    <form th:action="${product != null and product.id != null}-->
-<!--                      ? @{'/admin/catalog/products/' + ${product.id} + '/edit'}-->
-<!--                      : @{/admin/catalog/products/new}"-->
-<!--          method="post" class="form vstack gap-3">-->
-
-<!--        &lt;!&ndash; CSRF &ndash;&gt;-->
-<!--        <input type="hidden" th:if="${_csrf != null}"-->
-<!--               th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
-
-<!--        &lt;!&ndash; Name &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="name">Name *</label>-->
-<!--            <input type="text" id="name" name="name" class="form-control"-->
-<!--                   th:value="${product != null} ? ${product.name} : ''" required>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Slug &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="slug">Slug *</label>-->
-<!--            <input type="text" id="slug" name="slug" class="form-control"-->
-<!--                   th:value="${product != null} ? ${product.slug} : ''" required>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Category &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="categoryId">Category *</label>-->
-<!--            <select id="categoryId" name="categoryId" class="form-select" required>-->
-<!--                <option th:if="${product == null or product.category == null}" value="" disabled selected>&#45;&#45; Chọn &#45;&#45;</option>-->
-<!--                <option th:each="cat : ${categories}"-->
-<!--                        th:value="${cat.id}"-->
-<!--                        th:text="${cat.name}"-->
-<!--                        th:selected="${product != null and product.category != null} ? (${cat.id} == ${product.category.id}) : false">-->
-<!--                </option>-->
-<!--            </select>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Status (tùy enum của bạn; nếu có `statuses` trong model thì dùng th:each) &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="status">Status *</label>-->
-<!--            <select id="status" name="status" class="form-select" required>-->
-<!--                &lt;!&ndash; Nếu bạn truyền model.addAttribute("statuses", ProductStatus.values()) thì dùng:-->
-<!--                <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}"-->
-<!--                        th:selected="${product != null} ? (${st} == ${product.status}) : ( ${st.name()} == 'ACTIVE')"></option>-->
-<!--                &ndash;&gt;-->
-<!--                <option th:value="ACTIVE"  th:selected="${product == null or product.status?.name() == 'ACTIVE'}">ACTIVE</option>-->
-<!--                <option th:value="INACTIVE" th:selected="${product != null and product.status?.name() == 'INACTIVE'}">INACTIVE</option>-->
-<!--            </select>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Description &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="description">Description</label>-->
-<!--            <textarea id="description" name="description" class="form-control" rows="4"-->
-<!--                      th:text="${product != null} ? ${product.description} : ''"></textarea>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Material & Fit &ndash;&gt;-->
-<!--        <div class="field-group d-flex gap-3">-->
-<!--            <div class="field flex-1">-->
-<!--                <label for="material">Material</label>-->
-<!--                <input type="text" id="material" name="material" class="form-control"-->
-<!--                       th:value="${product != null} ? ${product.material} : ''">-->
-<!--            </div>-->
-<!--            <div class="field flex-1">-->
-<!--                <label for="fit">Fit</label>-->
-<!--                <input type="text" id="fit" name="fit" class="form-control"-->
-<!--                       th:value="${product != null} ? ${product.fit} : ''">-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Gender &ndash;&gt;-->
-<!--        <div class="field">-->
-<!--            <label for="gender">Gender *</label>-->
-<!--            <select id="gender" name="gender" class="form-select" required>-->
-<!--                <option th:value="UNISEX" th:selected="${product == null or product.gender?.name() == 'UNISEX'}">UNISEX</option>-->
-<!--                <option th:value="MEN"    th:selected="${product != null and product.gender?.name() == 'MEN'}">MEN</option>-->
-<!--                <option th:value="WOMEN"  th:selected="${product != null and product.gender?.name() == 'WOMEN'}">WOMEN</option>-->
-<!--            </select>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Actions &ndash;&gt;-->
-<!--        <div class="actions d-flex align-items-center gap-2">-->
-<!--            <button type="submit" class="btn btn-primary"-->
-<!--                    th:text="${product != null and product.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>-->
-<!--            <a th:href="@{/admin/catalog/products}" class="btn btn-outline-secondary">Quay lại danh sách</a>-->
-
-<!--            &lt;!&ndash; Chỉ hiện khi đang sửa (có id) &ndash;&gt;-->
-<!--            <span class="ms-auto" th:if="${product != null and product.id != null}">-->
-<!--                <a th:href="@{|/admin/catalog/products/${product.id}/variants|}" class="btn btn-warning">Quản lý Variants</a>-->
-<!--                <a th:href="@{|/admin/catalog/products/${product.id}/media|}" class="btn btn-info">Quản lý Media</a>-->
-<!--            </span>-->
-<!--        </div>-->
-<!--    </form>-->
-<!--</section>-->
-<!--</body>-->
-<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -203,7 +97,7 @@
 
             <!-- Name -->
             <div class="field">
-                <label for="name">Name <span style="color:#dc2626">*</span></label>
+                <label for="name">Tên sản phẩm <span style="color:#dc2626">*</span></label>
                 <input type="text" id="name" name="name" class="form-control"
                        th:value="${product != null} ? ${product.name} : ''" required>
             </div>
@@ -217,7 +111,7 @@
 
             <!-- Category -->
             <div class="field">
-                <label for="categoryId">Category <span style="color:#dc2626">*</span></label>
+                <label for="categoryId">Danh mục <span style="color:#dc2626">*</span></label>
                 <select id="categoryId" name="categoryId" class="form-select" required>
                     <option th:if="${product == null or product.category == null}" value="" disabled selected>-- Chọn --</option>
                     <option th:each="cat : ${categories}"
@@ -230,7 +124,7 @@
 
             <!-- Status -->
             <div class="field">
-                <label for="status">Status <span style="color:#dc2626">*</span></label>
+                <label for="status">Trạng thái <span style="color:#dc2626">*</span></label>
                 <select id="status" name="status" class="form-select" required>
                     <option th:value="ACTIVE"   th:selected="${product == null or product.status?.name() == 'ACTIVE'}">ACTIVE</option>
                     <option th:value="INACTIVE" th:selected="${product != null and product.status?.name() == 'INACTIVE'}">INACTIVE</option>
@@ -239,7 +133,7 @@
 
             <!-- Description -->
             <div class="field">
-                <label for="description">Description</label>
+                <label for="description">Mô tả</label>
                 <textarea id="description" name="description" class="form-control" rows="4"
                           th:text="${product != null} ? ${product.description} : ''"></textarea>
             </div>
@@ -247,12 +141,12 @@
             <!-- Material & Fit -->
             <div class="field-group">
                 <div class="field flex-1">
-                    <label for="material">Material</label>
+                    <label for="material">Chất liệu</label>
                     <input type="text" id="material" name="material" class="form-control"
                            th:value="${product != null} ? ${product.material} : ''">
                 </div>
                 <div class="field flex-1">
-                    <label for="fit">Fit</label>
+                    <label for="fit">Kích cỡ</label>
                     <input type="text" id="fit" name="fit" class="form-control"
                            th:value="${product != null} ? ${product.fit} : ''">
                 </div>
@@ -260,7 +154,7 @@
 
             <!-- Gender -->
             <div class="field">
-                <label for="gender">Gender <span style="color:#dc2626">*</span></label>
+                <label for="gender">Phong cách <span style="color:#dc2626">*</span></label>
                 <select id="gender" name="gender" class="form-select" required>
                     <option th:value="UNISEX" th:selected="${product == null or product.gender?.name() == 'UNISEX'}">UNISEX</option>
                     <option th:value="MEN"    th:selected="${product != null and product.gender?.name() == 'MEN'}">MEN</option>

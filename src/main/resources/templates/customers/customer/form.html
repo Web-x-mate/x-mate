@@ -1,88 +1,3 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="vi"-->
-<!--      xmlns:th="http://www.thymeleaf.org"-->
-<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
-<!--      layout:decorate="~{layout/main}">-->
-<!--<body>-->
-<!--<section layout:fragment="content">-->
-<!--    <h1 class="text-xl font-bold" th:text="${c.id == null ? 'Tạo khách hàng' : 'Sửa khách hàng'}">Form</h1>-->
-
-<!--    <div class="mt-3" th:if="${error}" >-->
-<!--        <div class="alert alert-danger" th:text="${error}"></div>-->
-<!--    </div>-->
-
-<!--    <form th:action="@{/admin/customers}" th:object="${c}" method="post" class="space-y-3">-->
-<!--        <input type="hidden" th:field="*{id}"/>-->
-<!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
-
-<!--        <div class="form-control">-->
-<!--            <label class="form-label">Email <span class="text-red-500">*</span></label>-->
-<!--            <input class="input" type="email" th:field="*{email}" maxlength="120"-->
-<!--                   th:readonly="${c.id != null}" required/>-->
-<!--            <small class="form-hint">Không sửa email sau khi tạo (unique).</small>-->
-<!--        </div>-->
-
-<!--        <div class="form-control">-->
-<!--            <label class="form-label">Họ tên</label>-->
-<!--            <input class="input" type="text" th:field="*{fullname}" maxlength="120"/>-->
-<!--        </div>-->
-
-<!--        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">Điện thoại</label>-->
-<!--                <input class="input" type="text" th:field="*{phone}" maxlength="20"/>-->
-<!--            </div>-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">Giới tính</label>-->
-<!--                <select class="input" th:field="*{gender}">-->
-<!--                    <option th:value="${null}">&#45;&#45;</option>-->
-<!--                    <option value="M">Nam</option>-->
-<!--                    <option value="F">Nữ</option>-->
-<!--                    <option value="O">Khác</option>-->
-<!--                </select>-->
-<!--            </div>-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">Ngày sinh</label>-->
-<!--                <input class="input" type="date" th:field="*{dob}"/>-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">Chiều cao (cm)</label>-->
-<!--                <input class="input" type="number" th:field="*{heightCm}" min="0"/>-->
-<!--            </div>-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">Cân nặng (kg)</label>-->
-<!--                <input class="input" type="number" th:field="*{weightKg}" min="0"/>-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        <div class="form-control">-->
-<!--            <label class="form-label">Enabled</label>-->
-<!--            <input type="checkbox" th:field="*{enabled}"/>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; OAuth info chỉ hiển thị đọc &ndash;&gt;-->
-<!--        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">OAuth Provider</label>-->
-<!--                <input class="input" type="text" th:value="${c.oauthProvider}" readonly/>-->
-<!--            </div>-->
-<!--            <div class="form-control">-->
-<!--                <label class="form-label">OAuth Subject</label>-->
-<!--                <input class="input" type="text" th:value="${c.oauthSubject}" readonly/>-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        <div class="flex items-center gap-2">-->
-<!--            <button class="btn btn-primary" type="submit">Lưu</button>-->
-<!--            <a class="btn btn-light" th:href="@{/admin/customers}">Hủy</a>-->
-<!--        </div>-->
-<!--    </form>-->
-<!--</section>-->
-<!--</body>-->
-<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -101,7 +16,8 @@
             --ring:#93c5fd;
             --primary:#2563eb;
             --primary-hover:#1d4ed8;
-            --secondary:#334155;
+            --danger:#ef4444;
+            --danger-hover:#dc2626;
         }
 
         body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
@@ -109,7 +25,7 @@
 
         .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0;}
 
-        /* Alert (giữ class cũ, làm đẹp) */
+        /* Alert */
         .alert{border-radius:12px;padding:.85rem 1rem;margin-top:12px;font-weight:600;}
         .alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
 
@@ -123,12 +39,11 @@
             margin-top:16px;
         }
 
-        /* Field set */
         .form-control{display:block;}
         .form-label{display:block;font-weight:700;color:var(--text);margin-bottom:.4rem;}
         .form-hint{display:block;margin-top:.35rem;font-size:.85rem;color:var(--muted);}
 
-        .input, .form-control .input, select.input{
+        .input, select.input{
             width:100%;height:42px;
             padding:0 .9rem;border:1px solid var(--bd);border-radius:10px;
             background:#fff;font-size:.95rem;color:var(--text);transition:.18s;
@@ -143,21 +58,23 @@
 
         /* Buttons */
         .btn{
-            height:42px;padding:0 18px;border-radius:12px;border:1px solid transparent;
-            font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.45rem;line-height:1;transition:.18s;
+            height:42px;padding:0 20px;border-radius:12px;border:1px solid transparent;
+            font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.5rem;
+            transition:.18s;cursor:pointer;
         }
         .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
-        .btn-primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);}
-        .btn-light{background:#eef2f7;color:var(--text);border:1px solid var(--bd);}
-        .btn-light:hover{background:#e5eaf1;}
+        .btn-primary:hover{background:var(--primary-hover);}
+        .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+        .btn-danger:hover{background:var(--danger-hover);}
 
-        /* Flex helpers (phòng khi layout không có tailwind) */
+        /* Flex helpers */
         .flex{display:flex;}
         .items-center{align-items:center;}
-        .gap-2{gap:12px;}
+        .gap-2{gap:14px;} /* dãn ra hơn một chút */
         .mt-3{margin-top:12px;}
+        .justify-end{justify-content:flex-end;}
 
-        /* Grid helpers (nếu môi trường không có tailwind thì vẫn đẹp) */
+        /* Grid helpers */
         .grid{display:grid;gap:12px;}
         .grid-cols-1{grid-template-columns:1fr;}
         .md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -227,7 +144,7 @@
                 <input type="checkbox" th:field="*{enabled}"/>
             </div>
 
-            <!-- OAuth info chỉ hiển thị đọc -->
+            <!-- OAuth info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="form-control">
                     <label class="form-label">OAuth Provider</label>
@@ -239,9 +156,10 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <!-- Buttons căn phải -->
+            <div class="flex items-center justify-end gap-2 mt-3">
                 <button class="btn btn-primary" type="submit">Lưu</button>
-                <a class="btn btn-light" th:href="@{/admin/customers}">Hủy</a>
+                <a class="btn btn-danger" th:href="@{/admin/customers}">Hủy</a>
             </div>
         </form>
     </div>

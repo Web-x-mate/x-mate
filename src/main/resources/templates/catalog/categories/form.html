@@ -1,46 +1,4 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="vi"-->
-<!--      xmlns:th="http://www.thymeleaf.org"-->
-<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
-<!--      layout:decorate="~{layout/main}">-->
-<!--<body>-->
-<!--<section layout:fragment="content">-->
-<!--    <h1 th:text="${category != null and category.id != null} ? 'Sửa danh mục' : 'Tạo mới danh mục'">Tạo mới danh mục</h1>-->
 
-<!--    <form th:action="${category != null and category.id != null}-->
-<!--                      ? @{'/admin/catalog/categories/' + ${category.id} + '/edit'}-->
-<!--                      : @{/admin/catalog/categories/new}"-->
-<!--          method="post">-->
-
-<!--        <input type="hidden" th:if="${_csrf != null}"-->
-<!--               th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
-
-<!--        <label for="name">Name *</label>-->
-<!--        <input type="text" id="name" name="name"-->
-<!--               th:value="${category != null} ? ${category.name} : ''" required>-->
-
-<!--        <label for="slug">Slug *</label>-->
-<!--        <input type="text" id="slug" name="slug"-->
-<!--               th:value="${category != null} ? ${category.slug} : ''" required>-->
-
-<!--        <label for="parentId">Parent Id</label>-->
-<!--        <input type="number" id="parentId" name="parentId"-->
-<!--               th:value="${category != null and category.parent != null} ? ${category.parent.id} : ''"-->
-<!--               placeholder="Để trống nếu là root">-->
-
-<!--        <div>-->
-<!--            <input type="checkbox" id="active" name="active"-->
-<!--                   th:checked="${category == null || category.active == null ? true : category.active}">-->
-<!--            <label for="active">Active</label>-->
-<!--        </div>-->
-
-<!--        <button type="submit"-->
-<!--                th:text="${category != null and category.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>-->
-<!--        <a th:href="@{/admin/catalog/categories}">Quay lại danh sách</a>-->
-<!--    </form>-->
-<!--</section>-->
-<!--</body>-->
-<!--</html>-->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
