@@ -53,7 +53,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         JOIN products p ON p.id = pv.product_id
         WHERE i.qty_on_hand < :threshold
         ORDER BY i.qty_on_hand ASC, pv.sku ASC
-        LIMIT :top
         """, nativeQuery = true)
     List<LowSkuRow> findLowStock(@Param("threshold") int threshold, @Param("top") int top);
 
@@ -74,7 +73,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         JOIN product_variants pv ON pv.id = i.variant_id
         JOIN products p          ON p.id  = pv.product_id
         ORDER BY (i.qty_on_hand + i.qty_reserved) DESC
-        LIMIT :top
         """, nativeQuery = true)
     List<StockRow> topStock(@Param("top") int top);
 

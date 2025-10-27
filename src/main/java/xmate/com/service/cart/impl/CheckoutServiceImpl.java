@@ -146,7 +146,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         // 8) URL chuyển hướng
         String redirectUrl = (paymentMethodEnum == PaymentMethod.COD)
-                ? "/orders/" + savedOrder.getCode()
+                ? "/orders/thank-you/" + savedOrder.getCode()
                 : "/orders/pay/" + savedOrder.getCode();
 
         return OrderPlacedDto.builder()

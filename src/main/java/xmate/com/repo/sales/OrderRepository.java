@@ -102,7 +102,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
         FROM orders o
         LEFT JOIN customers c ON c.id = o.customer_id
         ORDER BY o.created_at DESC
-        LIMIT :limit
+
         """, nativeQuery = true)
     List<RecentOrderRow> recent(@Param("limit") int limit);
 

@@ -40,7 +40,7 @@ public interface DiscountUsageRepository extends JpaRepository<DiscountUsage, Di
         WHERE DATE(u.used_at) BETWEEN :from AND :to
         GROUP BY d.id, d.code
         ORDER BY revenue DESC
-        LIMIT :top
+
         """, nativeQuery = true)
     List<EffectRow> effectiveness(@Param("from") LocalDate from,
                                   @Param("to") LocalDate to,
