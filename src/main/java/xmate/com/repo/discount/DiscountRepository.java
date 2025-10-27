@@ -16,22 +16,36 @@ public interface DiscountRepository extends JpaRepository<Discount, Long>, JpaSp
 
     Optional<Discount> findByCodeIgnoreCase(String code);
 
+    // Lấy tất cả theo type (không ràng buộc thời gian) – dùng cho /api/coupons
+    List<Discount> findAllByType(DiscountKind type);
+
     @Query("""
         SELECT d FROM Discount d
         WHERE d.status = 'ACTIVE'
           AND (d.startAt IS NULL OR d.startAt <= :now)
           AND (d.endAt   IS NULL OR d.endAt   >= :now)
-          AND (d.usageLimit IS NULL OR d.usedCount < d.usageLimit)
+          AND ( d.usageLimit IS NULL OR COALESCE(d.usedCount,0) < d.usageLimit )
           AND d.type = :kind
     """)
     List<Discount> findActiveByKind(@Param("now") LocalDateTime now,
                                     @Param("kind") DiscountKind kind);
 
     @Query("""
+        SELECT d FROM Discount d
+        WHERE d.status = 'ACTIVE'
+          AND (d.startAt IS NULL OR d.startAt <= :now)
+          AND (d.endAt   IS NULL OR d.endAt   >= :now)
+          AND ( d.usageLimit IS NULL OR COALESCE(d.usedCount,0) < d.usageLimit )
+          AND d.type IN :kinds
+    """)
+    List<Discount> findActiveByKinds(@Param("now") LocalDateTime now,
+                                     @Param("kinds") List<DiscountKind> kinds);
+
+    @Query("""
       SELECT d FROM Discount d
       WHERE (:q IS NULL OR :q = ''
              OR LOWER(COALESCE(d.code,'')) LIKE LOWER(CONCAT('%', :q, '%'))
-             OR LOWER(COALESCE(d.conditionsJson,'')) LIKE LOWER(CONCAT('%', :q, '%')))
+             OR LOWER(COALESCE(d.conditionsJson,'')) LIKE LOWER(CONCAT('%', :q, '%')) )
         AND (:type IS NULL OR :type = '' OR d.type = :type)
         AND (:valueType IS NULL OR :valueType = '' OR d.valueType = :valueType)
     """)
@@ -39,5 +53,4 @@ public interface DiscountRepository extends JpaRepository<Discount, Long>, JpaSp
                           @Param("type") DiscountKind type,
                           @Param("valueType") DiscountValueType valueType,
                           Pageable pageable);
-
 }

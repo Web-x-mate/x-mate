@@ -2,36 +2,27 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Thanh toán đơn hàng</title>
-    <link rel="stylesheet" th:href="@{/css/checkout-ui.css}"/> <style>
-    .payment-container {
-        max-width: 500px;
-        margin: 40px auto;
-        text-align: center;
-    }
-    .payment-container img {
-        max-width: 300px;
-        width: 100%;
-        margin: 20px 0;
-        border: 1px solid #eee;
-        border-radius: 8px;
-    }
-    .actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin-top: 20px;
-    }
-</style>
+    <link rel="stylesheet" th:href="@{/css/checkout-ui.css}"/>
+    <style>
+        .payment-container { max-width: 500px; margin: 40px auto; text-align: center; }
+        .payment-container img { max-width: 300px; width: 100%; margin: 20px 0; border: 1px solid #eee; border-radius: 8px; }
+        .actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="referrer" content="no-referrer"/>
+    <meta name="format-detection" content="telephone=no"/>
 </head>
 <body>
-<header class="topbar" th:replace="~{layout :: header}"></header>
+<!-- Header removed to avoid missing layout fragment; include your own if available -->
 
 <main class="container page" th:if="${order != null}">
     <div class="payment-container card">
         <h1>Vui lòng quét mã để thanh toán</h1>
         <p>Mã đơn hàng: <b th:text="${order.code}"></b></p>
-        <p>Tổng tiền: <b th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + ' đ'"></b></p>
+        <p>Tổng tiền: <b th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></b></p>
 
         <img th:src="${vietQrUrl}" alt="Mã VietQR">
 
@@ -43,6 +34,37 @@
         </div>
     </div>
 </main>
+
+<!-- SockJS + StompJS for real-time payment update -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:inline="javascript">
+    (function(){
+        var code = /*[[${order.code}]]*/ '';
+        if (!code) return;
+        try {
+            var sock = new SockJS('/ws');
+            var client = Stomp.over(sock);
+            client.debug = function(m){ try { console.log('[STOMP]', m); } catch(e){} };
+            client.connect({}, function(){
+                try { console.log('STOMP connected, subscribing topic for', code); } catch(e){}
+                client.subscribe('/topic/order.' + code, function(msg){
+                    try {
+                        var body = JSON.parse(msg.body || '{}');
+                        console.log('WS message', body);
+                        // Redirect when server confirms order is PAID
+                        if (body && body.event === 'paid' && (body.paid === true || body.changed === true)) {
+                            console.log('Paid event received, redirecting...');
+                            window.location.href = '/orders/thank-you/' + encodeURIComponent(code);
+                        }
+                    } catch(e){}
+                });
+            });
+        } catch (e) {
+            console.warn('WS unavailable', e);
+        }
+    })();
+</script>
 
 </body>
 </html>
