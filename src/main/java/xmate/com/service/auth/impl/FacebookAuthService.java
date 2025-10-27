@@ -83,7 +83,8 @@ public class FacebookAuthService {
     }
 
     private TokenRes issueTokens(Customer u) {
-        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer","authm", "facebook"));
+        String userToken = ensureUserToken(u);
+        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer", "authm", "facebook"));
         RefreshToken rt = RefreshToken.builder()
                 .token("f." + UUID.randomUUID())
                 .customer(u)
@@ -91,7 +92,15 @@ public class FacebookAuthService {
                 .revoked(false)
                 .build();
         rtRepo.save(rt);
-        return new TokenRes(access, rt.getToken());
+        return new TokenRes(access, rt.getToken(), userToken);
+    }
+
+    private String ensureUserToken(Customer u) {
+        if (u.getTokenUser() == null || u.getTokenUser().isBlank()) {
+            u.setTokenUser("usr_" + UUID.randomUUID().toString().replace("-", ""));
+            userRepo.save(u);
+        }
+        return u.getTokenUser();
     }
 
     private DebugToken debugToken(String userToken) {
@@ -116,3 +125,5 @@ public class FacebookAuthService {
     public record DebugToken(Data data) { public record Data(boolean is_valid, String app_id, String user_id, Long expires_at) {} }
     public record Me(String id, String name, String email) {}
 }
+
+

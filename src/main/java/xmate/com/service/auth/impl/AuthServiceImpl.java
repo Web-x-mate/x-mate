@@ -130,12 +130,20 @@ public class AuthServiceImpl implements IAuthService {
         if (s.startsWith("l.")) return "local";
         return "local"; // token cũ chưa có prefix -> mặc định local
     }
-    public TokenRes issueTokens(Customer u) {              // giữ tương thích ngược
-        return issueTokens(u, "local");                    // ⬅️ mặc định local
+    private String ensureUserToken(Customer u) {
+        if (u.getTokenUser() == null || u.getTokenUser().isBlank()) {
+            u.setTokenUser("usr_" + UUID.randomUUID().toString().replace("-", ""));
+            userRepo.save(u);
+        }
+        return u.getTokenUser();
+    }
+    public TokenRes issueTokens(Customer u) {
+        return issueTokens(u, "local");
     }
     public TokenRes issueTokens(Customer u, String authm) {
         String am = (authm == null || authm.isBlank()) ? "local" : authm.toLowerCase(Locale.ROOT);
-        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer","authm", am));
+        String userToken = ensureUserToken(u);
+        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer", "authm", am));
         String prefix = switch (am) {
             case "google" -> "g.";
             case "facebook" -> "f.";
@@ -149,7 +157,7 @@ public class AuthServiceImpl implements IAuthService {
                 .revoked(false)
                 .build();
         rtRepo.save(rt);
-        return new TokenRes(access, rt.getToken());
+        return new TokenRes(access, rt.getToken(), userToken);
     }
 
     @Override
@@ -168,3 +176,6 @@ public class AuthServiceImpl implements IAuthService {
         return email == null ? null : email.trim().toLowerCase();
     }
 }
+
+
+

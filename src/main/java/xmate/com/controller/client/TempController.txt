@@ -1,23 +1,22 @@
-package xmate.com.controller.client;
+﻿package xmate.com.controller.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import xmate.com.controller.client.support.ClientOrderViewService;
-import xmate.com.controller.client.view.OrderHistoryView;
 import xmate.com.dto.address.AccountAddressForm;
 import xmate.com.entity.common.DiscountKind;
 import xmate.com.entity.common.DiscountValueType;
@@ -42,15 +41,8 @@ public class ClientAccountController {
 
     private final CustomerRepository customerRepository;
     private final DiscountRepository discountRepository;
-    private final ClientOrderViewService clientOrderViewService;
     private final ObjectMapper objectMapper;
     private final AddressService addressService;
-
-    /** Trim toàn bộ String ("" -> null) để @NotBlank hoạt động chuẩn */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-    }
 
     @ModelAttribute("addressForm")
     public AccountAddressForm addressForm() {
@@ -75,8 +67,6 @@ public class ClientAccountController {
         String redirect = redirectIfIncomplete(me);
         if (redirect != null) return redirect;
         populateCommonModel(model, auth, me, "orders");
-        List<OrderHistoryView> orders = clientOrderViewService.buildOrderHistory(me);
-        model.addAttribute("orders", orders);
         model.addAttribute("pageTitle", "Lich su don hang");
         return "client/account/orders";
     }
@@ -121,13 +111,19 @@ public class ClientAccountController {
             populateCommonModel(model, auth, me, "addresses");
             model.addAttribute("addresses", addressService.listForCurrentUser());
             model.addAttribute("pageTitle", "So dia chi");
-            log.warn("Address form errors for user {}: {}", me.getId(), bindingResult.getAllErrors());
-            model.addAttribute("showAddressModal", true);
             return "client/account/addresses";
         }
 
-        log.info("Saving address - userId={}, defaultAddress={}, form={}",
-                me.getId(), form.isDefaultAddress(), form);
+        log.info("
+        
+        
+        
+        
+        DIA CHI
+        
+        
+        
+         - userId={}, defaultAddress={}, form={}", me.getId(), form.defaultAddress(), form);
         addressService.save(form);
         redirectAttributes.addFlashAttribute("addressMessage", "Da luu dia chi moi.");
         return "redirect:/account/addresses";
@@ -143,7 +139,7 @@ public class ClientAccountController {
         String redirect = redirectIfIncomplete(me);
         if (redirect != null) return redirect;
 
-        if (form.getAddressId() == null) {
+        if (form.addressId() == null) {
             bindingResult.rejectValue("addressId", "address.id.missing", "Thieu ma dia chi can cap nhat.");
         }
 
@@ -151,56 +147,12 @@ public class ClientAccountController {
             populateCommonModel(model, auth, me, "addresses");
             model.addAttribute("addresses", addressService.listForCurrentUser());
             model.addAttribute("pageTitle", "So dia chi");
-            model.addAttribute("showAddressModal", true); // mở lại modal khi lỗi
-            log.warn("Address update errors for user {}: {}", me.getId(), bindingResult.getAllErrors());
             return "client/account/addresses";
         }
 
         log.info("Updating address - userId={}, form={}", me.getId(), form);
         addressService.save(form);
         redirectAttributes.addFlashAttribute("addressMessage", "Da cap nhat dia chi.");
-        return "redirect:/account/addresses";
-    }
-
-    @PostMapping("/addresses/{id}/default")
-    public String setDefaultAddress(Authentication auth,
-                                    @PathVariable("id") Long id,
-                                    RedirectAttributes redirectAttributes,
-                                    Model model) {
-        Customer me = requireCustomer(auth);
-        String redirect = redirectIfIncomplete(me);
-        if (redirect != null) return redirect;
-
-        try {
-            addressService.setDefault(id);
-            redirectAttributes.addFlashAttribute("addressMessage", "Đã đặt địa chỉ mặc định.");
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("addressMessage",
-                    "Không thể đặt mặc định: " + ex.getMessage());
-        }
-        return "redirect:/account/addresses";
-    }
-
-    /**
-     * Xóa địa chỉ
-     * POST /account/addresses/{id}/delete
-     */
-    @PostMapping("/addresses/{id}/delete")
-    public String deleteAddress(Authentication auth,
-                                @PathVariable("id") Long id,
-                                RedirectAttributes redirectAttributes,
-                                Model model) {
-        Customer me = requireCustomer(auth);
-        String redirect = redirectIfIncomplete(me);
-        if (redirect != null) return redirect;
-
-        try {
-            addressService.delete(id);
-            redirectAttributes.addFlashAttribute("addressMessage", "Đã xóa địa chỉ.");
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("addressMessage",
-                    "Không thể xóa: " + ex.getMessage());
-        }
         return "redirect:/account/addresses";
     }
 
@@ -220,7 +172,7 @@ public class ClientAccountController {
         }
         Customer me = resolveCustomer(auth);
         if (me == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Khong xac dinh duoc tai khoan");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "KhÃƒÂ´ng xÃƒÂ¡c Ã„â€˜Ã¡Â»â€¹nh Ã„â€˜Ã†Â°Ã¡Â»Â£c tÃƒÂ i khoÃ¡ÂºÂ£n");
         }
         return me;
     }
@@ -269,15 +221,15 @@ public class ClientAccountController {
                 ? discount.getValueAmount().stripTrailingZeros().toPlainString() + "%"
                 : formatCurrency(discount.getValueAmount());
         String minOrder = discount.getMinOrder() != null && discount.getMinOrder().compareTo(BigDecimal.ZERO) > 0
-                ? "Don toi thieu " + formatCurrency(discount.getMinOrder())
-                : "Khong gioi han don toi thieu";
+                ? "Ã„ÂÃ†Â¡n tÃ¡Â»â€˜i thiÃ¡Â»Æ’u " + formatCurrency(discount.getMinOrder())
+                : "KhÃƒÂ´ng giÃ¡Â»â€ºi hÃ¡ÂºÂ¡n Ã„â€˜Ã†Â¡n tÃ¡Â»â€˜i thiÃ¡Â»Æ’u";
         String expiry = discount.getEndAt() != null
                 ? discount.getEndAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                : "Khong gioi han";
+                : "KhÃƒÂ´ng giÃ¡Â»â€ºi hÃ¡ÂºÂ¡n";
         return new VoucherView(
                 discount.getCode(),
                 valueText,
-                desc != null ? desc : "Ap dung cho moi san pham.",
+                desc != null ? desc : "ÃƒÂp dÃ¡Â»Â¥ng cho mÃ¡Â»Âi sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m.",
                 minOrder,
                 expiry
         );
@@ -308,3 +260,10 @@ public class ClientAccountController {
             String expiryText
     ) {}
 }
+
+
+
+
+
+
+

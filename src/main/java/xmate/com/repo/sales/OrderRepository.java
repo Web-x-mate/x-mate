@@ -21,6 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     Optional<Order> findByCode(String code);
     Page<Order> findByCustomer(Customer customer, Pageable pageable);
     Optional<Order> findByCodeAndCustomer(String code, Customer customer);
+    List<Order> findTop30ByCustomerOrderByCreatedAtDesc(Customer customer);
 
     @Query("select o.status from Order o where o.code = :code")
     Optional<OrderStatus> findStatusByCode(@Param("code") String code);

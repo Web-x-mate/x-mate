@@ -92,6 +92,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         } else {
             Address newAddress = new Address();
             newAddress.setCustomer(user);
+            newAddress.setFullName(req.newAddressFullName());
             newAddress.setLine1(req.newAddressLine1());
             newAddress.setCity(req.newAddressCity());
             newAddress.setPhone(req.newAddressPhone());

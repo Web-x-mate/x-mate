@@ -13,15 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = form.querySelector('.btn--primary');
   const modalTitle = modal.querySelector('.address-modal__title');
   const idField = form.querySelector('[data-address-id-field]');
-  const defaultCheckbox = form.querySelector('#is_default');
-  const fullNameInput = form.querySelector('#full_name');
-  const phoneInput = form.querySelector('#phone');
-  const line1Input = form.querySelector('#line1');
+  const defaultCheckbox = form.querySelector('[name="defaultAddress"]');
+  const fullNameInput = form.querySelector('[name="fullName"]');
+  const phoneInput = form.querySelector('[name="phone"]');
+  const line1Input = form.querySelector('[name="line1"]');
+  const line2Input = form.querySelector('[name="line2"]');
   const editButtons = Array.from(document.querySelectorAll('[data-edit-address]'));
 
-  const provinceSelect = document.getElementById('province');
-  const districtSelect = document.getElementById('district');
-  const wardSelect = document.getElementById('ward');
+  const provinceSelect = form.querySelector('[name="city"]');
+  const districtSelect = form.querySelector('[name="district"]');
+  const wardSelect = form.querySelector('[name="ward"]');
 
   const placeholders = {
     province: '-- Chọn Tỉnh / Thành phố --',
@@ -31,6 +32,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let locationData = [];
   let pendingLocation = null;
+
+  // ===== Helpers =====
+
+  // Chuẩn hoá action URL: xử lý trường hợp data-update-action là '@{/...}'
+  const resolveActionUrl = (raw, hardcodedFallback) => {
+    if (!raw) return hardcodedFallback;
+    const trimmed = String(raw).trim();
+
+    // Nếu Thymeleaf đã render sẵn (bắt đầu bằng / hoặc http/https) → dùng luôn
+    if (trimmed.startsWith('/') || /^https?:\/\//i.test(trimmed)) return trimmed;
+
+    // Nếu còn nguyên cú pháp của Thymeleaf '@{...}' → cố gắng lấy từ thẻ ẩn, nếu không có thì fallback
+    if (/^@\{.*\}$/.test(trimmed)) {
+      // Nếu trong HTML có <a id="addrUpdateLink" th:href="@{/account/addresses/update}" hidden></a>
+      const a = document.getElementById('addrUpdateLink');
+      if (a && a.getAttribute('href')) return a.getAttribute('href');
+      return hardcodedFallback; // fallback an toàn
+    }
+
+    // Th còn lại (chuỗi tương đối) → cứ trả về
+    return trimmed;
+  };
 
   const resetSelect = (el, placeholder) => {
     if (!el) return;
@@ -108,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingLocation = { city, district, ward };
       return;
     }
-
     applyValues();
   };
 
@@ -150,8 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const baseAction = form.getAttribute('action') || '/account/addresses';
-  const updateAction = form.dataset.updateAction || baseAction;
+  // ===== Action URLs (đã chuẩn hoá) =====
+  const baseActionRaw = form.getAttribute('action') || '/account/addresses';
+  const updateActionRaw = form.dataset.updateAction || '@{/account/addresses/update}';
+  const baseAction = resolveActionUrl(baseActionRaw, '/account/addresses');
+  const updateAction = resolveActionUrl(updateActionRaw, '/account/addresses/update');
+
   const baseTitle = modalTitle?.textContent?.trim() || 'Thêm địa chỉ mới';
   const baseSubmitLabel = submitBtn?.textContent?.trim() || 'Lưu địa chỉ';
   const updateTitle = 'Cập nhật địa chỉ';
@@ -168,18 +194,20 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const prepareEdit = (dataset = {}) => {
+    const safe = (value) => (value === undefined || value === null || value === 'null') ? '' : String(value);
     form.reset();
-    form.setAttribute('action', updateAction);
+    form.setAttribute('action', updateAction); // <— đã chuẩn hoá
     modalTitle && (modalTitle.textContent = updateTitle);
     submitBtn && (submitBtn.textContent = updateSubmitLabel);
-    idField && (idField.value = dataset.addressId || '');
-    fullNameInput && (fullNameInput.value = dataset.fullName || '');
-    phoneInput && (phoneInput.value = dataset.phone || '');
-    line1Input && (line1Input.value = dataset.line1 || '');
+    idField && (idField.value = safe(dataset.addressId));
+    fullNameInput && (fullNameInput.value = safe(dataset.fullName));
+    phoneInput && (phoneInput.value = safe(dataset.phone));
+    line1Input && (line1Input.value = safe(dataset.line1));
+    line2Input && (line2Input.value = safe(dataset.line2));
     if (defaultCheckbox) {
       defaultCheckbox.checked = dataset.isDefault === 'true' || dataset.isDefault === true;
     }
-    setLocationValues(dataset.city || '', dataset.district || '', dataset.ward || '');
+    setLocationValues(safe(dataset.city), safe(dataset.district), safe(dataset.ward));
   };
 
   const openModal = () => {
@@ -225,5 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   loadLocations();
-});
 
+  const autoOpen = modal?.dataset.autoOpen === 'true';
+  if (autoOpen) {
+    openModal();
+  }
+});

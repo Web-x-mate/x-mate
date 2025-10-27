@@ -6,133 +6,186 @@
 
 <body>
 <th:block layout:fragment="headExtras">
+    <!-- Đảm bảo base layout có <meta charset="UTF-8"> -->
     <link rel="stylesheet" th:href="@{/css/profile.css}"/>
     <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
 </th:block>
 
-<div layout:fragment="content" class="profile-page">
-    <!-- <section class="banner banner--simple">
-        <div class="banner-card banner-card--compact">
-            <div class="banner-left">
-                <h2>Sổ địa chỉ</h2>
-                <p class="muted">Quản lý địa chỉ nhận hàng để thanh toán nhanh hơn.</p>
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface address-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Địa chỉ của tôi</h1>
+                <button class="btn-pill" type="button" data-open-address-modal>
+                    <i>+</i>
+                    <span>Thêm địa chỉ mới</span>
+                </button>
             </div>
-            <button class="btn" type="button" data-open-address-modal>Thêm địa chỉ mới</button>
+
+            <div th:if="${addressMessage != null}" class="alert alert--success" th:text="${addressMessage}"></div>
+
+            <h4 class="address-header">Sổ địa chỉ</h4>
+
+            <div class="empty-state"
+                 th:if="${addresses == null or addresses.isEmpty()}">
+                Bạn chưa có địa chỉ nào!
+            </div>
+
+            <div class="address-list"
+                 th:if="${addresses != null and !addresses.isEmpty()}">
+                <div class="address-card"
+                     th:each="addr : ${addresses}"
+                     th:attr="data-address-id=${addr.id},
+                              data-full-name=${addr.fullName},
+                              data-phone=${addr.phone},
+                              data-line1=${addr.line1},
+                              data-line2=${addr.line2},
+                              data-city=${addr.city},
+                              data-district=${addr.district},
+                              data-ward=${addr.ward},
+                              data-is-default=${addr.defaultAddress}">
+                    <div class="address-card__band">
+                        <div>
+                            <div class="address-card__name"
+                                 th:text="${addr.fullName}">Nguyễn Văn A</div>
+                            <div class="address-card__phone"
+                                 th:text="${addr.phone}">0909123456</div>
+                        </div>
+                        <span class="address-badge"
+                              th:if="${addr.defaultAddress}">MẶC ĐỊNH</span>
+                    </div>
+
+                    <div class="address-card__body">
+                        <div class="address-card__line"
+                             th:text="${addr.line1}">123 Nguyễn Văn Cừ</div>
+                        <div class="address-card__line"
+                             th:if="${addr.line2 != null and !addr.line2.isBlank()}"
+                             th:text="${addr.line2}">Tòa nhà ABC</div>
+                        <div class="address-card__line"
+                             th:text="${addr.ward + ', ' + addr.district + ', ' + addr.city}">
+                            Phường 2, Quận 5, TP. Hồ Chí Minh
+                        </div>
+                    </div>
+
+                    <div class="address-card__action-row">
+                        <button type="button"
+                                class="address-card__action"
+                                data-edit-address
+                                th:attr="data-address-id=${addr.id},
+                                         data-full-name=${addr.fullName},
+                                         data-phone=${addr.phone},
+                                         data-line1=${addr.line1},
+                                         data-line2=${addr.line2},
+                                         data-city=${addr.city},
+                                         data-district=${addr.district},
+                                         data-ward=${addr.ward},
+                                         data-is-default=${addr.defaultAddress}">
+                            Chỉnh sửa
+                        </button>
+                        <form th:action="@{/account/addresses/{id}/delete(id=${addr.id})}"
+                              method="post"
+                              th:if="${!addr.defaultAddress}"
+                              class="address-card__form-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="address-card__action address-card__action--danger">
+                                Xóa
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="address-card__footer"
+                         th:if="${!addr.defaultAddress}">
+                        <form th:action="@{/account/addresses/{id}/default(id=${addr.id})}"
+                              method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="address-card__button">
+                                Chọn làm mặc định
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-    </section> -->
-
-    <div class="wrap">
-        <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
-
-        <main>
-            <div class="card">
-                <h1 class="h1">Địa chỉ của bạn</h1>
-
-                <div class="address-list"
-                     th:if="${addresses != null and !addresses.isEmpty()}">
-                    <article class="address-card"
-                             th:each="addr : ${addresses}"
-                             th:attr="
-                                data-address-id=${addr.id},
-                                data-full-name=${addr.fullName},
-                                data-phone=${addr.phone},
-                                data-line1=${addr.line1},
-                                data-city=${addr.city},
-                                data-district=${addr.district},
-                                data-ward=${addr.ward},
-                                data-is-default=${addr.default}">
-                        <header class="address-card__header">
-                            <div>
-                                <strong th:text="${addr.fullName}">Nguyễn Văn A</strong>
-                                <span class="address-card__phone" th:text="${addr.phone}">0900000000</span>
-                            </div>
-                            <span class="address-card__badge"
-                                  th:if="${addr.default}" >Mặc định</span>
-                        </header>
-                        <div class="address-card__body">
-                            <p th:text="${addr.line1}">123 Đường ABC</p>
-                            <p class="muted" th:text="${addr.ward + ', ' + addr.district + ', ' + addr.city}">
-                                Phường A, Quận B, TP.HCM
-                            </p>
-                        </div>
-                        <div class="address-card__actions">
-                            <button type="button" class="btn btn--ghost"
-                                    th:if="${!addr.default}">Chọn làm mặc định</button>
-                            <div class="address-card__links">
-                                <button type="button"
-                                        class="link-btn"
-                                        data-edit-address
-                                        th:attr="data-address-id=${addr.id}">Chỉnh sửa</button>
-                                <button type="button" class="link-btn link-btn--danger">Xóa</button>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="empty-block"
-                     th:if="${addresses == null or addresses.isEmpty()}">
-                    <p>Bạn chưa thêm địa chỉ nào.</p>
-                    <button class="btn" type="button" data-open-address-modal>Thêm địa chỉ mới</button>
-                </div>
-            </div>
-        </main>
-    </div>
+    </main>
 
     <div class="address-overlay hidden" data-address-overlay></div>
 
-    <div class="address-modal hidden" data-address-modal>
-        <button class="address-modal__close" type="button" data-close-address-modal aria-label="Đóng">×</button>
-        <div class="address-modal__title">Thêm địa chỉ mới</div>
-
-        <form class="address-form" data-address-form
-              th:action="@{/account/addresses}" method="post"
+    <div class="address-modal hidden"
+         role="dialog"
+         aria-modal="true"
+         data-address-modal th:attr="data-auto-open=${showAddressModal != null ? showAddressModal : false}">
+        <button class="address-modal__close"
+                type="button"
+                aria-label="Đóng"
+                data-close-address-modal>×
+        </button>
+        <h2 class="address-modal__title">Thêm Địa Chỉ</h2>
+        <form class="address-form"
+              data-address-form
+              th:action="@{/account/addresses}"
+              method="post"
+              th:object="${addressForm}"
               data-update-action="@{/account/addresses/update}">
-            <input type="hidden" name="addressId" data-address-id-field>
+            <input type="hidden" th:field="*{addressId}" data-address-id-field>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-            <div class="field-row">
-                <div class="form-group">
-                    <label for="full_name">Họ và tên</label>
-                    <input id="full_name" name="fullName" placeholder="Nguyễn Văn A" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Số điện thoại</label>
-                    <input id="phone" name="phone" placeholder="09xxxxxxxx" required>
-                </div>
+            <div class="form-group form-group--inline">
+                <label for="full_name">Họ và tên</label>
+                <input id="full_name" th:field="*{fullName}" placeholder="Nhập họ tên" required>
+                <span class="form-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Lỗi</span>
             </div>
 
-            <div class="form-group">
-                <label for="line1">Địa chỉ</label>
-                <input id="line1" name="line1" placeholder="Số nhà, tên đường" required>
+            <div class="form-group form-group--inline">
+                <label for="phone">Số điện thoại</label>
+                <input id="phone" th:field="*{phone}" placeholder="Nhập số điện thoại" required>
+                <span class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Lỗi</span>
             </div>
 
-            <div class="field-row">
-                <div class="form-group">
-                    <label for="province">Tỉnh / Thành phố</label>
-                    <select id="province" name="city" aria-label="Tỉnh / Thành phố" required>
-                        <option value="">Chọn Tỉnh / Thành phố</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="district">Quận / Huyện</label>
-                    <select id="district" name="district" aria-label="Quận / Huyện" required>
-                        <option value="">Chọn Quận / Huyện</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="ward">Phường / Xã</label>
-                    <select id="ward" name="ward" aria-label="Phường / Xã" required>
-                        <option value="">Chọn Phường / Xã</option>
-                    </select>
-                </div>
+            <div class="form-group form-group--inline">
+                <label for="province">Tỉnh / Thành phố</label>
+                <select id="province" th:field="*{city}" required>
+                    <option value="" disabled selected>-- Chọn Tỉnh / Thành phố --</option>
+                </select>
+                <span class="form-error" th:if="${#fields.hasErrors('city')}" th:errors="*{city}">Lỗi</span>
+            </div>
+
+            <div class="form-group form-group--inline">
+                <label for="district">Quận / Huyện</label>
+                <select id="district" th:field="*{district}" required>
+                    <option value="" disabled selected>-- Chọn Quận / Huyện --</option>
+                </select>
+                <span class="form-error" th:if="${#fields.hasErrors('district')}" th:errors="*{district}">Lỗi</span>
+            </div>
+
+            <div class="form-group form-group--inline">
+                <label for="ward">Phường / Xã</label>
+                <select id="ward" th:field="*{ward}" required>
+                    <option value="" disabled selected>-- Chọn Phường / Xã --</option>
+                </select>
+                <span class="form-error" th:if="${#fields.hasErrors('ward')}" th:errors="*{ward}">Lỗi</span>
+            </div>
+
+            <div class="form-group form-group--inline">
+                <label for="line1">Địa chỉ (số nhà, đường)</label>
+                <input id="line1" th:field="*{line1}" placeholder="Ví dụ: 123 đường A..." required>
+                <span class="form-error" th:if="${#fields.hasErrors('line1')}" th:errors="*{line1}">Lỗi</span>
+            </div>
+
+            <div class="form-group form-group--inline">
+                <label for="line2">Địa chỉ bổ sung</label>
+                <input id="line2" th:field="*{line2}" placeholder="Tòa nhà, tầng, số phòng (nếu có)">
             </div>
 
             <label class="form-check">
-                <input type="checkbox" id="is_default" name="default">
+                <input id="is_default" type="checkbox" th:field="*{defaultAddress}">
                 Đặt làm địa chỉ mặc định
             </label>
 
             <div class="actions">
-                <button class="btn btn--primary" type="submit">Lưu địa chỉ</button>
+                <button type="button" class="btn btn--ghost" data-close-address-modal>Đóng</button>
+                <button type="submit" class="btn btn--primary">Lưu</button>
             </div>
         </form>
     </div>
