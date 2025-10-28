@@ -1,7 +1,6 @@
 package xmate.com.service.cart.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,18 +9,24 @@ import xmate.com.dto.cart.CartItemDto;
 import xmate.com.dto.checkout.PricingDto;
 import xmate.com.entity.cart.Cart;
 import xmate.com.entity.cart.CartItem;
+import xmate.com.entity.catalog.ProductMedia;
 import xmate.com.entity.catalog.ProductVariant;
 import xmate.com.entity.customer.Customer;
 import xmate.com.repo.cart.CartItemRepository;
 import xmate.com.repo.cart.CartRepository;
+import xmate.com.repo.catalog.ProductMediaRepository;
 import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.service.cart.CartService;
 import xmate.com.service.cart.PricingService;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +34,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
 
+    private static final String PLACEHOLDER_IMAGE = "/client/images/product-placeholder.svg";
+
     private final CartRepository cartRepo;
     private final CartItemRepository cartItemRepo;
     private final ProductVariantRepository variantRepo;
+    private final ProductMediaRepository mediaRepo;
     private final CustomerRepository userRepo;
     private final PricingService pricingService;
 
@@ -168,18 +176,15 @@ public class CartServiceImpl implements CartService {
     private CartDto toDtoItemsOnly(Cart cart) {
         List<CartItem> items = cartItemRepo.findByCartIdWithDetails(cart.getId());
 
+        Map<Long, String> variantThumbCache = new HashMap<>();
+        Map<Long, String> productThumbCache = new HashMap<>();
+
         List<CartItemDto> itemDtos = items.stream().map(ci -> {
             // priceSnap (long) ưu tiên; nếu null, lấy Variant.price (BigDecimal → long)
             long price = Optional.ofNullable(ci.getPriceSnap())
                     .orElseGet(() -> priceToLong(ci.getVariant().getPrice()));
 
-            String image = null;
-            try {
-                // cố gắng lấy variant.getImage() trước, nếu null lấy product.getImage()
-                Object vImg = ci.getVariant().getClass().getMethod("getImage").invoke(ci.getVariant());
-                Object pImg = ci.getVariant().getProduct().getClass().getMethod("getImage").invoke(ci.getVariant().getProduct());
-                image = vImg != null ? String.valueOf(vImg) : (pImg != null ? String.valueOf(pImg) : null);
-            } catch (Exception ignore) {}
+            String image = resolveThumbnail(ci.getVariant(), variantThumbCache, productThumbCache);
 
             return new CartItemDto(
                     ci.getId(),
@@ -208,6 +213,59 @@ public class CartServiceImpl implements CartService {
                 pricing.total(),
                 (pricing.discount() > 0 ? appliedCode : base.appliedCoupon())
         );
+    }
+
+    private String resolveThumbnail(ProductVariant variant,
+                                    Map<Long, String> variantThumbCache,
+                                    Map<Long, String> productThumbCache) {
+        if (variant == null) {
+            return PLACEHOLDER_IMAGE;
+        }
+
+        Long variantId = variant.getId();
+        if (variantId != null) {
+            String cached = variantThumbCache.get(variantId);
+            if (cached != null) {
+                return cached;
+            }
+            String resolved = loadFirstMediaUrl(() ->
+                    mediaRepo.findAllByVariant_IdOrderBySortOrderAsc(variantId)
+            );
+            if (resolved != null) {
+                variantThumbCache.put(variantId, resolved);
+                return resolved;
+            }
+        }
+
+        if (variant.getProduct() != null && variant.getProduct().getId() != null) {
+            Long productId = variant.getProduct().getId();
+            String cached = productThumbCache.get(productId);
+            if (cached != null) {
+                return cached;
+            }
+            String resolved = loadFirstMediaUrl(() ->
+                    mediaRepo.findAllByProduct_IdOrderBySortOrderAsc(productId)
+            );
+            if (resolved != null) {
+                productThumbCache.put(productId, resolved);
+                return resolved;
+            }
+        }
+
+        return PLACEHOLDER_IMAGE;
+    }
+
+    private String loadFirstMediaUrl(Supplier<List<ProductMedia>> supplier) {
+        try {
+            return supplier.get().stream()
+                    .filter(Objects::nonNull)
+                    .map(ProductMedia::getUrl)
+                    .filter(url -> url != null && !url.isBlank())
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private long priceToLong(Object priceObj) {

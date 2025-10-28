@@ -33,6 +33,8 @@
 
                 <nav class="primary-nav">
                     <a class="primary-nav__item is-new" th:href="@{/hang-moi}">NEW</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nam')}">NAM</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nu')}">NỮ</a>
 
                     <div class="primary-nav__group"
                          th:each="group : ${primaryCategories}"
@@ -68,7 +70,7 @@
                         <span class="primary-nav__sale">SALE</span>
                         <span class="primary-nav__sale-tag">-50%</span>
                     </a>
-                    <a class="primary-nav__item" th:href="@{/cs}">C&amp;S</a>
+                    <!-- <a class="primary-nav__item" th:href="@{/cs}">C&amp;S</a> -->
                 </nav>
 
                 <div class="header-actions">
