@@ -1,6 +1,8 @@
 package xmate.com.controller.cart;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,6 +24,7 @@ public class SepayWebhookController {
 
     private final OrderRepository orderRepository;
     private final SimpMessagingTemplate ws;
+    private static final Logger log = LoggerFactory.getLogger(SepayWebhookController.class);
 
     @Value("${sepay.webhook.header-signature:Authorization}")
     private String headerSignatureName;
@@ -38,6 +41,9 @@ public class SepayWebhookController {
     @Transactional
     public ResponseEntity<Map<String, Object>> webhook(@RequestBody Map<String, Object> payload,
                                                        @RequestHeader Map<String, String> headers) {
+        log.info("[sepay.webhook] incoming headers={}, body={}",
+                headers == null ? 0 : headers.size(),
+                payload == null ? "{}" : payload.keySet());
         // Verification policy:
         // - If a dedicated webhook secret is configured, REQUIRE it in header.
         // - If not configured: do not hard-require a header (Sepay may not send one);
@@ -53,29 +59,39 @@ public class SepayWebhookController {
             }
         }
 
-        long amount = getLong(payload.get("amount"),
-                getLong(payload.get("transfer_amount"), getLong(payload.get("money"), 0)));
+        long amount = getLong(
+                payload.get("amount"),
+                payload.get("transfer_amount"),         // snake_case
+                payload.get("transferAmount"),          // camelCase (Sepay actual)
+                payload.get("money"),
+                payload.get("transferMoney"));
         String content = str(payload.get("description"));
         if (!StringUtils.hasText(content)) content = str(payload.get("content"));
         if (!StringUtils.hasText(content)) content = str(payload.get("note"));
         if (!StringUtils.hasText(content)) content = str(payload.get("message"));
+        String providedCode = str(payload.get("code")); // Sepay may parse code for you when configured
 
         if (!StringUtils.hasText(content)) {
             return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Missing transfer content"));
         }
 
         String prefix = StringUtils.hasText(sepayTransferPrefix) ? sepayTransferPrefix : fallbackTransferPrefix;
-        String foundCode = extractOrderCode(content, prefix);
+        String foundCode = StringUtils.hasText(providedCode)
+                ? extractOrderCode(providedCode, prefix)
+                : extractOrderCode(content, prefix);
         if (!StringUtils.hasText(foundCode)) {
+            log.info("[sepay.webhook] no order code in content='{}'", content);
             return ResponseEntity.ok(Map.of("ok", true, "matched", false));
         }
 
         Order order = orderRepository.findByCode(foundCode).orElse(null);
         if (order == null) {
+            log.warn("[sepay.webhook] order not found code={}", foundCode);
             return ResponseEntity.ok(Map.of("ok", true, "matched", false, "reason", "order_not_found"));
         }
 
         if (amount <= 0 || amount < order.getTotal()) {
+            log.warn("[sepay.webhook] amount not enough code={}, got={}, need>={}", order.getCode(), amount, order.getTotal());
             return ResponseEntity.ok(Map.of("ok", true, "matched", false, "reason", "amount_not_enough"));
         }
 
@@ -98,7 +114,9 @@ public class SepayWebhookController {
                     "changed", changed,
                     "ts", System.currentTimeMillis()
             ));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            log.warn("[sepay.webhook] ws notify failed for code={}", order.getCode());
+        }
 
         return ResponseEntity.ok(Map.of(
                 "ok", true,
@@ -146,7 +164,14 @@ public class SepayWebhookController {
             if (c == null) continue;
             if (c instanceof Number n) return n.longValue();
             try {
-                return Long.parseLong(String.valueOf(c));
+                String s = String.valueOf(c).trim();
+                // Try integer first
+                return Long.parseLong(s);
+            } catch (Exception ignored) {}
+            try {
+                // Remove all non-digit characters to handle formats like "200,000.00" or "200000.00"
+                String digits = String.valueOf(c).replaceAll("[^0-9]", "");
+                if (!digits.isEmpty()) return Long.parseLong(digits);
             } catch (Exception ignored) {}
         }
         return 0L;
