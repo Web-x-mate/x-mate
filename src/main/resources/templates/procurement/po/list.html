@@ -5,28 +5,135 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
-<body>
 <head>
-    <link rel="stylesheet" th:href="@{/css/procement/PO/list.css}">
+    <meta charset="UTF-8" />
+    <title>Danh sách hàng nhập kho</title>
+
+    <style>
+        :root{
+            --app-font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+            --bg:#f8fafc; --surface:#fff; --text:#0f172a; --muted:#64748b; --bd:#e2e8f0;
+            --primary:#2563eb;   /* xanh lam */
+            --success:#059669;   /* xanh ngọc */
+            --warning:#fbbf24;   /* vàng */
+            --danger:#ef4444;    /* đỏ */
+            --gray:#e2e8f0;      /* xám nhạt */
+        }
+
+        html,body,.topbar,.topbar *,.sidebar,.sidebar *{
+            font-family:var(--app-font)!important;
+        }
+        body{ color:var(--text); background:var(--bg); }
+
+        .wrap{
+            max-width:1100px; margin:0 auto; padding:32px 0;
+        }
+
+        .page-title{
+            font-size:1.75rem; font-weight:800; line-height:1.3;
+            text-align:center; margin:0 0 24px;
+        }
+
+        /* Filters */
+        .filter-grid{
+            display:grid;
+            grid-template-columns:repeat(6,1fr);
+            gap:.675rem; align-items:stretch; margin-bottom:1rem;
+        }
+        .filter-grid .cell > *{
+            height:43px; width:100%; border-radius:9px; font-size:.855rem;
+            border:1px solid var(--bd); background:var(--surface); color:var(--text);
+            padding:0 .9rem;
+        }
+        .filter-grid .cell select{ padding-right:.9rem; }
+        @media (max-width: 992px){ .filter-grid{ grid-template-columns:repeat(3,1fr);} }
+        @media (max-width: 576px){ .filter-grid{ grid-template-columns:repeat(2,1fr);} }
+
+        /* Buttons — phẳng, đồng bộ hệ thống */
+        .btn{
+            display:inline-flex; align-items:center; justify-content:center;
+            height:43px; min-width:90px; border-radius:.65rem;
+            font-weight:700; font-size:.9rem; padding:0 1rem;
+            border:none; color:#fff; cursor:pointer; text-decoration:none;
+        }
+        .btn-sm{ height:34px; min-width:80px; font-size:.82rem; border-radius:.55rem; }
+
+        .btn-primary{ background:var(--primary) !important; color:#fff !important; border:none !important; }
+        .btn-success{ background:var(--success) !important; color:#fff !important; border:none !important; }
+        .btn-warning{ background:var(--warning) !important; color:#111827 !important; border:none !important; }
+        .btn-danger{ background:var(--danger) !important; color:#fff !important; border:none !important; }
+        .btn-gray{ background:var(--gray) !important; color:#111827 !important; border:none !important; }
+
+        /* Fix Bootstrap override for .btn-primary / .btn-success */
+        .btn-primary, .btn-success {
+            --bs-btn-bg: inherit;
+            --bs-btn-border-color: inherit;
+            --bs-btn-hover-bg: inherit;
+            --bs-btn-hover-border-color: inherit;
+            --bs-btn-active-bg: inherit;
+            --bs-btn-active-border-color: inherit;
+            box-shadow:none !important;
+        }
+
+        /* Table */
+        .table-card{
+            background:var(--surface); border:1px solid var(--bd);
+            border-radius:1rem; box-shadow:0 1px 2px rgba(15,23,42,.06);
+            overflow:hidden;
+        }
+        .table-responsive{ overflow:auto; border-radius:1rem; }
+        table{ width:100%; border-collapse:separate; border-spacing:0; font-size:.95rem; }
+        thead th{
+            position:sticky; top:0; z-index:1;
+            background:#eef2f7; color:#0f172a; border-bottom:1px solid var(--bd);
+            text-transform:uppercase; font-weight:800; font-size:.8rem;
+            letter-spacing:.02em; padding:.75rem .9rem; text-align:center;
+        }
+        tbody td{
+            padding:.9rem .9rem; border-bottom:1px solid var(--bd);
+            background:#fff; text-align:center; vertical-align:middle;
+        }
+        tbody tr:hover td{ background:#f8fafc; }
+
+        /* Pagination */
+        .pagination{ display:flex; gap:.5rem; align-items:center; margin-top:16px; }
+        .page-item{ list-style:none; }
+        .page-link{
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:40px; height:36px; padding:0 .75rem;
+            border-radius:10px; border:1px solid #e2e8f0;
+            background:#fff; color:#0f172a; font-weight:700; text-decoration:none;
+        }
+        .page-item.active .page-link{ background:#16a34a; color:#fff; border-color:#16a34a; }
+        .page-item.disabled .page-link{
+            background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none;
+        }
+    </style>
 </head>
+<body>
 <section layout:fragment="content">
+
     <!-- Khi KHÔNG có quyền VIEW -->
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">
-        Bạn không có quyền xem danh sách Purchase Orders.
+        Bạn không có quyền xem danh sách hàng nhập kho.
     </div>
 
     <!-- Khi CÓ quyền VIEW -->
-    <div sec:authorize="hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">
-        <h1>Purchase Orders</h1>
+    <div sec:authorize="hasAnyAuthority('PO_VIEW','ROLE_ADMIN')" class="wrap">
 
-        <!-- Filters -->
-        <form class="row g-2 mb-3" method="get" th:action="@{/admin/procurement/po}"
+        <h1 class="page-title">Danh sách hàng nhập kho</h1>
+
+        <!-- Bộ lọc -->
+        <form class="filter-grid"
+              method="get"
+              th:action="@{/admin/procurement/po}"
               th:with="extra=${'q=' + (q?:'') + '&status=' + (status?:'') + '&supplierId=' + (supplierId?:'')}">
-            <div class="col-md-3">
+
+            <div class="cell">
                 <input class="form-control" type="text" name="q" th:value="${q}" placeholder="Search code">
             </div>
 
-            <div class="col-md-3">
+            <div class="cell">
                 <select class="form-select" name="status">
                     <option value="">-- Trạng thái --</option>
                     <option th:each="s : ${statuses}"
@@ -37,7 +144,7 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="cell">
                 <select class="form-select" name="supplierId">
                     <option value="">-- Nhà cung cấp --</option>
                     <option th:each="s : ${suppliers}"
@@ -48,63 +155,62 @@
                 </select>
             </div>
 
-            <div class="col-md-3 d-flex gap-2">
+            <div class="cell" style="display:flex; gap:.675rem;">
                 <button class="btn btn-primary" type="submit">Lọc</button>
-
-                <!-- Nút tạo PO chỉ hiển thị khi có quyền CREATE -->
                 <a th:href="@{/admin/procurement/po/new}"
-                   class="btn btn-success ms-auto"
-                   sec:authorize="hasAnyAuthority('PO_CREATE','ROLE_ADMIN')">+ Tạo PO</a>
+                   class="btn btn-success"
+                   sec:authorize="hasAnyAuthority('PO_CREATE','ROLE_ADMIN')">Tạo PO</a>
             </div>
         </form>
 
-        <!-- Table -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Code</th>
-                    <th>Supplier</th>
-                    <th>Status</th>
-                    <th>Expected</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="p : ${page?.content}">
-                    <td th:text="${p.id}">1</td>
-                    <td th:text="${p.code}">PO-001</td>
-                    <td th:text="${p.supplier != null ? p.supplier.name : '—'}">NCC</td>
-                    <td th:text="${p.status}">DRAFT</td>
-                    <td th:text="${p.expectedDate}">2025-10-05</td>
-                    <td class="d-flex gap-2">
-                        <!-- Edit chỉ hiển thị khi có quyền EDIT -->
-                        <a th:href="@{|/admin/procurement/po/${p.id}/edit|}"
-                           class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('PO_EDIT','ROLE_ADMIN')">Edit</a>
+        <!-- Bảng -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Supplier</th>
+                        <th>Status</th>
+                        <th>Expected</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${page?.content}">
+                        <td th:text="${p.id}">1</td>
+                        <td th:text="${p.code}">PO-001</td>
+                        <td th:text="${p.supplier != null ? p.supplier.name : '—'}">NCC</td>
+                        <td th:text="${p.status}">DRAFT</td>
+                        <td th:text="${p.expectedDate}">2025-10-05</td>
+                        <td style="display:flex; gap:8px; justify-content:center;">
+                            <a class="btn btn-gray btn-sm">Xem</a>
+                            <a th:href="@{|/admin/procurement/po/${p.id}/edit|}"
+                               class="btn btn-warning btn-sm"
+                               sec:authorize="hasAnyAuthority('PO_EDIT','ROLE_ADMIN')">Sửa</a>
+                            <a th:href="@{|/admin/procurement/po/${p.id}/delete|}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Xóa PO?')"
+                               sec:authorize="hasAnyAuthority('PO_DELETE','ROLE_ADMIN')">Xóa</a>
+                        </td>
+                    </tr>
 
-                        <!-- Delete chỉ hiển thị khi có quyền DELETE -->
-                        <a th:href="@{|/admin/procurement/po/${p.id}/delete|}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Xóa PO?')"
-                           sec:authorize="hasAnyAuthority('PO_DELETE','ROLE_ADMIN')">Delete</a>
-                    </td>
-                </tr>
-                <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                    <td colspan="6" class="text-center">No data</td>
-                </tr>
-                </tbody>
-            </table>
+                    <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                        <td colspan="6" class="text-center" style="padding:18px; color:var(--muted);">No data</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Pagination -->
+        <!-- Phân trang -->
         <div th:replace="~{layout/components/_pagination :: body(
             page=${page},
             baseUrl='/admin/procurement/po',
             q=${extra}
-          )}">
-        </div>
+        )}"></div>
+
     </div>
 </section>
 </body>

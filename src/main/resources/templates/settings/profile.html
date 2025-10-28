@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <head>
@@ -16,53 +15,65 @@
                           ? #authentication.authorities.?[#strings.startsWith(#this.authority,'ROLE_')]
                           : T(java.util.Collections).emptyList()}">
 
-    <h1>Hồ sơ cá nhân</h1>
+    <div class="wrap">
+        <div class="surface-header">
+            <h1 class="surface-title">👤 Hồ sơ cá nhân</h1>
+        </div>
 
-    <!-- Thông báo -->
-    <div th:if="${saved}" class="alert alert-success">Đã lưu thay đổi!</div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <!-- Thông báo -->
+        <div th:if="${saved}" class="alert success">Đã lưu thay đổi!</div>
+        <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
-    <!-- Info hiện tại của tài khoản -->
-    <div class="profile-card mb-4">
-        <div class="profile-grid">
-            <div>
-                <div><strong>Username:</strong> <span th:text="${user.username}">username</span></div>
-                <div><strong>Trạng thái:</strong>
-                    <span th:text="${user.active ? 'Active' : 'Inactive'}">Active</span>
-                </div>
-                <div><strong>Tạo lúc:</strong>
-                    <span th:text="${#temporals.format(user.createdAt, fmt)}">01/01/2025 10:00</span>
+        <!-- Thông tin tài khoản -->
+        <div class="white-surface">
+            <div class="meta-grid">
+                <dl class="meta">
+                    <div><dt>Tài khoản</dt><dd th:text="${user.username}">admin</dd></div>
+                    <div><dt>Trạng thái</dt><dd><span class="dot on"></span>Active</dd></div>
+                    <div><dt>Tạo lúc</dt><dd th:text="${#temporals.format(user.createdAt, fmt)}">27/10/2025 19:16</dd></div>
+                </dl>
+
+                <div class="roles">
+                    <div class="section-subtitle">Vai trò</div>
+                    <div class="badge-list">
+                        <span class="badge" th:each="ga : ${roles}" th:text="${ga.authority}">ROLE_ADMIN</span>
+                        <span class="badge empty" th:if="${#lists.isEmpty(roles)}">(Không có vai trò)</span>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Roles từ Spring Security (chỉ hiện role, không hiện permissions) -->
-            <div>
-                <div style="font-weight:600;margin-bottom:6px;">Roles</div>
-                <div class="badge-list">
-                    <span class="badge" th:each="ga : ${roles}" th:text="${ga.authority}">ROLE_ADMIN</span>
-                    <span th:if="${#lists.isEmpty(roles)}">(Không có role)</span>
+        <!-- Form cập nhật -->
+        <div class="white-surface">
+            <form th:action="@{/settings/profile}" th:object="${form}" method="post" class="profile-form" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="fullName">Họ và tên</label>
+                        <input id="fullName" type="text" th:field="*{fullName}" placeholder="Your name"
+                               required minlength="2" maxlength="120" autocomplete="name">
+                    </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" th:field="*{email}" placeholder="you@example.com"
+                               maxlength="120" autocomplete="email" inputmode="email">
+                    </div>
+                    <div class="field">
+                        <label for="phone">SĐT</label>
+                        <input id="phone" type="text" th:field="*{phone}" placeholder="0xxxxxxxxx"
+                               pattern="^0\\d{9}$" maxlength="10" inputmode="tel" autocomplete="tel-national"
+                               title="Số điện thoại gồm 10 chữ số, bắt đầu bằng 0">
+                    </div>
                 </div>
-            </div>
+
+                <!-- Nút căn phải -->
+                <div class="form-actions">
+                    <button type="submit" class="btn primary" data-loading-text="Đang lưu...">Lưu thay đổi</button>
+                </div>
+            </form>
         </div>
     </div>
-
-    <!-- Form cập nhật -->
-    <form th:action="@{/settings/profile}" th:object="${form}" method="post" class="space-y-3">
-        <div>
-            <label>Full name</label>
-            <input type="text" th:field="*{fullName}" placeholder="Your name" required minlength="2" maxlength="120"/>
-        </div>
-        <div>
-            <label>Email</label>
-            <input type="email" th:field="*{email}" placeholder="you@example.com" maxlength="120"/>
-        </div>
-        <div>
-            <label>Phone</label>
-            <input type="text" th:field="*{phone}" placeholder="0xxxxxxxxx" pattern="^0\\d{9}$" maxlength="10"/>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-    </form>
 </section>
+
+<script th:src="@{/js/settings/profile.js}"></script>
 </body>
 </html>
