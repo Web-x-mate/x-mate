@@ -17,4 +17,7 @@ public class Cart {
     private Customer user;
 
     private String appliedCouponCode;
+
+    @Column(name = "guest_key", unique = true, length = 64)
+    private String guestKey;
 }

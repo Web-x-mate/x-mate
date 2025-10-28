@@ -29,6 +29,13 @@
       </div>
     </div>
 
+    <div class="search-summary" th:if="${!isSearch and sectionTitle != null}">
+      <div class="search-summary__container">
+        <h1 class="search-summary__title" th:text="${sectionTitle}">Bộ sưu tập</h1>
+        <p class="search-summary__meta" th:text="${searchTotal} + ' sản phẩm'"></p>
+      </div>
+    </div>
+
     <!-- render bằng fragment -->
     <section class="products" th:if="${products != null and !products.isEmpty()}">
       <div th:each="p : ${products}">

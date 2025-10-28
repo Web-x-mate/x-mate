@@ -15,4 +15,6 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     Optional<Cart> findFirstByUser_IdOrderByIdAsc(Long userId);
 
     Optional<Cart> findByUserId(Long userId);
+
+    Optional<Cart> findByGuestKey(String guestKey);
 }

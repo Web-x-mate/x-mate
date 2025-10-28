@@ -51,6 +51,7 @@ public class SecurityConfig {
                         // Webhook từ Sepay (không yêu cầu JWT)
                         .requestMatchers(HttpMethod.POST, "/api/sepay/webhook").permitAll()
                         .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
+                        .requestMatchers("/api/cart/**").permitAll()
 
                         // ADMIN pages: must be staff (exclude anonymous)
                         .requestMatchers("/admin/**").access((authz, ctx) -> {
