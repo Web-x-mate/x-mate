@@ -150,6 +150,10 @@ public class CheckoutServiceImpl implements CheckoutService {
                 ? "/orders/thank-you/" + savedOrder.getCode()
                 : "/orders/pay/" + savedOrder.getCode();
 
+        // Clear cart after order placement so the customer
+        // starts fresh for the next purchase
+        cartService.clearCartForCurrentUser();
+
         return OrderPlacedDto.builder()
                 .id(savedOrder.getId())
                 .code(savedOrder.getCode())

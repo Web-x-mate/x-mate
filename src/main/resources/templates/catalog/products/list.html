@@ -9,25 +9,11 @@
     <title>Danh sách sản phẩm</title>
     <style>
         :root{
-            --bg:#f8fafc;
-            --surface:#ffffff;
-            --text:#0f172a;
-            --muted:#64748b;
-            --bd:#e2e8f0;
-            --ring:#93c5fd;
-            --primary:#2563eb;
-            --primary-hover:#1d4ed8;
-
-            --success:#22c55e;
-            --warning:#fbbf24;
-            --danger:#ef4444;
-            --danger-hover:#dc2626;
-
-            --neutral:#6b7280;         /* Biến thể (xám) */
-            --neutral-hover:#4b5563;
-
-            --media:#3b82f6;           /* Hình ảnh (xanh biển) */
-            --media-hover:#2563eb;
+            --bg:#f8fafc; --surface:#ffffff; --text:#0f172a; --muted:#64748b; --bd:#e2e8f0; --ring:#93c5fd;
+            --primary:#2563eb; --primary-hover:#1d4ed8;
+            --success:#22c55e; --warning:#fbbf24; --danger:#ef4444; --danger-hover:#dc2626;
+            --neutral:#6b7280; --neutral-hover:#4b5563;
+            --media:#3b82f6; --media-hover:#2563eb;
         }
 
         body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
@@ -43,12 +29,10 @@
         }
         .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
 
-        /* ================= BUTTONS ================= */
+        /* Buttons */
         .btn{
-            display:inline-flex;align-items:center;justify-content:center;
-            height:36px;min-width:90px;
-            border-radius:.55rem;border:1px solid transparent;
-            font-weight:700;font-size:.85rem;line-height:1;
+            display:inline-flex;align-items:center;justify-content:center;height:36px;min-width:90px;
+            border-radius:.55rem;border:1px solid transparent;font-weight:700;font-size:.85rem;line-height:1;
             transition:.18s;padding:0 .9rem;cursor:pointer;
         }
         .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-hover);}
@@ -59,41 +43,49 @@
         .btn-media{background:var(--media);color:#fff;} .btn-media:hover{background:var(--media-hover);}
         .btn-sm{height:34px;min-width:90px;font-size:.82rem;}
 
-        /* ================= TABLE ================= */
-        .table-card{background:var(--surface);border:1px solid var(--bd);border-radius:1rem;box-shadow:0 2px 4px rgba(15,23,42,.06);}
-        .table-responsive{max-height:65vh;overflow:auto;border-radius:1rem;}
+        /* Table */
+        .table-card{
+            background:var(--surface);border:1px solid var(--bd);border-radius:1rem;
+            box-shadow:0 2px 4px rgba(15,23,42,.06); overflow:hidden; /* giữ bo góc, không cắt phân trang */
+        }
+        .table-responsive{
+            overflow-x:auto; /* chỉ cuộn ngang khi cần */
+            /* bỏ max-height và overflow dọc để phân trang hiển thị bình thường */
+            border-radius:1rem 1rem 0 0;
+        }
         table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;}
-
         thead th{
-            position:sticky;top:0;z-index:2;background:#eef2f7;color:#0f172a;border-bottom:1px solid var(--bd);
+            position:sticky;top:0;z-index:1;background:#eef2f7;color:#0f172a;border-bottom:1px solid var(--bd);
             text-transform:uppercase;font-weight:800;font-size:.8rem;letter-spacing:.02em;
             padding:.75rem .9rem;white-space:nowrap;text-align:center;
         }
-        tbody td{
-            padding:.9rem .9rem;border-bottom:1px solid var(--bd);background:#fff;
-            text-align:center;vertical-align:middle;
-        }
+        tbody td{padding:.9rem .9rem;border-bottom:1px solid var(--bd);background:#fff;text-align:center;vertical-align:middle;}
         tbody tr:hover td{background:#f8fafc;}
+        thead th:first-child{border-top-left-radius:16px;} thead th:last-child{border-top-right-radius:16px;}
+        tbody tr:last-child td:first-child{border-bottom-left-radius:0;} tbody tr:last-child td:last-child{border-bottom-right-radius:0;}
 
-        /* Bo góc bảng */
-        thead th:first-child{border-top-left-radius:16px;}
-        thead th:last-child{border-top-right-radius:16px;}
-        tbody tr:last-child td:first-child{border-bottom-left-radius:16px;}
-        tbody tr:last-child td:last-child{border-bottom-right-radius:16px;}
-
-        /* Badge trạng thái */
+        /* Badges */
         .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:.6rem;padding:.35rem .6rem;font-weight:800;font-size:.72rem;color:#fff;}
-        .bg-success{background:var(--success);}
-        .bg-secondary{background:#94a3b8;color:#0f172a;}
+        .bg-success{background:var(--success);} .bg-secondary{background:#94a3b8;color:#0f172a;}
 
         /* Actions */
         .actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:nowrap;}
-
-        /* Zebra nhẹ */
         tbody tr:nth-child(even) td{background:#fcfdff;}
-
-        /* Force center */
         .table-centered th,.table-centered td{text-align:center!important;vertical-align:middle!important;}
+
+        /* Pagination — pills */
+        .pagination{ display:flex; gap:.5rem; align-items:center; margin-top:16px; }
+        .page-item{ list-style:none; }
+        .page-link{
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:40px; height:36px; padding:0 .75rem;
+            border-radius:10px; border:1px solid #e2e8f0;
+            background:#fff; color:#0f172a; font-weight:700; text-decoration:none;
+            transition:background .15s, border-color .15s, color .15s;
+        }
+        .page-item.active .page-link{ background:#16a34a; color:#fff; border-color:#16a34a; }
+        .page-item.disabled .page-link{ background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none; }
+        .page-link:hover{ background:#f8fafc; }
     </style>
 </head>
 <body>
@@ -104,7 +96,7 @@
     </div>
 
     <div sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')" class="wrap">
-        <h1 class="page-title">🛒Danh sách sản phẩm</h1>
+        <h1 class="page-title mb-3 fw-bold" style="text-align:center;">Danh sách sản phẩm</h1>
 
         <div class="toolbar">
             <form method="get" th:action="@{/admin/catalog/products}" class="search-form">
@@ -153,6 +145,13 @@
                 </table>
             </div>
         </div>
+
+        <!-- PHÂN TRANG: pill, giữ q -->
+        <div th:replace="~{layout/components/_pagination :: body(
+                page=${page},
+                baseUrl='/admin/catalog/products',
+                q=${q}
+        )}"></div>
 
     </div>
 </section>
