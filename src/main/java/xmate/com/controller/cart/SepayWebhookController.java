@@ -125,8 +125,15 @@ public class SepayWebhookController {
         if (!StringUtils.hasText(hv)) hv = getHeaderIgnoreCase(headers, "X-Sepay-Api-Key");
         if (!StringUtils.hasText(hv)) hv = getHeaderIgnoreCase(headers, "X-Sepay-Signature");
         if (!StringUtils.hasText(hv)) return null;
-        String token = hv;
-        if (token != null && token.toLowerCase().startsWith("bearer ")) token = token.substring(7).trim();
+
+        String token = hv.trim();
+        String lower = token.toLowerCase(java.util.Locale.ROOT);
+        // Accept common auth schemes used by Sepay dashboards: "Apikey <token>", "Bearer <token>", etc.
+        if (lower.startsWith("bearer ")) token = token.substring(7).trim();
+        else if (lower.startsWith("apikey ")) token = token.substring(7).trim();
+        else if (lower.startsWith("api-key ")) token = token.substring(8).trim();
+        else if (lower.startsWith("token ")) token = token.substring(6).trim();
+        else if (lower.startsWith("apisecret ")) token = token.substring(10).trim();
         return token;
     }
 
@@ -148,6 +155,7 @@ public class SepayWebhookController {
     private String extractOrderCode(String content, String prefix) {
         if (content == null) return null;
         String normalized = content.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
+        String flat = normalized.replaceAll("[^A-Z0-9]", "");
 
         // If prefix provided (e.g., XMATE-ODR), capture the full token starting at prefix
         if (StringUtils.hasText(prefix)) {
@@ -165,21 +173,62 @@ public class SepayWebhookController {
                 }
                 if (sb.length() > 0) {
                     String token = sb.toString();
-                    String expect = pfx + "-";
-                    if (token.startsWith(expect) && token.length() > expect.length()) {
-                        // Prefix found; strip it to get the real order code stored in DB
-                        return token.substring(expect.length());
+                    // Accept separators between prefix and code: '-', ':', space or none
+                    // 1) Exact prefix-<CODE>
+                    String expectDash = pfx + "-";
+                    if (token.startsWith(expectDash) && token.length() > expectDash.length()) {
+                        return token.substring(expectDash.length());
+                    }
+                    // 2) Prefix with colon/space
+                    String expectColon = pfx + ":";
+                    if (token.startsWith(expectColon) && token.length() > expectColon.length()) {
+                        return token.substring(expectColon.length());
+                    }
+                    String expectSpace = pfx + " ";
+                    if (token.startsWith(expectSpace) && token.length() > expectSpace.length()) {
+                        return token.substring(expectSpace.length());
+                    }
+                    // 3) No separator: try to peel prefix from start
+                    if (token.startsWith(pfx) && token.length() > pfx.length()) {
+                        return token.substring(pfx.length());
                     }
                     return token;
                 }
             }
+            // Also try matching on a hyphen-less version of the prefix within a hyphen-less content
+            String pfxFlat = pfx.replaceAll("[^A-Z0-9]", "");
+            int k = flat.indexOf(pfxFlat);
+            if (k >= 0) {
+                String after = flat.substring(k + pfxFlat.length());
+                java.util.regex.Matcher mFlat = java.util.regex.Pattern
+                        .compile("XM([0-9A-F]{8})")
+                        .matcher(after);
+                if (mFlat.find()) {
+                    return "XM-" + mFlat.group(1);
+                }
+            }
         }
 
-        // Fallback: find the longest token that looks like a code with dashes
+        // Fallback 1: 'XM-XXXXXXXX' (default format, hex-only)
         java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("([A-Z0-9]{2,}-[A-Z0-9-]{2,})")
+                .compile("([A-Z]{2}-[0-9A-F]{8})")
                 .matcher(normalized);
         if (m.find()) return m.group(1);
+
+        // Fallback 2: prefix then code separated by space/colon
+        if (StringUtils.hasText(prefix)) {
+            String pfx = prefix.trim().toUpperCase(Locale.ROOT);
+            m = java.util.regex.Pattern
+                    .compile(java.util.regex.Pattern.quote(pfx) + "[\u0020:]+([A-Z]{2}-?[0-9A-F]{8})")
+                    .matcher(normalized);
+            if (m.find()) return m.group(1);
+        }
+
+        // Fallback 3: hyphenless 'XMXXXXXXXX' anywhere -> rebuild to 'XM-XXXXXXXX'
+        m = java.util.regex.Pattern
+                .compile("XM([0-9A-F]{8})")
+                .matcher(flat);
+        if (m.find()) return "XM-" + m.group(1);
 
         // Fallback: CODE: <value>
         m = java.util.regex.Pattern.compile("CODE[:\\s]+([A-Z0-9-]{3,})").matcher(normalized);
