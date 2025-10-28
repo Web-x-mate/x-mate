@@ -113,8 +113,8 @@
         /* Font cơ bản + căn giữa toàn bộ bảng */
         .table-centered thead th,
         .table-centered tbody td {
-            text-align: center;            /* ✅ căn giữa ngang */
-            vertical-align: middle;        /* ✅ căn giữa dọc */
+            text-align: center;
+            vertical-align: middle;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
         }
 
@@ -180,7 +180,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="c,iter : ${page != null ? page.content : {}}">
+                    <tr th:each="c,iter : ${page != null ? page.content : categories}">
                         <td class="col-center" th:text="${iter.index + 1}">1</td>
                         <td class="col-center" th:text="${c.id}">1</td>
                         <td class="col-left">

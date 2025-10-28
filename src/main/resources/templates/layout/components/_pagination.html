@@ -1,15 +1,86 @@
-<!-- src/main/resources/templates/layout/components/_pagination.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        /* ==== Pagination Style (Không in đậm) ==== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            margin-top: 1rem;
+        }
+
+        .pagination .page-item {
+            list-style: none;
+        }
+
+        .pagination .page-link {
+            font-weight: normal;
+            color: #0d6efd;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
+
+        /* Trang hiện tại (active) - không in đậm */
+        .pagination .page-item.active .page-link {
+            font-weight: normal;
+            background-color: #f8f9fa;       /* Màu nền nhạt nhẹ */
+            color: #0d6efd;
+            border-color: #dee2e6;
+        }
+    </style>
+</head>
+
 <body>
-<div th:fragment="body (page, baseUrl, q)">
+<!--
+  Fragment phân trang dùng chung.
+  Tham số:
+    - page      : org.springframework.data.domain.Page
+    - baseUrl   : đường dẫn gốc (vd: '/admin/sales/orders')
+    - q         : query text (tùy chọn)
+    - status    : trạng thái (Orders)
+    - payment   : tình trạng thanh toán (Orders)
+    - type      : loại discount (Discounts)
+    - valueType : kiểu giảm giá (Discounts)
+    - size      : số bản ghi/trang (tùy chọn, mặc định = page.size)
+    - sort      : tên trường sort (tùy chọn)
+    - direction : ASC/DESC (tùy chọn)
+  Tham số nào null sẽ không được đưa vào URL.
+-->
+<div th:fragment="body (page, baseUrl, q, status, payment, type, valueType, size, sort, direction)">
     <nav th:if="${page != null and page.totalPages > 1}" aria-label="pagination">
         <ul class="pagination">
 
             <!-- Prev -->
             <li th:class="'page-item ' + (${page.first} ? 'disabled' : '')">
                 <a class="page-link"
-                   th:href="@{|${baseUrl}?page=${page.number - 1}&size=${page.size}&q=${q}|}">Prev</a>
+                   th:href="@{${baseUrl}(
+                      page=${page.number - 1},
+                      size=${size != null ? size : page.size},
+                      q=${q},
+                      status=${status},
+                      payment=${payment},
+                      type=${type},
+                      valueType=${valueType},
+                      sort=${sort},
+                      direction=${direction}
+                    )}">Prev</a>
             </li>
 
             <!-- Numbers -->
@@ -17,13 +88,33 @@
                 th:class="'page-item ' + (${i} == ${page.number} ? 'active' : '')">
                 <a class="page-link"
                    th:text="${i + 1}"
-                   th:href="@{|${baseUrl}?page=${i}&size=${page.size}&q=${q}|}">1</a>
+                   th:href="@{${baseUrl}(
+                      page=${i},
+                      size=${size != null ? size : page.size},
+                      q=${q},
+                      status=${status},
+                      payment=${payment},
+                      type=${type},
+                      valueType=${valueType},
+                      sort=${sort},
+                      direction=${direction}
+                    )}">1</a>
             </li>
 
             <!-- Next -->
             <li th:class="'page-item ' + (${page.last} ? 'disabled' : '')">
                 <a class="page-link"
-                   th:href="@{|${baseUrl}?page=${page.number + 1}&size=${page.size}&q=${q}|}">Next</a>
+                   th:href="@{${baseUrl}(
+                      page=${page.number + 1},
+                      size=${size != null ? size : page.size},
+                      q=${q},
+                      status=${status},
+                      payment=${payment},
+                      type=${type},
+                      valueType=${valueType},
+                      sort=${sort},
+                      direction=${direction}
+                    )}">Next</a>
             </li>
 
         </ul>

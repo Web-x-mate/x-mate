@@ -1,4 +1,4 @@
-package xmate.com.controller.client.support;
+﻿package xmate.com.controller.client.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +16,7 @@ import xmate.com.entity.enums.PaymentStatus;
 import xmate.com.entity.sales.Order;
 import xmate.com.entity.sales.OrderItem;
 import xmate.com.repo.catalog.ProductMediaRepository;
-import xmate.com.repo.sales.OrderRepository;
-import xmate.com.repo.catalog.ProductVariantRepository;
+import xmate.com.repo.sales.OrderRepository;\nimport xmate.com.repo.catalog.ProductVariantRepository;
 
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
@@ -39,8 +38,7 @@ public class ClientOrderViewService {
     private static final String PLACEHOLDER_IMAGE = "/client/images/product-placeholder.svg";
 
     private final OrderRepository orderRepository;
-    private final ProductMediaRepository mediaRepository;
-    private final ProductVariantRepository variantRepository;
+    private final ProductMediaRepository mediaRepository;\n    private final ProductVariantRepository variantRepository;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
@@ -119,31 +117,13 @@ public class ClientOrderViewService {
         Product product = item.getProduct();
         ProductVariant variant = item.getVariant();
 
-                String vProductName = null;
-        String vSlug = null;
-        if (variant != null) {
-            try {
-                if (variant.getProduct() != null) {
-                    vProductName = trimToNull(variant.getProduct().getName());
-                    vSlug = trimToNull(variant.getProduct().getSlug());
-                } else if (variant.getId() != null) {
-                    xmate.com.entity.catalog.ProductVariant v = variantRepository.findById(variant.getId()).orElse(null);
-                    if (v != null && v.getProduct() != null) {
-                        vProductName = trimToNull(v.getProduct().getName());
-                        vSlug = trimToNull(v.getProduct().getSlug());
-                    }
-                }
-            } catch (Exception ignored) {}
-        }
-
         String title = firstNonBlank(
                 item.getProductName(),
                 product != null ? product.getName() : null,
-                vProductName,
                 "Sản phẩm"
         );
 
-        String slug = product != null ? trimToNull(product.getSlug()) : vSlug;
+        String slug = product != null ? trimToNull(product.getSlug()) : null;
         String thumbnail = resolveThumbnail(product, variant, variantThumbCache, productThumbCache);
         String color = variant != null ? trimToNull(variant.getColor()) : null;
         String size = variant != null ? trimToNull(variant.getSize()) : null;
@@ -344,14 +324,6 @@ public class ClientOrderViewService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 }
-
-
-
-
-
-
-
-
 
 
 
