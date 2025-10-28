@@ -62,7 +62,7 @@ public class ClientHomeController {
         if (cards.isEmpty()) log.warn("[HOME] No products available to render.");
         else log.info("[HOME] First card: {}", cards.get(0));
 
-        model.addAttribute("pageTitle", "X-Mate | Trang chu");
+        model.addAttribute("pageTitle", "X-Mate | Trang chủ");
         model.addAttribute("isSearch", isSearch);
         model.addAttribute("searchQuery", sanitizedQuery);
         model.addAttribute("searchTotal", page.getTotalElements());

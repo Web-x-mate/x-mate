@@ -18,7 +18,7 @@
   box-shadow: 0 6px 18px rgba(30, 35, 55, 0.06);
   overflow: hidden;
   transition: all 0.25s ease;
-  min-height: 340px; /* ✅ cố định chiều cao */
+  min-height: 340px;
 }
 .review-card:hover {
   transform: translateY(-4px);
