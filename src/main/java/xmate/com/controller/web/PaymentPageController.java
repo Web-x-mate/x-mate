@@ -23,6 +23,9 @@ public class PaymentPageController {
     private String sepayBankName;
     @Value("${app.sepay.account:}")
     private String sepayAccount;
+    // Some Sepay accounts use a Virtual Account (VA) like 96247NVH20
+    @Value("${app.sepay.va:}")
+    private String sepayVa;
     @Value("${app.sepay.transfer-prefix:}")
     private String sepayPrefix;
     // Optional: template for Sepay QR image (compact/card/…)
@@ -59,7 +62,8 @@ public class PaymentPageController {
         String encodedNote = URLEncoder.encode(note, StandardCharsets.UTF_8);
 
         String qrUrl = null;
-        String effAccount = notBlank(sepayAccount) ? sepayAccount : bankAccount;
+        // Prefer VA if configured, otherwise use real account number
+        String effAccount = notBlank(sepayVa) ? sepayVa : (notBlank(sepayAccount) ? sepayAccount : bankAccount);
         String effBankName = notBlank(sepayBankName) ? sepayBankName : bankName;
         String effBin = notBlank(bankBin) ? bankBin : resolveBinByBankName(effBankName);
 
