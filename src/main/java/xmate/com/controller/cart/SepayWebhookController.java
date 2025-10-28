@@ -38,11 +38,17 @@ public class SepayWebhookController {
     @Transactional
     public ResponseEntity<Map<String, Object>> webhook(@RequestBody Map<String, Object> payload,
                                                        @RequestHeader Map<String, String> headers) {
-        // Verify: use webhookSecret if present, otherwise fallback to app.sepay.api-key
-        String expected = StringUtils.hasText(webhookSecret) ? webhookSecret : sepayApiKey;
-        if (StringUtils.hasText(expected)) {
-            String token = resolveIncomingToken(headers, headerSignatureName);
-            if (!expected.equals(token)) {
+        // Verification policy:
+        // - If a dedicated webhook secret is configured, REQUIRE it in header.
+        // - If not configured: do not hard-require a header (Sepay may not send one);
+        //   but if a token is provided, accept it when matching either webhookSecret or the API key.
+        String providedToken = resolveIncomingToken(headers, headerSignatureName);
+        if (StringUtils.hasText(webhookSecret)) {
+            if (!webhookSecret.equals(providedToken)) {
+                return ResponseEntity.status(401).body(Map.of("ok", false, "error", "invalid_signature"));
+            }
+        } else if (StringUtils.hasText(providedToken)) {
+            if (StringUtils.hasText(sepayApiKey) && !sepayApiKey.equals(providedToken)) {
                 return ResponseEntity.status(401).body(Map.of("ok", false, "error", "invalid_signature"));
             }
         }
@@ -157,7 +163,15 @@ public class SepayWebhookController {
                         j++;
                     } else break;
                 }
-                if (sb.length() > 0) return sb.toString();
+                if (sb.length() > 0) {
+                    String token = sb.toString();
+                    String expect = pfx + "-";
+                    if (token.startsWith(expect) && token.length() > expect.length()) {
+                        // Prefix found; strip it to get the real order code stored in DB
+                        return token.substring(expect.length());
+                    }
+                    return token;
+                }
             }
         }
 

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <th:block layout:fragment="headExtras"></th:block>
 
@@ -21,7 +22,15 @@
                     <li><a th:href="@{/coolclub}">X-Club</a></li>
                     <li><a th:href="@{/blog}">Blog</a></li>
                     <li><a th:href="@{/cskh}">CSKH</a></li>
-                    <li><a th:href="@{/auth/login}">Đăng nhập</a></li>
+                    <!-- Chưa đăng nhập: hiển thị Đăng nhập -->
+                    <li sec:authorize="isAnonymous()">
+                        <a th:href="@{/auth/login}">Đăng nhập</a>
+                    </li>
+                    <!-- Đã đăng nhập: hiển thị Đăng xuất (POST /auth/logout) -->
+                    <li sec:authorize="isAuthenticated()">
+                        <a href="#" onclick="document.getElementById('logoutForm').submit(); return false;">Đăng xuất</a>
+                        <form id="logoutForm" th:action="@{/auth/logout}" method="post" style="display:none"></form>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -84,7 +93,11 @@
                             <span class="icon icon--search"></span>
                         </button>
                     </form>
-                    <a class="action-link" th:href="@{/account/profile}" aria-label="Tài khoản">
+                    <!-- Icon tài khoản: nếu ẩn danh -> đi login, nếu đã login -> đi profile -->
+                    <a class="action-link" sec:authorize="isAnonymous()" th:href="@{/auth/login}" aria-label="Tài khoản">
+                        <span class="fa-solid fa-user"></span>
+                    </a>
+                    <a class="action-link" sec:authorize="isAuthenticated()" th:href="@{/account/profile}" aria-label="Tài khoản">
                         <span class="fa-solid fa-user"></span>
                     </a>
                     <a class="action-link cart" th:href="@{/cart}" aria-label="Giỏ hàng">
