@@ -40,4 +40,27 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         String getName();
         Integer getQty();
     }
+
+    // === Dashboard: Top products (aggregate variants) ===
+    @Query(value = """
+        SELECT 
+          p.id           AS productId,
+          p.name         AS productName,
+          SUM(oi.qty)    AS qty
+        FROM order_items oi
+        JOIN orders o            ON o.id  = oi.order_id
+        JOIN product_variants pv ON pv.id = oi.variant_id
+        JOIN products p          ON p.id  = pv.product_id
+        WHERE DATE(o.created_at) BETWEEN :from AND :to
+        GROUP BY p.id, p.name
+        ORDER BY SUM(oi.qty) DESC
+        """, nativeQuery = true)
+    List<TopProductRow> topProductsByQty(@Param("from") LocalDate from,
+                                         @Param("to") LocalDate to);
+
+    interface TopProductRow {
+        Long getProductId();
+        String getProductName();
+        Integer getQty();
+    }
 }
