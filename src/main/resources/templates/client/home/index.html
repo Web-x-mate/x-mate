@@ -11,12 +11,12 @@
   <!-- NỘI DUNG TRANG -->
   <div layout:fragment="content">
     <!-- chỉ hiện ở trang đầu của trang chủ -->
-    <!-- <div class="home-banner full-bleed"
-     th:if="${#request != null and #request.requestURI == (#request.contextPath + '/')}">
+    <div class="home-banner full-bleed" th:if="${showHomeBanner}">
       <img class="home-banner__img"
           src="https://n7media.coolmate.me/uploads/October2025/Hero-Banner-rpp_63.jpg"
           alt="Hero Banner">
-    </div> -->
+    </div>
+
 
 
     <div class="search-summary" th:if="${isSearch}">
@@ -26,6 +26,13 @@
           "<span class="search-summary__keyword" th:text="${searchQuery}">từ khóa</span>"
         </h1>
         <p class="search-summary__meta" th:text="${searchTotal} + ' sản phẩm'">0 sản phẩm</p>
+      </div>
+    </div>
+
+    <div class="search-summary" th:if="${!isSearch and sectionTitle != null}">
+      <div class="search-summary__container">
+        <h1 class="search-summary__title" th:text="${sectionTitle}">Bộ sưu tập</h1>
+        <p class="search-summary__meta" th:text="${searchTotal} + ' sản phẩm'"></p>
       </div>
     </div>
 

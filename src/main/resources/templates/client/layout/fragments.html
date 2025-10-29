@@ -42,42 +42,46 @@
 
                 <nav class="primary-nav">
                     <a class="primary-nav__item is-new" th:href="@{/hang-moi}">NEW</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nam')}">NAM</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nu')}">NỮ</a>
 
-                    <div class="primary-nav__group"
-                         th:each="group : ${primaryCategories}"
-                         th:classappend="${group.children() != null and !group.children().isEmpty()} ? ' has-dropdown'">
-                        <a class="primary-nav__item"
-                           th:href="@{/category/{slug}(slug=${group.slug()})}"
-                           th:text="${group.title()}">Danh mục</a>
+                    <th:block th:each="group : ${primaryCategories}">
+                        <div class="primary-nav__group"
+                             th:if="${group.slug() != 'nam' and group.slug() != 'nu'}"
+                             th:classappend="${group.children() != null and !group.children().isEmpty()} ? ' has-dropdown'">
+                            <a class="primary-nav__item"
+                               th:href="@{/category/{slug}(slug=${group.slug()})}"
+                               th:text="${group.title()}">Danh mục</a>
 
-                        <ul class="primary-nav__dropdown"
-                            th:if="${group.children() != null and !group.children().isEmpty()}"
-                            th:classappend="${group.children().size() <= 6} ? ' is-row'">
-                            <li class="primary-nav__column"
-                                th:each="column : ${group.children()}">
-                                <a class="primary-nav__column-title"
-                                   th:href="@{/category/{slug}(slug=${column.slug()})}"
-                                   role="menuitem">
-                                    <span th:text="${column.title()}">Danh mục</span>
-                                    <span class="primary-nav__column-arrow">+</span>
-                                </a>
-                                <ul class="primary-nav__column-list"
-                                    th:if="${column.items() != null and !column.items().isEmpty()}">
-                                    <li th:each="item : ${column.items()}">
-                                        <a th:href="@{/category/{slug}(slug=${item.slug()})}"
-                                           th:text="${item.title()}"></a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
+                            <ul class="primary-nav__dropdown"
+                                th:if="${group.children() != null and !group.children().isEmpty()}"
+                                th:classappend="${group.children().size() <= 6} ? ' is-row'">
+                                <li class="primary-nav__column"
+                                    th:each="column : ${group.children()}">
+                                    <a class="primary-nav__column-title"
+                                       th:href="@{/category/{slug}(slug=${column.slug()})}"
+                                       role="menuitem">
+                                        <span th:text="${column.title()}">Danh mục</span>
+                                        <span class="primary-nav__column-arrow">+</span>
+                                    </a>
+                                    <ul class="primary-nav__column-list"
+                                        th:if="${column.items() != null and !column.items().isEmpty()}">
+                                        <li th:each="item : ${column.items()}">
+                                            <a th:href="@{/category/{slug}(slug=${item.slug()})}"
+                                               th:text="${item.title()}"></a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </th:block>
 
                     <a class="primary-nav__item" th:href="@{/the-thao}">THỂ THAO</a>
                     <a class="primary-nav__item is-sale" th:href="@{/sale}">
                         <span class="primary-nav__sale">SALE</span>
                         <span class="primary-nav__sale-tag">-50%</span>
                     </a>
-                    <a class="primary-nav__item" th:href="@{/cs}">C&amp;S</a>
+                    <!-- <a class="primary-nav__item" th:href="@{/cs}">C&amp;S</a> -->
                 </nav>
 
                 <div class="header-actions">

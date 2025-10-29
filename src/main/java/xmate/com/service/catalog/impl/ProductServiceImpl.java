@@ -110,6 +110,29 @@ public class ProductServiceImpl implements ProductService {
         return repo.findAllByCategory_IdIn(categoryIds);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> listNewArrivals(LocalDateTime since, Pageable pageable) {
+        LocalDateTime threshold = since != null ? since : LocalDateTime.now().minusDays(7);
+        return repo.findAllByCreatedAtGreaterThanEqual(threshold, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> findBySlugKeyword(String slugKeyword, Pageable pageable) {
+        if (slugKeyword == null || slugKeyword.isBlank()) {
+            return Page.empty(pageable);
+        }
+        return repo.findAllBySlugContainingIgnoreCase(slugKeyword.trim(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> listDiscounted(double minDiscountRatio, Pageable pageable) {
+        double ratio = Math.max(0.0, Math.min(minDiscountRatio, 1.0));
+        return repo.findAllWithMinDiscount(ratio, pageable);
+    }
+
     private Specification<Product> productSpec(String q) {
         return (root, query, cb) -> {
             if (q == null || q.isBlank()) return cb.conjunction();
