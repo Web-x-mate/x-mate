@@ -14,7 +14,8 @@ public record OrderHistoryView(
         Shipping shipping,
         Totals totals,
         boolean hasDiscount,
-        String note
+        String note,
+        boolean delivered
 ) {
     public record Item(
             String thumbnail,

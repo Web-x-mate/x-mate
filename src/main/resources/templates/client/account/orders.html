@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -34,7 +34,7 @@
                                   th:text="${order.shortCode}">ORD-0001</span>
                             <span class="status-chip"
                                   th:classappend="${order.statusClass != null} ? ' ' + ${order.statusClass} : ''"
-                                  th:text="${order.statusLabel}">Chờ thanh toán</span>
+                                  th:text="${order.statusLabel}">Chưa thanh toán</span>
                         </div>
                         <div class="order-card__meta">
                             <span class="order-card__meta-item">
@@ -42,11 +42,13 @@
                                 <span th:text="${order.createdAtText != null ? order.createdAtText : 'Chưa cập nhật'}">01/01/2025 10:00</span>
                             </span>
                             <span class="order-card__meta-item"
-                                  th:text="'Thanh toán: ' + (order.paymentLabel != null ? order.paymentLabel : 'Chưa cập nhật')">
-                                Thanh toán: Chưa thanh toán
+                                  th:text="${'Thanh toán: ' + (order.paymentLabel != null ? order.paymentLabel : 'Chưa cập nhật')}"> Thanh toán : Chưa thanh toán
                             </span>
                             <span class="order-card__meta-item"
-                                  th:text="${order.quantityTotal} + ' sản phẩm'">0 sản phẩm</span>
+                                  th:text="${order.quantityTotal} + ' Sản phẩm'">0 Sản phẩm</span>
+                        </div>
+                        <div class="order-card__actions" th:if="${order.delivered}">
+                            <a class="btn btn-sm" th:href="@{/account/reviews}">Đánh giá sản phẩm</a>
                         </div>
                     </div>
 
@@ -71,19 +73,19 @@
                                          th:if="${item.color != null or item.size != null}">
                                         <span class="order-item__meta-chip"
                                               th:if="${item.color != null}"
-                                              th:text="'Màu: ' + ${item.color}">Màu</span>
+                                              th:text="${'Màu sắc: ' + item.color}">Màu sắc: </span>
                                         <span class="order-item__meta-chip"
                                               th:if="${item.size != null}"
-                                              th:text="'Size: ' + ${item.size}">Size</span>
+                                              th:text="${'Size: ' + item.size}">Size: </span>
                                     </div>
 
                                     <div class="order-item__pricing">
                                         <span class="order-item__price"
-                                              th:text="${item.priceText}">0&nbsp;₫</span>
+                                              th:text="${item.priceText}">0 đ</span>
                                         <span class="order-item__quantity"
-                                              th:text="'x' + ${item.quantity}">x1</span>
+                                              th:text="${'x' + item.quantity}">x1</span>
                                         <span class="order-item__line"
-                                              th:text="${item.lineTotalText}">0&nbsp;₫</span>
+                                              th:text="${item.lineTotalText}">0&nbsp;đ</span>
                                     </div>
                                 </div>
                             </li>
@@ -96,7 +98,7 @@
 
                     <div class="order-card__footer">
                         <div class="order-card__shipping">
-                            <strong>Giao tới</strong>
+                            <strong>Giao tại</strong>
                             <span class="order-card__recipient"
                                   th:text="${order.shipping != null and order.shipping.recipient() != null ? order.shipping.recipient() : 'Chưa cập nhật'}">
                                 Người nhận
@@ -112,23 +114,23 @@
                         <div class="order-card__totals">
                             <div class="order-card__summary-row">
                                 <span>Tạm tính</span>
-                                <span th:text="${order.totals != null ? order.totals.subtotalText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.subtotalText() : '0 đ'}">0 đ</span>
                             </div>
                             <div class="order-card__summary-row"
                                     th:if="${order.hasDiscount}">
                                 <span>Giảm giá</span>
                                 <span class="order-card__discount"
-                                        th:with="disc=${order.totals != null ? order.totals.discountText() : '0 ₫'}"
-                                        th:text="${'- ' + disc}">- 0 ₫</span>
+                                        th:with="disc=${order.totals != null ? order.totals.discountText() : '0 đ'}"
+                                        th:text="${'- ' + disc}">- 0 đ</span>
                             </div>
 
                             <div class="order-card__summary-row">
                                 <span>Phí vận chuyển</span>
-                                <span th:text="${order.totals != null ? order.totals.shippingText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.shippingText() : '0 đ'}">0&nbsp;đ</span>
                             </div>
                             <div class="order-card__summary-row is-total">
                                 <span>Tổng cộng</span>
-                                <span th:text="${order.totals != null ? order.totals.totalText() : '0 ₫'}">0&nbsp;₫</span>
+                                <span th:text="${order.totals != null ? order.totals.totalText() : '0 đ'}">0&nbsp;đ</span>
                             </div>
                         </div>
                     </div>
@@ -143,3 +145,4 @@
 </th:block>
 </body>
 </html>
+

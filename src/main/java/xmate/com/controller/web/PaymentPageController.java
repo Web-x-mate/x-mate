@@ -23,8 +23,14 @@ public class PaymentPageController {
     private String sepayBankName;
     @Value("${app.sepay.account:}")
     private String sepayAccount;
+    // Some Sepay accounts use a Virtual Account (VA) like 96247NVH20
+    @Value("${app.sepay.va:}")
+    private String sepayVa;
     @Value("${app.sepay.transfer-prefix:}")
     private String sepayPrefix;
+    // Optional: template for Sepay QR image (compact/card/…)
+    @Value("${app.sepay.qr-template:compact}")
+    private String sepayQrTemplate;
 
     @Value("${app.pay.bank.bin:}")
     private String bankBin;
@@ -56,13 +62,28 @@ public class PaymentPageController {
         String encodedNote = URLEncoder.encode(note, StandardCharsets.UTF_8);
 
         String qrUrl = null;
-        String effAccount = notBlank(sepayAccount) ? sepayAccount : bankAccount;
+        // Prefer VA if configured, otherwise use real account number
+        String effAccount = notBlank(sepayVa) ? sepayVa : (notBlank(sepayAccount) ? sepayAccount : bankAccount);
         String effBankName = notBlank(sepayBankName) ? sepayBankName : bankName;
         String effBin = notBlank(bankBin) ? bankBin : resolveBinByBankName(effBankName);
 
-        if (notBlank(effBin) && notBlank(effAccount)) {
+        // Prefer Sepay's QR endpoint when Sepay bank/account is configured
+        if (notBlank(effAccount) && notBlank(effBankName)) {
+            // Sepay expects bank code like BIDV/VCB… in `bank`, account in `acc`, content in `des`
+            String qrSepay = String.format(
+                    "https://qr.sepay.vn/img?acc=%s&bank=%s&amount=%d&des=%s&template=%s&download=0",
+                    URLEncoder.encode(effAccount, StandardCharsets.UTF_8),
+                    URLEncoder.encode(effBankName, StandardCharsets.UTF_8),
+                    order.getTotal(),
+                    encodedNote,
+                    URLEncoder.encode(notBlank(sepayQrTemplate) ? sepayQrTemplate : "compact", StandardCharsets.UTF_8)
+            );
+            qrUrl = qrSepay;
+        }
+        // Fallback to VietQR if Sepay QR cannot be built
+        if (qrUrl == null && notBlank(effBin) && notBlank(effAccount)) {
             String accountNameParam = notBlank(effBankName)
-                    ? ("&accountName=" + URLEncoder.encode(bankName, StandardCharsets.UTF_8))
+                    ? ("&accountName=" + URLEncoder.encode(effBankName, StandardCharsets.UTF_8))
                     : "";
             qrUrl = String.format(
                     "https://img.vietqr.io/image/%s-%s-compact2.jpg?amount=%d&addInfo=%s%s",

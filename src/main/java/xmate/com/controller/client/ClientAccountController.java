@@ -48,7 +48,6 @@ public class ClientAccountController {
     private final AddressService addressService;
     private final ClientCatalogViewService catalogViewService;
 
-    /** Trim toàn bộ String ("" -> null) để @NotBlank hoạt động chuẩn */
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
@@ -67,7 +66,7 @@ public class ClientAccountController {
         populateCommonModel(model, auth, me, "profile");
         model.addAttribute("mb", null);
         model.addAttribute("wallet", null);
-        model.addAttribute("pageTitle", "Tai khoan cua toi");
+        model.addAttribute("pageTitle", "Tài khoản của tôi");
         return "client/account/profile";
     }
 
@@ -79,7 +78,7 @@ public class ClientAccountController {
         populateCommonModel(model, auth, me, "orders");
         List<OrderHistoryView> orders = clientOrderViewService.buildOrderHistory(me);
         model.addAttribute("orders", orders);
-        model.addAttribute("pageTitle", "Lich su don hang");
+        model.addAttribute("pageTitle", "Lịch sử đơn hàng");
         return "client/account/orders";
     }
 
@@ -105,7 +104,7 @@ public class ClientAccountController {
         if (redirect != null) return redirect;
         populateCommonModel(model, auth, me, "addresses");
         model.addAttribute("addresses", addressService.listForCurrentUser());
-        model.addAttribute("pageTitle", "So dia chi");
+        model.addAttribute("pageTitle", "Sổ địa chỉ");
         return "client/account/addresses";
     }
 
@@ -122,16 +121,15 @@ public class ClientAccountController {
         if (bindingResult.hasErrors()) {
             populateCommonModel(model, auth, me, "addresses");
             model.addAttribute("addresses", addressService.listForCurrentUser());
-            model.addAttribute("pageTitle", "So dia chi");
+            model.addAttribute("pageTitle", "Sổ địa chỉ");
             log.warn("Address form errors for user {}: {}", me.getId(), bindingResult.getAllErrors());
             model.addAttribute("showAddressModal", true);
             return "client/account/addresses";
         }
 
-        log.info("Saving address - userId={}, defaultAddress={}, form={}",
-                me.getId(), form.isDefaultAddress(), form);
+        log.info("Saving address - userId={}, defaultAddress={}, form={}", me.getId(), form.isDefaultAddress(), form);
         addressService.save(form);
-        redirectAttributes.addFlashAttribute("addressMessage", "Da luu dia chi moi.");
+        redirectAttributes.addFlashAttribute("addressMessage", "Đã lưu địa chỉ mới.");
         return "redirect:/account/addresses";
     }
 
@@ -146,21 +144,21 @@ public class ClientAccountController {
         if (redirect != null) return redirect;
 
         if (form.getAddressId() == null) {
-            bindingResult.rejectValue("addressId", "address.id.missing", "Thieu ma dia chi can cap nhat.");
+            bindingResult.rejectValue("addressId", "address.id.missing", "Thiếu mã địa chỉ cần cập nhật.");
         }
 
         if (bindingResult.hasErrors()) {
             populateCommonModel(model, auth, me, "addresses");
             model.addAttribute("addresses", addressService.listForCurrentUser());
-            model.addAttribute("pageTitle", "So dia chi");
-            model.addAttribute("showAddressModal", true); // mở lại modal khi lỗi
+            model.addAttribute("pageTitle", "Sổ địa chỉ");
+            model.addAttribute("showAddressModal", true);
             log.warn("Address update errors for user {}: {}", me.getId(), bindingResult.getAllErrors());
             return "client/account/addresses";
         }
 
         log.info("Updating address - userId={}, form={}", me.getId(), form);
         addressService.save(form);
-        redirectAttributes.addFlashAttribute("addressMessage", "Da cap nhat dia chi.");
+        redirectAttributes.addFlashAttribute("addressMessage", "Đã cập nhật địa chỉ.");
         return "redirect:/account/addresses";
     }
 
@@ -177,16 +175,11 @@ public class ClientAccountController {
             addressService.setDefault(id);
             redirectAttributes.addFlashAttribute("addressMessage", "Đã đặt địa chỉ mặc định.");
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("addressMessage",
-                    "Không thể đặt mặc định: " + ex.getMessage());
+            redirectAttributes.addFlashAttribute("addressMessage", "Không thể đặt thành mặc định: " + ex.getMessage());
         }
         return "redirect:/account/addresses";
     }
 
-    /**
-     * Xóa địa chỉ
-     * POST /account/addresses/{id}/delete
-     */
     @PostMapping("/addresses/{id}/delete")
     public String deleteAddress(Authentication auth,
                                 @PathVariable("id") Long id,
@@ -200,20 +193,9 @@ public class ClientAccountController {
             addressService.delete(id);
             redirectAttributes.addFlashAttribute("addressMessage", "Đã xóa địa chỉ.");
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("addressMessage",
-                    "Không thể xóa: " + ex.getMessage());
+            redirectAttributes.addFlashAttribute("addressMessage", "Không thể xóa: " + ex.getMessage());
         }
         return "redirect:/account/addresses";
-    }
-
-    @GetMapping("/reviews")
-    public String reviews(Authentication auth, Model model) {
-        Customer me = requireCustomer(auth);
-        String redirect = redirectIfIncomplete(me);
-        if (redirect != null) return redirect;
-        populateCommonModel(model, auth, me, "reviews");
-        model.addAttribute("pageTitle", "Danh gia va phan hoi");
-        return "client/account/reviews";
     }
 
     private Customer requireCustomer(Authentication auth) {
@@ -222,7 +204,7 @@ public class ClientAccountController {
         }
         Customer me = resolveCustomer(auth);
         if (me == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Khong xac dinh duoc tai khoan");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được tài khoản khách hàng.");
         }
         return me;
     }
@@ -274,15 +256,15 @@ public class ClientAccountController {
                 ? discount.getValueAmount().stripTrailingZeros().toPlainString() + "%"
                 : formatCurrency(discount.getValueAmount());
         String minOrder = discount.getMinOrder() != null && discount.getMinOrder().compareTo(BigDecimal.ZERO) > 0
-                ? "Don toi thieu " + formatCurrency(discount.getMinOrder())
-                : "Khong gioi han don toi thieu";
+                ? "Đơn tối thiểu: " + formatCurrency(discount.getMinOrder())
+                : "Không giới hạn đơn tối thiểu!";
         String expiry = discount.getEndAt() != null
                 ? discount.getEndAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                : "Khong gioi han";
+                : "Không giới hạn";
         return new VoucherView(
                 discount.getCode(),
                 valueText,
-                desc != null ? desc : "Ap dung cho moi san pham.",
+                desc != null ? desc : "Áp dụng cho mọi sản phẩm.",
                 minOrder,
                 expiry
         );
@@ -295,8 +277,7 @@ public class ClientAccountController {
             if (node.hasNonNull("desc")) {
                 return node.get("desc").asText();
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
         return null;
     }
 
@@ -313,3 +294,4 @@ public class ClientAccountController {
             String expiryText
     ) {}
 }
+

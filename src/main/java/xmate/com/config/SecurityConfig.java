@@ -30,6 +30,7 @@ public class SecurityConfig {
                         "/auth/logout",
                         "/account/**",
                         "/cart/**",
+                        "/widget/chatbot/**",
                         "/ws/**"))
                 
                         
