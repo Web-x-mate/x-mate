@@ -5,7 +5,10 @@
     <title>Đăng ký tài khoản</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/register.css}">
-
+    <style>
+        .error { color:#d00; text-align:center; margin:8px 0 }
+        .hidden { display:none }
+    </style>
 </head>
 <body>
 <div class="backdrop">
@@ -16,7 +19,7 @@
             <img class="logo" src="/images/coolclub-logo.avif" alt="COOL CLUB">
         </div>
 
-        <h1 class="title" id="dlg-title">Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn</h1>
+<!--        <h1 class="title" id="dlg-title">Rất nhiều đặc quyền và quyền lợi mua sắm đang chờ bạn</h1>-->
         <div class="muted">Quyền lợi dành riêng cho bạn khi tham gia Coolclub</div>
 
         <div class="perks">
@@ -28,18 +31,20 @@
         <div class="section-label">Đăng ký tài khoản (miễn phí)</div>
 
         <div class="socials">
-            <a class="social-btn" href="/oauth2/authorization/google" title="Đăng ký với Google">
+            <a class="social-btn" href="#" id="btnGoogle" title="Đăng ký/Đăng nhập Google">
                 <img src="/images/ic-google.png" alt="Google">
             </a>
-            <a class="social-btn" href="#" title="Đăng ký với Facebook (mock)">
+            <a class="social-btn" href="#" id="btnFacebook" title="Đăng ký/Đăng nhập Facebook">
                 <img src="/images/ic-facebook.png" alt="Facebook">
             </a>
         </div>
+        <p class="error hidden" id="errGoogle">Đăng nhập Google thất bại.</p>
+        <p class="error hidden" id="errFacebook">Đăng nhập Facebook thất bại.</p>
 
         <div class="or">Hoặc</div>
 
-        <!-- REGISTER FORM -->
-        <form th:action="@{/auth/register}" method="post" id="registerForm" novalidate>
+        <!-- REGISTER FORM (gọi API, không post MVC) -->
+        <form id="registerForm" novalidate>
             <div class="float-field">
                 <input class="float-input" type="text" name="fullName" id="fullName" placeholder=" " required minlength="2" maxlength="100">
                 <label class="float-label" for="fullName">Họ và tên</label>
@@ -68,13 +73,23 @@
                 <label class="float-label" for="pwd2">Xác nhận mật khẩu</label>
                 <span class="toggle-eye" data-target="pwd2">👁</span>
             </div>
+            <small id="pwdHint" class="muted"></small>
 
             <label class="agree">
-                <input type="checkbox" name="agree" required>
+                <input type="checkbox" name="agree" id="agree" required>
                 <span>Tôi đồng ý với <a th:href="@{/terms}">Điều khoản</a> &amp; <a th:href="@{/privacy}">Chính sách</a>.</span>
             </label>
 
-            <button class="btn btn-primary" type="submit">ĐĂNG KÝ TÀI KHOẢN</button>
+            <!-- reCAPTCHA v2 checkbox: ẨN LÚC ĐẦU, render khi bấm Đăng ký -->
+            <div id="captchaWrap" class="hidden" style="margin-top:12px">
+                <div id="captcha"
+                     th:attr="data-sitekey=${@environment.getProperty('app.recaptcha.site-key')}"></div>
+                <small class="muted">Vui lòng xác nhận để hoàn tất đăng ký.</small>
+            </div>
+
+            <p class="error hidden" id="errRegister"></p>
+
+            <button class="btn btn-primary" type="submit" id="btnSubmit">ĐĂNG KÝ TÀI KHOẢN</button>
         </form>
 
         <div class="links">
@@ -83,9 +98,28 @@
         </div>
     </div>
 </div>
+<!-- ===== Modal (popup) ===== -->
+<div id="appModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Thông báo</h3>
+        </div>
+        <div class="modal-body" id="modalBody">Nội dung thông báo…</div>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="modalCancel" style="display:none">Hủy</button>
+            <button type="button" class="btn btn-primary" id="modalOk">OK</button>
+        </div>
+    </div>
+</div>
 
+<!-- ===== Helpers & form logic ===== -->
 <script>
-    // toggle eye for both password fields
+    // helpers
+    const $ = (s) => document.querySelector(s);
+    const show = el => el?.classList?.remove('hidden');
+    const hide = el => el?.classList?.add('hidden');
+
+    // toggle eye
     document.querySelectorAll('.toggle-eye').forEach(el=>{
         el.addEventListener('click', ()=>{
             const id = el.getAttribute('data-target');
@@ -94,16 +128,292 @@
         });
     });
 
-    // simple client check: confirm password
+    // strength hint
+    const pwd = document.getElementById('pwd'), hint = document.getElementById('pwdHint');
+    pwd.addEventListener('input', ()=>{
+        const v=pwd.value;
+        const score=(v.length>=8)+/[A-Z]/.test(v)+/[a-z]/.test(v)+/[0-9]/.test(v)+/[^A-Za-z0-9]/.test(v);
+        hint.textContent=['Rất yếu','Yếu','Trung bình','Khá','Mạnh','Rất mạnh'][score]||'';
+    });
+
+    // ==== reCAPTCHA explicit render (ẩn trước, chỉ render khi bấm nút) ====
+    let recaptchaReady=false, recaptchaWidgetId=null, captchaToken='';
+    function onRecaptchaReady(){ recaptchaReady = true; } // được gọi khi SDK load xong
+    function renderCaptchaIfNeeded(){
+        show(document.getElementById('captchaWrap'));
+        if (recaptchaWidgetId !== null) return;
+        const doRender = () => {
+            const el = document.getElementById('captcha');
+            const sitekey = el.dataset.sitekey;
+            recaptchaWidgetId = grecaptcha.render('captcha', {
+                sitekey,
+                callback: function(token){ captchaToken = token; }
+            });
+            // focus vào captcha
+            setTimeout(()=> document.getElementById('captcha').scrollIntoView({behavior:'smooth', block:'center'}), 50);
+        };
+        if (recaptchaReady) doRender();
+        else {
+            // chờ SDK sẵn sàng
+            let n=0; const t=setInterval(()=>{
+                if (recaptchaReady){ clearInterval(t); doRender(); }
+                if (++n>50){ clearInterval(t); } // 5s timeout
+            },100);
+        }
+    }
+
+    // submit -> nếu chưa có token thì hiện captcha; có rồi thì gọi API
     const form = document.getElementById('registerForm');
-    form.addEventListener('submit', (e)=>{
-        const p1 = document.getElementById('pwd').value;
-        const p2 = document.getElementById('pwd2').value;
-        if(p1 !== p2){
-            e.preventDefault();
-            alert('Mật khẩu xác nhận không khớp.');
+    const err = document.getElementById('errRegister');
+    form.addEventListener('submit', async (e)=>{
+        e.preventDefault(); hide(err);
+
+        // client checks
+        const p1 = document.getElementById('pwd').value.trim();
+        const p2 = document.getElementById('pwd2').value.trim();
+        if(p1 !== p2){ alertError('Mật khẩu xác nhận không khớp.', { title: 'Lỗi' });
+            return;
+        }
+        if(!document.getElementById('agree').checked){ alertError('Bạn phải đồng ý với Điều khoản & Chính sách.', { title: 'Lỗi' });
+return; }
+
+        // chưa có token -> hiện/render captcha & yêu cầu người dùng tick
+        if(!captchaToken){
+            renderCaptchaIfNeeded();
+            // nếu đã render rồi nhưng chưa tick, nhắc lỗi
+            const respNow = (window.grecaptcha && recaptchaWidgetId!=null) ? grecaptcha.getResponse(recaptchaWidgetId) : '';
+            if(!respNow){alertInfo('Vui lòng xác nhận Captcha.', {
+                title: 'Xác nhận bảo mật',
+                onOk: () => {
+                    renderCaptchaIfNeeded();
+                    document.getElementById('captcha').scrollIntoView({behavior:'smooth', block:'center'});
+                }
+            });
+                return; }
+            // khi người dùng vừa tick xong, callback sẽ set captchaToken → lần submit tiếp theo sẽ đi tiếp
+            return;
+        }
+
+        // có token rồi -> gọi API
+        const btn = document.getElementById('btnSubmit'); btn.disabled = true;
+        const body = {
+            email:    $('#email').value.trim(),
+            password: p1,
+            fullname: $('#fullName').value.trim(),
+            phone:    $('#phone').value.trim(),
+            recaptchaToken: captchaToken
+        };
+
+        try{
+            const resp = await fetch('/api/auth/register', {
+                method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+            });
+            const text = await resp.text();
+            if(!resp.ok){
+                alertError((text && text.length<200)?text:'Đăng ký thất bại.', { title: 'Đăng ký thất bại' });
+                if(window.grecaptcha && recaptchaWidgetId!=null){ grecaptcha.reset(recaptchaWidgetId); captchaToken=''; }
+                return;
+            }
+            const go = () => location.href = '/auth/complete/intro';
+            const timer = setTimeout(go, 3000);
+            alertSuccess('Đăng ký thành công! Bạn sẽ được chuyển hướng sau 3 giây.', {
+                title: 'Thành công',
+                okText: 'Đi ngay',
+                onOk: () => { clearTimeout(timer); go(); }
+            });
+
+        }catch(ex){
+            alertError('Lỗi mạng khi đăng ký. Vui lòng thử lại.', { title: 'Lỗi mạng' });
+            if(window.grecaptcha && recaptchaWidgetId!=null){ grecaptcha.reset(recaptchaWidgetId); captchaToken=''; }
+            console.error(ex);
+        }finally{
+            btn.disabled=false;
         }
     });
 </script>
+
+<!-- reCAPTCHA SDK: explicit render + onload callback -->
+<script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaReady&render=explicit" async defer></script>
+
+<!-- ===== Social (FB & Google) vẫn ẩn captcha, dùng lại flow đăng nhập ===== -->
+<!-- FB SDK -->
+<div id="fb-root"></div>
+<script>
+    const fbReady = new Promise(resolve => {
+        window.fbAsyncInit = function () {
+            FB.init({ appId: '1495990908193900', cookie: true, xfbml: false, version: 'v19.0' });
+            console.log('[FB] SDK ready'); resolve(true);
+        };
+    });
+    (function(d,s,id){ if(d.getElementById(id))return; const js=d.createElement(s);
+        js.id=id; js.async=true; js.defer=true; js.crossOrigin='anonymous';
+        js.src='https://connect.facebook.net/vi_VN/sdk.js';
+        d.getElementsByTagName('head')[0].appendChild(js);
+    })(document,'script','facebook-jssdk');
+</script>
+
+<!-- Google GSI -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    const GSI_CLIENT_ID='96998956369-8pvvqgj35agmp1jlon8iectgsdkhdptn.apps.googleusercontent.com';
+    function waitGSI(){ return new Promise((res,rej)=>{let n=0,t=setInterval(()=>{n++;
+        if(window.google?.accounts?.id){clearInterval(t);res();}
+        if(n>50){clearInterval(t);rej(new Error('GSI not loaded'));}},100);});
+    }
+
+    async function handleRegisterResult(resp, errEl){
+        let text=''; try{ text=await resp.text(); }catch{}
+        if(!resp.ok){
+            if(errEl){ errEl.classList.remove('hidden'); errEl.textContent=(text&&text.length<200)?text:'Đăng nhập thất bại.'; }
+            console.error('Auth error:', resp.status, text);
+            return false;
+        }
+        let data={}; try{ data=text?JSON.parse(text):{}; }catch{}
+        if(data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
+        if(data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+        // Gọi /api/me để xem đã có phone chưa
+        try{
+            const meResp = await fetch('/api/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': data.accessToken ? `Bearer ${data.accessToken}` : ''
+                },
+                credentials: 'include'
+            });
+            if(meResp.ok){
+                const me = await meResp.json();
+                if (me?.phone) {
+                    alertSuccess('Đăng ký thành công! Đang chuyển hướng...', {
+                        title: 'Thành công',
+                        onOk: () => { location.href = '/auth/complete/intro'; }
+                    });
+                } else {
+                    location.href = '/auth/complete';
+                }
+                return true;
+            }
+        }catch(e){ console.warn('Cannot fetch /api/me', e); }
+
+        // fallback nếu /api/me lỗi
+        location.href = '/auth/complete';
+        return true;
+    }
+
+    async function initGoogle() {
+        try{
+            await waitGSI();
+            google.accounts.id.initialize({
+                client_id: GSI_CLIENT_ID,
+                callback: async ({credential}) => {
+                    const resp = await fetch('/api/auth/google', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ idToken: credential })
+                    });
+                    await handleRegisterResult(resp, document.getElementById('errGoogle'));
+                }
+            });
+            const btn = document.getElementById('btnGoogle');
+            btn.innerHTML=''; btn.style.padding='0'; btn.style.border='none'; btn.style.background='transparent';
+            btn.style.display='inline-flex'; btn.style.alignItems='center'; btn.style.justifyContent='center';
+            google.accounts.id.renderButton(btn, { type:'icon', theme:'outline', size:'large', shape:'circle' });
+        }catch(e){
+            const el = document.getElementById('errGoogle');
+            alertError('Không tải được Google Identity.', { title: 'Lỗi Google' });
+
+            console.error(e);
+        }
+    }
+    window.addEventListener('load', initGoogle);
+
+    // Facebook button
+    const errFacebook = document.getElementById('errFacebook');
+    document.getElementById('btnFacebook')?.addEventListener('click', async (e) => {
+        e.preventDefault(); errFacebook.classList.add('hidden');
+        try {
+            await fbReady;
+            FB.login((response) => {
+                (async () => {
+                    const t = response?.authResponse?.accessToken;
+                    if (response.status === 'connected' && t) {
+                        const resp = await fetch('/api/auth/facebook', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ accessToken: t })
+                        });
+                        await handleRegisterResult(resp, errFacebook);
+                    } else {
+                        alertError('Đăng nhập Facebook bị hủy hoặc thất bại.', { title: 'Lỗi Facebook' });
+                    }
+                })().catch(ex => {
+                    alertError('Đăng nhập Facebook bị hủy hoặc thất bại.', { title: 'Lỗi Facebook' });
+                });
+            }/*, { scope:'email', return_scopes:true }*/);
+        } catch (ex) {
+            alertError('Đăng nhập Facebook bị hủy hoặc thất bại.', { title: 'Lỗi Facebook' });
+        }
+    });
+</script>
+<script>
+    // === Modal helpers ===
+    const modalEl = document.getElementById('appModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody  = document.getElementById('modalBody');
+    const btnOk      = document.getElementById('modalOk');
+    const btnCancel  = document.getElementById('modalCancel');
+    let lastFocus = null;
+
+    function openModal(message, { title='Thông báo', type='info', okText='OK', cancelText=null, onOk=null, onCancel=null } = {}) {
+        lastFocus = document.activeElement;
+
+        modalTitle.textContent = title;
+        modalBody.textContent = message;
+
+        modalEl.classList.remove('modal--error','modal--success','modal--info');
+        modalEl.classList.add(`modal--${type}`);
+
+
+        btnOk.textContent = okText || 'OK';
+        btnOk.onclick = () => {
+            closeModal();
+            if (typeof onOk === 'function') onOk();
+        };
+
+        if (cancelText) {
+            btnCancel.style.display = '';
+            btnCancel.textContent = cancelText;
+            btnCancel.onclick = () => {
+                closeModal();
+                if (typeof onCancel === 'function') onCancel();
+            };
+        } else {
+            btnCancel.style.display = 'none';
+            btnCancel.onclick = null;
+        }
+
+        modalEl.classList.add('show');
+        modalEl.setAttribute('aria-hidden', 'false');
+        btnOk.focus();
+    }
+
+    function closeModal() {
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    // Đóng khi bấm ESC hoặc click ra ngoài
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalEl.classList.contains('show')) closeModal();
+    });
+    modalEl.addEventListener('click', (e) => {
+        if (e.target === modalEl) closeModal();
+    });
+
+    // shortcut theo loại
+    const alertInfo    = (msg, opts={}) => openModal(msg, {type:'info',    title: opts.title || 'Thông báo', ...opts});
+    const alertError   = (msg, opts={}) => openModal(msg, {type:'error',   title: opts.title || 'Lỗi', ...opts});
+    const alertSuccess = (msg, opts={}) => openModal(msg, {type:'success', title: opts.title || 'Thành công', ...opts});
+</script>
+
 </body>
 </html>

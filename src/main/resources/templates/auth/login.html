@@ -54,14 +54,11 @@
         </div>
 
         <div class="or">Hoặc</div>
+        <p class="error hidden" id="errLogin"></p>
+        <p class="error hidden" id="errGoogle"></p>
+        <p class="error hidden" id="errFacebook"></p>
 
-        <p class="error hidden" id="errLogin">Sai email hoặc mật khẩu.</p>
-        <p class="error hidden" id="errGoogle">Đăng nhập Google thất bại.</p>
-        <p class="error hidden" id="errFacebook">Đăng nhập Facebook thất bại.</p>
-        <p th:if="${param.reset}" style="color:#0a7a2a;text-align:center">Đổi mật khẩu thành công, vui lòng đăng nhập
-            lại.</p>
-
-        <form th:action="@{/auth/login}" method="post" id="loginForm" novalidate>
+        <form method="post" id="loginForm" novalidate>
             <div class="float-field">
                 <input class="float-input" type="text" name="email" id="email" placeholder=" " required>
                 <label class="float-label" for="email">Email/SDT của bạn</label>
@@ -86,106 +83,171 @@
         </div>
     </div>
 </div>
+<!-- ===== Modal (popup) ===== -->
+<div id="appModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <span class="modal-icon" id="modalIcon">ℹ️</span>
+            <h3 class="modal-title" id="modalTitle">Thông báo</h3>
+        </div>
+        <div class="modal-body" id="modalBody">Nội dung thông báo…</div>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="modalCancel" style="display:none">Hủy</button>
+            <button type="button" class="btn btn-primary" id="modalOk">OK</button>
+        </div>
+    </div>
+</div>
+<script>
+    // Modal helpers
+    const modalEl   = document.getElementById('appModal');
+    const modalTitle= document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalIcon = document.getElementById('modalIcon');
+    const btnOk     = document.getElementById('modalOk');
+    const btnCancel = document.getElementById('modalCancel');
+    let lastFocus = null;
+
+    function openModal(
+        message,
+        options = {}
+    ) {
+        const {
+            title = 'Thông báo',
+            type = 'info',
+            okText = 'OK',
+            cancelText = null,
+            onOk = null,
+            onCancel = null,
+            useIcon = false   // <-- mặc định KHÔNG dùng icon
+        } = options;
+        lastFocus = document.activeElement;
+        modalTitle.textContent = title;
+        modalBody.textContent  = message;
+
+        const box = modalEl.firstElementChild; // .modal
+        box.classList.remove('modal--error','modal--success','modal--info','modal--noicon');
+        box.classList.add(`modal--${type}`);
+        if (!useIcon) box.classList.add('modal--noicon'); // <-- ẩn icon nếu không dùng
+
+        modalIcon.textContent = (type==='error' ? '⛔' : type==='success' ? '✅' : 'ℹ️');
+
+        btnOk.textContent = okText || 'OK';
+        btnOk.onclick = () => { closeModal(); if (typeof onOk === 'function') onOk(); };
+
+        if (cancelText) {
+            btnCancel.style.display = '';
+            btnCancel.textContent = cancelText;
+            btnCancel.onclick = () => { closeModal(); if (typeof onCancel === 'function') onCancel(); };
+        } else {
+            btnCancel.style.display = 'none';
+            btnCancel.onclick = null;
+        }
+
+        modalEl.classList.add('show');
+        modalEl.setAttribute('aria-hidden', 'false');
+        btnOk.focus();
+    }
+    function closeModal() {
+        modalEl.classList.remove('show');
+        modalEl.setAttribute('aria-hidden', 'true');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalEl.classList.contains('show')) closeModal(); });
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+
+    // shortcuts
+    const alertInfo    = (msg, opts={}) => openModal(msg, {type:'info',    title: opts.title || 'Thông báo', ...opts});
+    const alertError   = (msg, opts={}) => openModal(msg, {type:'error',   title: opts.title || 'Lỗi', ...opts});
+    const alertSuccess = (msg, opts={}) => openModal(msg, {type:'success', title: opts.title || 'Thành công', ...opts});
+</script>
+
 
 <!-- Facebook SDK -->
 <div id="fb-root"></div>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+<script>
+    // Promise resolve khi FB.init gọi xong
+    const fbReady = new Promise((resolve) => {
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '1495990908193900',
+                cookie: true,        // nên bật nếu server dùng session
+                xfbml: false,
+                version: 'v19.0'
+            });
+            console.log('[FB] SDK ready');
+            resolve(true);
+        };
+    });
+
+    // Nạp SDK đúng 1 lần
+    (function (d, s, id) {
+        if (d.getElementById(id)) return;
+        const js = d.createElement(s);
+        js.id = id; js.async = true; js.defer = true; js.crossOrigin = 'anonymous';
+        js.src = 'https://connect.facebook.net/vi_VN/sdk.js';
+        d.getElementsByTagName('head')[0].appendChild(js);
+    })(document, 'script', 'facebook-jssdk');
+</script>
 
 <script>
     const $ = (s) => document.querySelector(s);
-    const show = el => el.classList.remove('hidden');
-    const hide = el => el.classList.add('hidden');
-
-    // Toggle password
-    $('#toggleEye')?.addEventListener('click', () => {
-        const pwd = $('#pwd');
-        pwd.type = (pwd.type === 'password') ? 'text' : 'password';
-    });
-
-    // Kết quả chung
-    // THAY handleAuthResult hiện tại bằng bản này:
-    async function handleAuthResult(resp, errEl) {
-        let text = '';
-        try {
-            text = await resp.text();
-        } catch {
+    window.show = (el) => {
+        if (!el) return;
+        el.classList.remove('hidden');
+        // Nếu là 3 thẻ lỗi cũ -> bật modal thay vì hiện text
+        const id = el.id || '';
+        if (id === 'errLogin' || id === 'errGoogle' || id === 'errFacebook') {
+            // đợi 1 nhịp để đoạn errEl.textContent = ... chạy xong
+            setTimeout(() => {
+                const msg = (el.textContent || '').trim() || 'Đăng nhập thất bại.';
+                alertError(msg);
+                el.classList.add('hidden');    // ẩn lại để không nháy UI
+                el.style.display = 'none';
+            }, 0);
         }
-        if (!resp.ok) {
-            console.error('Auth error:', resp.status, text);
-            errEl.classList.remove('hidden');
-            errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.';
-            return;
-        }
-
-        // cố gắng parse JSON (không dùng để điều hướng)
-        let data = {};
-        try {
-            data = text ? JSON.parse(text) : {};
-        } catch (e) {
-            console.warn('JSON parse fail', e, text);
-        }
-
-        // (tuỳ ý) lưu token nếu backend vẫn trả về
-        if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
-        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-
-        // QUAN TRỌNG: đi thẳng tới /auth/complete để server đọc cookie ACCESS_TOKEN và set Authentication
-        location.href = '/auth/complete';
-    }
-
-
-    // Form login → /api/auth/login
-    const errLogin = $('#errLogin');
-    $('#loginForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        hide(errLogin);
-        const email = $('#email').value.trim();
-        const password = $('#pwd').value;
-        try {
-            const resp = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-            await handleAuthResult(resp, errLogin);
-        } catch (ex) {
-            show(errLogin);
-            errLogin.textContent = 'Lỗi mạng: ' + ex.message;
-        }
-    });
-
-    // Facebook → /api/auth/facebook
-    window.fbAsyncInit = function () {
-        FB.init({appId: '1152571593486247', cookie: false, xfbml: false, version: 'v19.0'});
     };
-    const errFacebook = $('#errFacebook');
-    $('#btnFacebook')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        hide(errFacebook);
-        if (!window.FB) {
-            show(errFacebook);
-            errFacebook.textContent = 'Không tải được Facebook SDK.';
-            return;
+    window.hide = (el) => { if (el) el.classList.add('hidden'); };
+
+
+    const errFacebook = document.getElementById('errFacebook');
+
+    $('#btnFacebook')?.addEventListener('click', async (e) => {
+        e.preventDefault(); hide(errFacebook);
+        try {
+            // CHỜ CHẮC FB.init xong (không tự poll nữa)
+            await fbReady;
+
+            // Gọi login (có thể thêm scope: 'email' nếu app đã được duyệt)
+            FB.login((response) => {
+                (async () => {
+                    console.log('FB.login response =', response);
+                    const t = response?.authResponse?.accessToken;
+                    if (response.status === 'connected' && t) {
+                        const resp = await fetch('/api/auth/facebook', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ accessToken: t }),
+                            credentials: 'include'
+                        });
+                        await handleAuthResult(resp, errFacebook);
+                    } else {
+                        alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
+                    }
+                })().catch(ex => {
+                    alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
+                    console.error(ex);
+                });
+            }/*, { scope: 'email', return_scopes: true }*/);
+        } catch (ex) {
+            alertError('Đăng nhập Facebook bị hủy hoặc thất bại.');
+
+            console.error(ex);
         }
-        FB.login(async (response) => {
-            try {
-                if (response.status === 'connected' && response.authResponse?.accessToken) {
-                    const resp = await fetch('/api/auth/facebook', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({accessToken: response.authResponse.accessToken})
-                    });
-                    await handleAuthResult(resp, errFacebook);
-                } else {
-                    show(errFacebook);
-                    errFacebook.textContent = 'Đăng nhập Facebook bị hủy hoặc thất bại.';
-                }
-            } catch (ex) {
-                show(errFacebook);
-                errFacebook.textContent = 'Lỗi mạng: ' + ex.message;
-            }
-        }, {scope: 'email'});
     });
 </script>
+
 
 <!-- GSI: CHỈ 1 SCRIPT & 1 INIT -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -219,7 +281,8 @@
                     console.log('GSI credential received');
                     const resp = await fetch('/api/auth/google', {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({idToken: credential})
+                        body: JSON.stringify({idToken: credential}),
+                        credentials: 'include'
                     });
                     await handleAuthResult(resp, document.getElementById('errGoogle'));
                 }
@@ -241,14 +304,69 @@
 
             // KHÔNG gọi prompt() để tránh im lặng không hiện
         } catch (e) {
-            console.error(e);
-            const el = document.getElementById('errGoogle');
-            show(el);
-            el.textContent = 'Không tải được Google Identity.';
+            alertError('Không tải được Google Identity.');
+
+
         }
     }
 
     window.addEventListener('load', initGoogle);
 </script>
+<script>
+    const errLogin = document.getElementById('errLogin');
+
+
+    async function callJson(url, body){
+        return fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+            credentials: 'include'
+        });
+    }
+
+    function decodeJwtPayload(jwt){
+        try{
+            const b = (jwt||'').split('.')[1] || '';
+            const s = atob(b.replace(/-/g,'+').replace(/_/g,'/'));
+            return JSON.parse(decodeURIComponent(escape(s)));
+        }catch{ return {}; }
+    }
+
+    async function handleAuthResult(resp, errEl){
+        let text = ''; try { text = await resp.text(); } catch {}
+        if (!resp.ok) {
+            if (errEl) { show(errEl); errEl.textContent = (text && text.length < 200) ? text : 'Đăng nhập thất bại.'; }
+            console.error('Auth error:', resp.status, text);
+            return false;
+        }
+        let data = {}; try { data = text ? JSON.parse(text) : {}; } catch {}
+        if (data.accessToken)  localStorage.setItem('accessToken',  data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+        // TokenRes chỉ có 2 field → đọc claim để biết có role không
+        const p = decodeJwtPayload(data.accessToken || '');
+        const isStaff = p?.actor === 'staff' && Array.isArray(p?.roles) && p.roles.length > 0;
+
+        location.href = isStaff ? '/admin' : '/auth/complete';
+        return true;
+    }
+
+    document.getElementById('loginForm')?.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        hide(errLogin);
+        const email = e.target.email.value.trim();
+        const password = e.target.password.value;
+
+        // 1) thử đăng nhập admin
+        let resp = await callJson('/api/admin/auth/login', { email, password });
+
+        // 2) nếu không phải admin → thử customer
+        if (!resp.ok) resp = await callJson('/api/auth/login', { email, password });
+
+        await handleAuthResult(resp, errLogin);
+    });
+</script>
+
 </body>
 </html>

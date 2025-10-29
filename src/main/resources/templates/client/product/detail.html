@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/client/css/product-detail.css}"/>
+</th:block>
+
+<div layout:fragment="content">
+    <section class="product-detail-page" th:if="${product == null}">
+        <div class="product-detail-empty">
+            <p>Khong tim thay san pham.</p>
+        </div>
+    </section>
+
+    <section class="product-detail-page" th:if="${product != null}">
+        <div class="product-detail"
+             th:attr="data-product-id=${product.id}, data-product-slug=${product.slug}">
+            <div class="product-detail__gallery">
+                <div class="product-detail__thumbs-wrapper"
+                     th:if="${product.images != null and !product.images.isEmpty()}">
+                    <ul class="product-detail__thumbs gallery__thumbs">
+                        <li th:each="img, iter : ${product.images}"
+                            th:classappend="${iter.index == 0} ? ' is-active'">
+                            <button type="button"
+                                    th:data-index="${iter.index}"
+                                    th:data-src="${img}">
+                                <img th:src="${img}"
+                                     th:alt="${product.title} + ' - ' + (${iter.index} + 1)"
+                                     loading="lazy"/>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="product-detail__main">
+                    <img id="mainImage"
+                         th:src="${product.images != null and !product.images.isEmpty() ? product.images.get(0) : product.thumbnail}"
+                         th:alt="${product.title}"
+                         loading="lazy"/>
+                </div>
+            </div>
+
+            <div class="product-detail__info">
+                <header class="product-detail__header">
+                    <div class="product-detail__header-text">
+                        <a class="product-detail__category"
+                           th:if="${product.categorySlug != null}"
+                           th:href="@{/category/{slug}(slug=${product.categorySlug})}"
+                           th:text="${product.categoryName}">Danh muc</a>
+                        <h1 class="product-detail__title" th:text="${product.title}">San pham</h1>
+                    </div>
+                </header>
+
+                <div class="product-detail__price-box">
+                    <span class="product-detail__price-current"
+                          th:text="${product.finalPriceText != null ? product.finalPriceText : 'Lien he'}">0 VND</span>
+                    <span class="product-detail__price-original"
+                          th:if="${product.hasDiscount}"
+                          th:text="${product.originalPriceText}">0 VND</span>
+                    <span class="product-detail__price-discount"
+                          th:if="${product.hasDiscount and product.discountPercent > 0}"
+                          th:text="'-' + ${product.discountPercent} + '%'">-0%</span>
+                </div>
+
+                <div class="product-detail__freeship" th:if="${product.freeShip}">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    <span>Freeship toan quoc</span>
+                </div>
+
+                <div class="product-detail__voucher" th:if="${product.vouchers != null and !product.vouchers.isEmpty()}">
+                    <span class="product-detail__voucher-label">Ma giam gia:</span>
+                    <ul class="product-detail__voucher-list">
+                        <li class="product-detail__voucher-badge"
+                            th:each="voucher : ${product.vouchers}"
+                            th:text="${voucher}">COOL10</li>
+                    </ul>
+                </div>
+
+                <div class="product-detail__section"
+                     th:if="${product.colors != null and !product.colors.isEmpty()}">
+                    <div class="product-detail__section-head">
+                        <span class="product-detail__section-label">Mau sac:</span>
+                        <span class="product-detail__section-value"
+                              data-selected-color
+                              th:text="${product.defaultColor != null ? product.defaultColor.name : product.colors.get(0).name}">Mau</span>
+                    </div>
+                    <div class="product-detail__swatches swatches">
+                        <button type="button"
+                                th:each="color, iter : ${product.colors}"
+                                th:classappend="${iter.first} ? ' is-active' : ''"
+                                th:data-color-name="${color.name}"
+                                th:data-color-hex="${color.hex}"
+                                th:data-color-image="${color.image != null ? color.image : ''}"
+                                th:data-color-swatch="${color.swatchUrl != null ? color.swatchUrl : ''}"
+                                th:data-variant-id="${color.variantId}"
+                                th:data-variant-price="${color.price != null ? color.price : ''}"
+                                th:data-variant-compare="${color.compareAt != null ? color.compareAt : ''}"
+                                th:attr="data-color-sizes=${color.sizes != null ? #strings.listJoin(color.sizes, '|') : ''}"
+                                th:style="${color.style != null ? color.style : null}">
+                            <span class="visually-hidden" th:text="${color.name}">Mau</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="product-detail__section"
+                     th:if="${product.sizes != null and !product.sizes.isEmpty()}">
+                    <div class="product-detail__section-head">
+                        <span class="product-detail__section-label">Kich thuoc:</span>
+                        <span class="product-detail__section-value"
+                              data-selected-size
+                              th:text="${product.defaultSize != null ? product.defaultSize : product.sizes.get(0)}">Size</span>
+                    </div>
+                    <div class="product-detail__sizes sizes">
+                        <button type="button"
+                                th:each="size, iter : ${product.sizes}"
+                                th:classappend="${product.defaultSize != null ? (size == product.defaultSize ? ' is-active' : '') : (iter.first ? ' is-active' : '')}"
+                                th:data-size="${size}"
+                                th:text="${size}">M</button>
+                    </div>
+                </div>
+
+                <div class="product-detail__purchase">
+                    <div class="product-detail__quantity">
+                        <button class="qty-btn" type="button" data-action="decrease">-</button>
+                        <input id="qty" type="number" min="1" value="1"/>
+                        <button class="qty-btn" type="button" data-action="increase">+</button>
+                    </div>
+                    <button class="btn--primary"
+                            type="button"
+                            data-action="add-to-cart"
+                            th:attr="data-product-id=${product.id},
+                                     data-product-slug=${product.slug},
+                                     data-product-title=${product.title},
+                                     data-product-image=${product.images != null and !product.images.isEmpty() ? product.images.get(0) : product.thumbnail},
+                                     data-product-price=${product.priceForCart}">
+                        <span class="icon">+</span>
+                        <span>Them vao gio</span>
+                    </button>
+                </div>
+
+                <details class="product-detail__description" th:if="${product.description != null}">
+                    <summary>Mo ta san pham</summary>
+                    <div th:utext="${product.description}"></div>
+                </details>
+            </div>
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/client/js/product-detail.js}"></script>
+</th:block>
+</body>
+</html>

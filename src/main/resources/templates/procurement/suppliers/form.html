@@ -5,6 +5,9 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <body>
+<head>
+    <link rel="stylesheet" th:href="@{/css/procement/supplier/form.css}">
+</head>
 <section layout:fragment="content">
     <h1 th:text="${supplier.id != null} ? 'Sửa NCC' : 'Thêm NCC'"></h1>
 

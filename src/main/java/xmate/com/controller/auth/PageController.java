@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
-    // === PUBLIC PAGES ===
-    @GetMapping({"/", "/auth/login"})
+
+    // chỉ phục vụ trang đăng nhập
+    @GetMapping("/auth/login")
     public String login() { return "auth/login"; }
 
     @GetMapping("/auth/register")
@@ -14,9 +15,8 @@ public class PageController {
 
     @GetMapping("/auth/forgot")
     public String forgot() { return "auth/forgot"; }
-    // === AUTH PAGES ===
 
-
+    // auth pages của user
     @GetMapping("/user/addresses")
     public String addresses() { return "user/addresses"; }
 }

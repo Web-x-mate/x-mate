@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <!-- Nếu trang này render trực tiếp, 2 meta dưới sẽ được Thymeleaf fill.
+         Nếu chỉ nhúng fragment vào layout khác, hãy đặt 2 meta này ở layout chính. -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+</head>
+<body>
+<!-- Fragment có tên "widget" để nhúng -->
+<div th:fragment="widget">
+    <button type="button" class="sb-launcher" id="sbLauncher" aria-label="Open chat">💬</button>
+
+    <div class="sb-panel" id="sbPanel" aria-live="polite">
+        <div class="sb-header">
+            ShopBot
+            <span style="float:right; cursor:pointer" id="sbClose">✖</span>
+        </div>
+        <div class="sb-body" id="sbMsgs"></div>
+        <form class="sb-input" id="sbForm">
+            <input type="text" id="sbQuestion" placeholder="Nhập câu hỏi..." required />
+            <button type="submit">Gửi</button>
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            const launcher = document.getElementById('sbLauncher');
+            const panel = document.getElementById('sbPanel');
+            const closeBtn = document.getElementById('sbClose');
+            const form = document.getElementById('sbForm');
+            const input = document.getElementById('sbQuestion');
+            const msgs = document.getElementById('sbMsgs');
+
+            function toggle(open) {
+                if (open === true) panel.classList.add('open');
+                else if (open === false) panel.classList.remove('open');
+                else panel.classList.toggle('open');
+                if (panel.classList.contains('open')) setTimeout(() => input.focus(), 50);
+            }
+
+            launcher.addEventListener('click', () => toggle());
+            closeBtn.addEventListener('click', () => toggle(false));
+
+            function escapeHtml(text) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            // 👉 Biến URL trong text thành <a> … </a>
+            function linkify(text) {
+                // trước tiên escape để tránh XSS, rồi mới thay thế URL
+                const escaped = escapeHtml(text);
+                // regex đơn giản nhận http/https
+                const urlRegex = /\bhttps?:\/\/[^\s<>"')]+/gi;
+                return escaped.replace(urlRegex, (url) => {
+                    // Hiển thị gọn nếu quá dài
+                    const display = url.length > 80 ? url.slice(0, 77) + '…' : url;
+                    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${display}</a>`;
+                });
+            }
+
+            function addMsg(content, me = false, meta) {
+                const wrap = document.createElement('div');
+                wrap.className = 'msg' + (me ? ' me' : '');
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = content; // plain text
+                wrap.appendChild(bubble);
+                if (meta) {
+                    const m = document.createElement('div');
+                    m.className = 'meta';
+                    m.textContent = meta;
+                    wrap.appendChild(m);
+                }
+                msgs.appendChild(wrap);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            // 👉 Cho phép chèn HTML đã “làm sạch” (từ linkify)
+            function addMsgHtml(html, me = false, meta) {
+                const wrap = document.createElement('div');
+                wrap.className = 'msg' + (me ? ' me' : '');
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = html; // chỉ dùng với output của linkify()
+                wrap.appendChild(bubble);
+                if (meta) {
+                    const m = document.createElement('div');
+                    m.className = 'meta';
+                    m.textContent = meta;
+                    wrap.appendChild(m);
+                }
+                msgs.appendChild(wrap);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            // --- CSRF helper (Cách A) ---
+            function getCookie(name) {
+                return document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith(name + '='))
+                    ?.split('=')[1];
+            }
+            function buildCsrfHeaders() {
+                const headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' };
+                const token  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+                const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+                if (token && header) { headers[header] = token; return headers; }
+                const xsrf = getCookie('XSRF-TOKEN');
+                if (xsrf) headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrf);
+                return headers;
+            }
+
+            async function ask(q) {
+                try {
+                    const headers = buildCsrfHeaders();
+
+                    // bubble "đang gõ…"
+                    const loading = document.createElement('div');
+                    loading.className = 'msg';
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.innerHTML = '<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+                    loading.appendChild(bubble);
+                    msgs.appendChild(loading);
+                    msgs.scrollTop = msgs.scrollHeight;
+
+                    const res = await fetch('/widget/chatbot/chat', {
+                        method: 'POST',
+                        headers,
+                        body: new URLSearchParams({ question: q })
+                    });
+
+                    loading.remove();
+
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json(); // ChatResponse
+
+                    const txt = (data?.answer ?? '').toString();
+                    // Nếu answer rỗng, show toàn bộ JSON
+                    const htmlAnswer = txt ? linkify(txt) : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+                    addMsgHtml(htmlAnswer, false, data?.intent ? ('intent: ' + data.intent) : null);
+
+                    // Passages -> hiển thị link nếu có
+                    if (Array.isArray(data?.passages) && data.passages.length) {
+                        const top = data.passages.slice(0, 3).map(p => {
+                            const label = p?.slug || p?.url || p?.type || 'nguồn';
+                            if (p?.url) {
+                                const safeLabel = escapeHtml(label.toString());
+                                return `<a href="${p.url}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+                            }
+                            return escapeHtml(label.toString());
+                        }).join(' | ');
+                        addMsgHtml('Nguồn: ' + top, false);
+                    }
+                } catch (e) {
+                    addMsg('Lỗi gọi chatbot: ' + e.message, false);
+                }
+            }
+
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                const q = input.value.trim();
+                if (!q) return;
+                addMsg(q, true);
+                input.value = '';
+                ask(q);
+            });
+
+            // toggle(true); // mở sẵn nếu muốn
+        })();
+    </script>
+
+</div>
+</body>
+</html>

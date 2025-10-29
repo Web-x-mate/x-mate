@@ -1,92 +1,196 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách giảm giá</title>
+    <style>
+        /* Căn giữa bảng */
+        .table thead th { text-align:center; }
+        .table tbody td { text-align:center; }
+
+        .page-title { font-size: 1.71rem; }
+
+        .table thead th, .table tbody td { font-size: .81rem; padding: .45rem .72rem; }
+
+        .badge{ display:inline-flex; align-items:center; gap:.315rem; font-weight:600;
+            border-radius:.45rem; padding:.225rem .45rem; font-size:.765rem; }
+        .bg-light{background:#f1f5f9;color:#0f172a}
+        .bg-secondary{background:#e2e8f0;color:#0f172a}
+        .bg-primary{background:#3b82f6;color:#fff}
+        .bg-success{background:#22c55e;color:#fff}
+        .bg-danger{background:#ef4444;color:#fff}
+        .bg-info{background:#38bdf8;color:#0f172a}
+        .bg-warning{background:#fbbf24;color:#0f172a}
+
+        .btn-create{
+            font-weight:900; font-size:.945rem; background:linear-gradient(90deg,#10b981,#059669);
+            border:none; color:#fff; box-shadow:0 2px 6px rgba(16,185,129,.35);
+            border-radius:9px; height:43px; transition:transform .15s, box-shadow .15s;
+        }
+        .btn-create:hover{ transform:translateY(-2px); box-shadow:0 4px 10px rgba(16,185,129,.45); }
+        .btn-action{ font-weight:600; border-radius:7.2px; padding:.36rem .81rem; font-size:.81rem; transition:.15s; }
+        .btn-edit{ background:#fbbf24; color:#0f172a; border:none; } .btn-edit:hover{ background:#f59e0b; }
+        .btn-delete{ background:#ef4444; color:#fff; border:none; } .btn-delete:hover{ background:#dc2626; }
+
+        /* Bộ lọc 6 ô */
+        .filter-grid{
+            display:grid; grid-template-columns:repeat(6,1fr);
+            gap:.675rem; align-items:stretch; margin-bottom:.9rem;
+        }
+        .filter-grid .cell > *{
+            height:43px; width:100%; border-radius:9px; font-size:.855rem;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .filter-grid .btn{ font-weight:700; }
+        @media (max-width: 992px){ .filter-grid{ grid-template-columns:repeat(3,1fr); } }
+        @media (max-width: 576px){ .filter-grid{ grid-template-columns:repeat(2,1fr); } }
+
+        /* Pagination — pills */
+        .pagination{ display:flex; gap:.5rem; align-items:center; margin-top:14px; }
+        .page-item{ list-style:none; }
+        .page-link{
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:40px; height:36px; padding:0 .75rem;
+            border-radius:10px; border:1px solid #e2e8f0;
+            background:#fff; color:#0f172a; font-weight:700; text-decoration:none;
+            transition:background .15s, border-color .15s, color .15s;
+        }
+        .page-item.active .page-link{ background:#16a34a; color:#fff; border-color:#16a34a; }
+        .page-item.disabled .page-link{ background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none; }
+        .page-link:hover{ background:#f8fafc; }
+        .page-title{
+            font-size: 1.75rem;  /* chỉnh con số này để ra đúng cỡ */
+            font-weight: 800;
+            line-height: 1.5;
+            text-align: center;
+            margin: 0 0 18px;
+        }
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
-    <h1 class="page-title">Discounts</h1>
+    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">
+        Bạn không có quyền xem danh sách giảm giá.
+    </div>
 
-    <!-- Toolbar: Search + Add new -->
-    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-        <form method="get" th:action="@{/admin/discounts}" class="d-flex align-items-center gap-2">
-            <input class="form-control" type="text" name="q" th:value="${q}" placeholder="Search code or JSON...">
-            <button class="btn btn-primary" type="submit">Search</button>
+    <div sec:authorize="hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">
+        <h1 class="page-title">Danh sách giảm giá</h1>
+
+        <form method="get" th:action="@{/admin/discounts}" class="filter-grid">
+            <div class="cell">
+                <input class="form-control" type="text" name="q" th:value="${q}" placeholder=" Tìm mã hoặc JSON...">
+            </div>
+            <div class="cell">
+                <select class="form-select" name="type">
+                    <option value="">Loại</option>
+                    <option value="CODE" th:selected="${type == 'CODE'}">CODE</option>
+                    <option value="AUTO" th:selected="${type == 'AUTO'}">AUTO</option>
+                </select>
+            </div>
+            <div class="cell">
+                <select class="form-select" name="valueType">
+                    <option value="">Loại giảm giá</option>
+                    <option value="FIXED" th:selected="${valueType == 'FIXED'}">FIXED</option>
+                    <option value="PERCENT" th:selected="${valueType == 'PERCENT'}">PERCENT</option>
+                </select>
+            </div>
+            <div class="cell">
+                <button class="btn btn-primary w-100" type="submit">Tìm kiếm</button>
+            </div>
+            <div class="cell">
+                <a class="btn btn-secondary w-100" th:href="@{/admin/discounts}">Đặt lại</a>
+            </div>
+            <div class="cell" sec:authorize="hasAnyAuthority('DISCOUNT_CREATE','ROLE_ADMIN')">
+                <a th:href="@{/admin/discounts/new}" class="btn btn-create w-100">Thêm mã giảm giá</a>
+            </div>
         </form>
-        <a th:href="@{/admin/discounts/new}" class="btn btn-success">+ New discount</a>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle w-100">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Loại</th>
+                    <th>Mã giảm</th>
+                    <th>Loại giảm giá</th>
+                    <th>Giá trị</th>
+                    <th>Giá trị thấp nhất</th>
+                    <th>Ngày áp dụng</th>
+                    <th>Ngày hết hạn</th>
+                    <th>Số lượng áp dụng</th>
+                    <th>Số lượng đã dùng</th>
+                    <th>Tình trạng</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="d : ${ (page != null and page.content != null) ? page.content : T(java.util.Collections).emptyList() }">
+                    <td th:text="${d.id}">1</td>
+                    <td th:text="${d.type}">CODE</td>
+                    <td th:text="${d.code}">SALE10</td>
+
+                    <td th:switch="${d.valueType != null ? d.valueType.name() : ''}">
+                        <span class="badge bg-success" th:case="'FIXED'">💵 FIXED</span>
+                        <span class="badge bg-primary" th:case="'PERCENT'">🎯 PERCENT</span>
+                        <span class="badge bg-secondary" th:case="*">—</span>
+                    </td>
+
+                    <td th:switch="${d.valueType != null ? d.valueType.name() : ''}">
+            <span th:case="'FIXED'"
+                  th:text="${#numbers.formatDecimal(d.valueAmount?:0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">50,000 ₫</span>
+                        <span th:case="'PERCENT'"
+                              th:text="${#numbers.formatDecimal(d.valueAmount?:0, 0, 'COMMA', 0, 'POINT')} + ' %'">10 %</span>
+                        <span th:case="*">—</span>
+                    </td>
+
+                    <td th:text="${#numbers.formatDecimal(d.minOrder?:0, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+
+                    <td th:text="${d.startAt != null ? #temporals.format(d.startAt,'dd/MM/yyyy HH:mm') : ''}"></td>
+                    <td th:text="${d.endAt != null ? #temporals.format(d.endAt,'dd/MM/yyyy HH:mm') : ''}"></td>
+
+                    <td th:text="${d.usageLimit}">100</td>
+                    <td th:text="${d.usedCount}">0</td>
+
+                    <td th:switch="${d.status != null ? (d.status instanceof T(java.lang.Enum) ? d.status.name() : d.status) : ''}">
+                        <span class="badge bg-success" th:case="'ACTIVE'">ACTIVE</span>
+                        <span class="badge bg-secondary" th:case="*" th:text="${d.status}">INACTIVE</span>
+                    </td>
+
+                    <td>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a th:href="@{|/admin/discounts/${d.id}/edit|}"
+                               class="btn btn-action btn-edit"
+                               sec:authorize="hasAnyAuthority('DISCOUNT_EDIT','ROLE_ADMIN')">Sửa</a>
+                            <a th:href="@{|/admin/discounts/${d.id}/delete|}"
+                               onclick="return confirm('Xoá discount này?');"
+                               class="btn btn-action btn-delete"
+                               sec:authorize="hasAnyAuthority('DISCOUNT_DELETE','ROLE_ADMIN')">Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                    <td colspan="12" class="text-center text-muted py-4">No data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG: pill, giữ q + type + valueType -->
+        <div th:replace="~{layout/components/_pagination :: body(
+            page=${page},
+            baseUrl='/admin/discounts',
+            q=${q},
+            type=${type},
+            valueType=${valueType}
+    )}"></div>
+
     </div>
-
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle w-100">
-            <colgroup>
-                <col style="width: 70px;">
-                <col style="width: 90px;">
-                <col style="width: 120px;">
-                <col style="width: 110px;">
-                <col>
-                <col style="width: 120px;">
-                <col style="width: 170px;">
-                <col style="width: 170px;">
-                <col style="width: 110px;">
-                <col style="width: 110px;">
-                <col style="width: 110px;">
-                <col style="width: 160px;">
-            </colgroup>
-            <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>Code</th>
-                <th>Value Type</th>
-                <th>Value</th>
-                <th>Min order</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Limit</th>
-                <th>Used</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:each="d : ${page?.content}">
-                <td th:text="${d.id}">1</td>
-                <td th:text="${d.type}">CODE</td>
-                <td th:text="${d.code}">SAVE10</td>
-                <td th:text="${d.valueType}">PERCENT</td>
-                <td>
-                    <span th:if="${d.valueType?.name() == 'PERCENT'}"
-                          th:text="${#numbers.formatDecimal(d.valueAmount,1,2)} + ' %'">10 %</span>
-                    <span th:if="${d.valueType?.name() == 'FIXED'}"
-                          th:text="${#numbers.formatDecimal(d.valueAmount,1,2)}">50000</span>
-                </td>
-                <td th:text="${#numbers.formatDecimal(d.minOrder?:0,1,2)}">0</td>
-                <td th:text="${d.startAt != null ? #temporals.format(d.startAt,'yyyy-MM-dd HH:mm') : ''}"></td>
-                <td th:text="${d.endAt != null ? #temporals.format(d.endAt,'yyyy-MM-dd HH:mm') : ''}"></td>
-                <td th:text="${d.usageLimit}">100</td>
-                <td th:text="${d.usedCount}">5</td>
-                <td>
-                    <span th:class="'badge ' + (${d.status} == 'ACTIVE' ? 'bg-success' : 'bg-secondary')"
-                          th:text="${d.status}">ACTIVE</span>
-                </td>
-                <td class="d-flex gap-2">
-                    <a th:href="@{|/admin/discounts/${d.id}/edit|}" class="btn btn-sm btn-warning">Edit</a>
-                    <a th:href="@{|/admin/discounts/${d.id}/delete|}"
-                       onclick="return confirm('Xoá discount này?');"
-                       class="btn btn-sm btn-danger">Delete</a>
-                </td>
-            </tr>
-
-            <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                <td colspan="12" class="text-center">No data</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/discounts', q=${q})}"></div>
 </section>
 </body>
 </html>

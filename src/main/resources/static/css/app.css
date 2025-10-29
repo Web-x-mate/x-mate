@@ -1,6 +1,6 @@
 :root{
     /* Theme */
-    --bg:        #f7fafc;     /* nền trang */
+    --bg: #eff3f5;     /* nền trang */
     --surface:   #ffffff;     /* nền thẻ/sidebar */
     --border:    #e2e8f0;     /* viền nhạt */
     --text:      #1f2937;     /* chữ chính */
@@ -14,11 +14,11 @@
 }
 
 /* ===== Base ===== */
-*{ box-sizing:border-box; }
+*{ box-sizing:border-box; font-family: "Nunito" !important;}
 html, body{ height:100%; }
 body{
     margin:0;
-    font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    font-family:  "Nunito";
     color:var(--text);
     background:var(--bg);
 }

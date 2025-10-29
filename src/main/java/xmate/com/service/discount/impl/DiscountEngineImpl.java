@@ -33,35 +33,44 @@ public class DiscountEngineImpl implements DiscountEngine {
         DiscountConditions cond = parse(discount.getConditionsJson());
 
         BigDecimal total = BigDecimal.ZERO;
+
         for (int i = 0; i < items.size(); i++) {
             OrderItem it = items.get(i);
             if (it.getVariant() == null || it.getVariant().getId() == null) continue;
 
             ProductVariant v = variantRepo.findById(it.getVariant().getId()).orElse(null);
             if (v == null) continue;
+
             Long productId  = v.getProduct() != null ? v.getProduct().getId() : null;
             Long categoryId = (v.getProduct() != null && v.getProduct().getCategory() != null)
                     ? v.getProduct().getCategory().getId() : null;
 
             if (!matchScope(cond, categoryId, productId, v.getId())) continue;
 
-            int minQty = cond.getMinQtyPerItem() != null ? cond.getMinQtyPerItem() : 1;
-            int qty = it.getQty() != null ? it.getQty() : 0;
+            // minQty có thể là Integer (nullable) trong điều kiện
+            int minQty = cond.getMinQtyPerItem() == null ? 1 : cond.getMinQtyPerItem();
+            // qty từ OrderItem là int (primitive) → không check null
+            int qty = it.getQty();
             if (qty < minQty) continue;
 
-            BigDecimal lineTotal = safe(it.getPrice()).multiply(BigDecimal.valueOf(qty));
-            BigDecimal lineDiscount = BigDecimal.ZERO;
+            // price trong OrderItem là long (VND) → đưa sang BigDecimal để tính toán
+            BigDecimal lineTotal = BigDecimal.valueOf(it.getPrice()).multiply(BigDecimal.valueOf(qty));
+            BigDecimal lineDiscount;
 
             if (discount.getValueType() == DiscountValueType.PERCENT) {
+                // valueAmount là BigDecimal, ví dụ 10 -> 10%
                 lineDiscount = lineTotal.multiply(discount.getValueAmount())
                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            } else { // FIXED = tiền mỗi item
+            } else {
+                // FIXED: số tiền giảm cho mỗi item
                 lineDiscount = discount.getValueAmount().multiply(BigDecimal.valueOf(qty));
             }
 
+            // Trần trên mỗi item (nếu có)
             if (cond.getCapPerItem() != null && lineDiscount.compareTo(cond.getCapPerItem()) > 0) {
                 lineDiscount = cond.getCapPerItem();
             }
+            // Không vượt quá line total
             if (lineDiscount.compareTo(lineTotal) > 0) lineDiscount = lineTotal;
 
             if (lineDiscount.signum() > 0) {
@@ -69,39 +78,51 @@ public class DiscountEngineImpl implements DiscountEngine {
                 total = total.add(lineDiscount);
             }
         }
+
+        // Trần theo đơn (nếu có)
         if (cond.getCapPerOrder() != null && total.compareTo(cond.getCapPerOrder()) > 0) {
             total = cond.getCapPerOrder();
-            // (đơn giản: không phân bổ lại; có thể phân bổ theo tỷ trọng nếu cần)
+            // Nếu cần, có thể phân bổ lại theo tỷ lệ ở đây
         }
+
         rs.totalDiscount = total;
         return rs;
     }
 
     private DiscountConditions parse(String json) {
-        try { return (json == null || json.isBlank()) ? new DiscountConditions() : om.readValue(json, DiscountConditions.class); }
-        catch (Exception e) { return new DiscountConditions(); }
+        try {
+            return (json == null || json.isBlank())
+                    ? new DiscountConditions()
+                    : om.readValue(json, DiscountConditions.class);
+        } catch (Exception e) {
+            return new DiscountConditions();
+        }
     }
 
     private boolean matchScope(DiscountConditions cond, Long catId, Long prodId, Long varId) {
-        var s = cond.getScope(); if (s == null) return true;
-        boolean byCat = s.getCategoryIds()!=null && !s.getCategoryIds().isEmpty() && catId!=null && s.getCategoryIds().contains(catId);
-        boolean byPro = s.getProductIds()!=null  && !s.getProductIds().isEmpty()  && prodId!=null && s.getProductIds().contains(prodId);
-        boolean byVar = s.getVariantIds()!=null  && !s.getVariantIds().isEmpty()  && varId!=null && s.getVariantIds().contains(varId);
+        var s = cond.getScope();
+        if (s == null) return true;
 
-        boolean hasAny = (s.getCategoryIds()!=null && !s.getCategoryIds().isEmpty())
-                || (s.getProductIds()!=null  && !s.getProductIds().isEmpty())
-                || (s.getVariantIds()!=null  && !s.getVariantIds().isEmpty());
+        boolean byCat = s.getCategoryIds() != null && !s.getCategoryIds().isEmpty()
+                && catId != null && s.getCategoryIds().contains(catId);
+        boolean byPro = s.getProductIds() != null && !s.getProductIds().isEmpty()
+                && prodId != null && s.getProductIds().contains(prodId);
+        boolean byVar = s.getVariantIds() != null && !s.getVariantIds().isEmpty()
+                && varId != null && s.getVariantIds().contains(varId);
+
+        boolean hasAny = (s.getCategoryIds() != null && !s.getCategoryIds().isEmpty())
+                || (s.getProductIds() != null && !s.getProductIds().isEmpty())
+                || (s.getVariantIds() != null && !s.getVariantIds().isEmpty());
         if (!hasAny) return true;
 
         if ("ALL".equalsIgnoreCase(cond.getIncludeMode())) {
             boolean ok = true;
-            if (s.getCategoryIds()!=null && !s.getCategoryIds().isEmpty()) ok &= byCat;
-            if (s.getProductIds()!=null  && !s.getProductIds().isEmpty())  ok &= byPro;
-            if (s.getVariantIds()!=null  && !s.getVariantIds().isEmpty())  ok &= byVar;
+            if (s.getCategoryIds() != null && !s.getCategoryIds().isEmpty()) ok &= byCat;
+            if (s.getProductIds() != null && !s.getProductIds().isEmpty()) ok &= byPro;
+            if (s.getVariantIds() != null && !s.getVariantIds().isEmpty()) ok &= byVar;
             return ok;
         }
-        return byCat || byPro || byVar; // ANY
+        // ANY
+        return byCat || byPro || byVar;
     }
-
-    private BigDecimal safe(BigDecimal b) { return b != null ? b : BigDecimal.ZERO; }
 }

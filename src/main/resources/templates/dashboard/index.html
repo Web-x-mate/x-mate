@@ -1,181 +1,755 @@
+<!--<!doctype html>-->
+<!--<html lang="vi"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+<!--<head>-->
+<!--    <meta charset="utf-8"/>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1"/>-->
+<!--    <title>Bảng điều khiển</title>-->
+
+<!--    <script src="https://cdn.tailwindcss.com"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>-->
+
+<!--    <style>-->
+<!--        /*-->
+<!--        ====================================================-->
+<!--        1. BIẾN CSS VÀ MÀU SẮC SEMANTIC (Màu tương phản cao)-->
+<!--        ====================================================-->
+<!--        */-->
+<!--        :root{-->
+<!--            /* Màu nền và chữ cơ bản */-->
+<!--            &#45;&#45;bg:#F8F9FA;      /* Xám Nhạt - Nền Dashboard */-->
+<!--            &#45;&#45;surface:#FFFFFF; /* Trắng Tinh - Nền Cards/Widgets */-->
+<!--            &#45;&#45;text:#212529;    /* Đen Đậm - Văn bản Chính (High Contrast) */-->
+<!--            &#45;&#45;muted:#6C757D;   /* Xám Đậm - Văn bản Phụ, đường lưới */-->
+<!--            &#45;&#45;bd:#DEE2E6;      /* Xám Sáng - Viền/Đường chia */-->
+<!--            &#45;&#45;ring:#ADB5BD;    /* Vòng focus/shadow */-->
+
+<!--            /* Màu Semantic (Tăng trưởng/Cảnh báo) - Tương phản cao */-->
+<!--            &#45;&#45;up-bg:rgba(40,167,69,.15); &#45;&#45;up:#28A745; /* Xanh Lá Cây - Success/Tăng */-->
+<!--            &#45;&#45;down-bg:rgba(220,53,69,.15); &#45;&#45;down:#DC3545; /* Đỏ Rực - Danger/Giảm */-->
+<!--            &#45;&#45;warn-bg:rgba(255,193,7,.15); &#45;&#45;warn:#FFC107; /* Vàng Cam - Warning/Chờ */-->
+<!--            &#45;&#45;info-bg:rgba(23,162,184,.15); &#45;&#45;info:#17A2B8; /* Xanh Lam Sáng - Info/Trung tính */-->
+
+<!--            /* Màu Icon cho KPI */-->
+<!--            &#45;&#45;ico-blue-bg:#e0f2fe; &#45;&#45;ico-blue:#0369a1; /* Giữ lại màu blue cho icon */-->
+<!--            &#45;&#45;ico-green-bg:#dcfce7; &#45;&#45;ico-green:#166534;-->
+<!--            &#45;&#45;ico-purple-bg:#ede9fe; &#45;&#45;ico-purple:#5b21b6;-->
+<!--            &#45;&#45;ico-orange-bg:#ffedd5; &#45;&#45;ico-orange:#9a3412;-->
+<!--            &#45;&#45;ico-gray-bg:#e5e7eb; &#45;&#45;ico-gray:#334155;-->
+<!--        }-->
+
+<!--        /* Chart Colors (Áp dụng Bảng màu thống nhất) */-->
+<!--        .chart-colors {-->
+<!--            &#45;&#45;chart-primary: #63a4ed;   /* Xanh Dương Đậm */-->
+<!--            &#45;&#45;chart-danger:#DC3545;    /* Đỏ Rực */-->
+<!--            &#45;&#45;chart-success:#28A745;   /* Xanh Lá Cây */-->
+<!--            &#45;&#45;chart-warning:#FFC107;   /* Vàng Cam */-->
+<!--            &#45;&#45;chart-info:#17A2B8;      /* Xanh Lam Sáng */-->
+<!--            &#45;&#45;chart-vip:#6F42C1;       /* Tím Đậm */-->
+<!--            &#45;&#45;chart-secondary:#FD7E14; /* Cam Đậm (Phụ trợ) */-->
+<!--            &#45;&#45;chart-pink:#E83E8C;      /* Hồng Đậm (Phụ trợ) */-->
+<!--        }-->
+
+<!--        body{background:var(&#45;&#45;bg); color:var(&#45;&#45;text)}-->
+<!--        .wrap{max-width:1360px;margin:0 auto}-->
+<!--        .card{background:var(&#45;&#45;surface);border:1px solid var(&#45;&#45;bd);border-radius:1rem;box-shadow:0 1px 3px rgba(33,37,41,.1)} /* Tăng độ đậm shadow nhẹ */-->
+<!--        .muted{color:var(&#45;&#45;muted)}-->
+<!--        .btn{padding:.45rem .7rem;border-radius:.55rem;border:1px solid var(&#45;&#45;bd);font-size:.875rem;background:var(&#45;&#45;surface);color:var(&#45;&#45;text)}-->
+<!--        .btn:hover{filter:brightness(0.97)}-->
+<!--        input[type="date"], select{background:var(&#45;&#45;surface);color:var(&#45;&#45;text);border:1px solid var(&#45;&#45;bd);outline:none}-->
+<!--        input[type="date"]:focus, select:focus{box-shadow:0 0 0 3px var(&#45;&#45;ring)}-->
+
+<!--        /* Filter gọn */-->
+<!--        .filter-grid{-->
+<!--            display:grid; grid-template-columns:minmax(520px,1fr) auto auto;-->
+<!--            align-items:center; column-gap:.5rem; row-gap:.35rem;-->
+<!--        }-->
+<!--        .field-inline{display:flex;align-items:center;gap:.4rem}-->
+<!--        .field-wrap{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}-->
+<!--        .filter-presets{grid-column:1/2;display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}-->
+<!--        .ctl{font-size:.92rem;padding:.45rem .6rem;border-radius:.5rem}-->
+<!--        .ctl-select{font-size:.92rem;padding:.45rem 2rem .45rem .6rem;border-radius:.5rem}-->
+
+<!--        /* KPI */-->
+<!--        .kpi{display:flex;gap:.75rem;align-items:center;padding:.85rem;background:var(&#45;&#45;surface);border:1px solid var(&#45;&#45;bd);border-radius:1rem;min-height:84px}-->
+<!--        .ico{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:.85rem}-->
+<!--        .ico.blue{background:var(&#45;&#45;ico-blue-bg);color:var(&#45;&#45;ico-blue)}-->
+<!--        .ico.green{background:var(&#45;&#45;ico-green-bg);color:var(&#45;&#45;ico-green)}-->
+<!--        .ico.purple{background:var(&#45;&#45;ico-purple-bg);color:var(&#45;&#45;ico-purple)}-->
+<!--        .ico.orange{background:var(&#45;&#45;ico-orange-bg);color:var(&#45;&#45;ico-orange)}-->
+<!--        .ico.gray{background:var(&#45;&#45;ico-gray-bg);color:var(&#45;&#45;ico-gray)}-->
+<!--        .kmain{min-width:0;flex:1}-->
+<!--        .kval{font-size:1.45rem;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}-->
+<!--        .kcap{font-size:.84rem;color:var(&#45;&#45;muted);margin-top:.2rem;white-space:nowrap}-->
+<!--        .kright{margin-left:.4rem;display:flex;align-items:center}-->
+<!--        /* Tinh chỉnh chip - độ tương phản cao */-->
+<!--        .chip{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .55rem;border-radius:999px;font-weight:700;font-size:.74rem;white-space:nowrap; border:1px solid}-->
+<!--        .chip.up{background:var(&#45;&#45;up-bg);color:var(&#45;&#45;up); border-color:var(&#45;&#45;up)}-->
+<!--        .chip.down{background:var(&#45;&#45;down-bg);color:var(&#45;&#45;down); border-color:var(&#45;&#45;down)}-->
+<!--        .chip.warn{background:var(&#45;&#45;warn-bg);color:var(&#45;&#45;warn); border-color:var(&#45;&#45;warn)}-->
+
+<!--        canvas.small-pie{max-height:200px!important}-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body class="chart-colors">-->
+<!--<section layout:fragment="content">-->
+<!--    <div class="wrap p-3 md:p-5 space-y-4">-->
+
+<!--        <div class="card p-3 md:p-4">-->
+<!--            <h1 class="text-2xl md:text-3xl font-bold mb-2">Bảng điều khiển</h1>-->
+
+<!--            <div class="filter-grid">-->
+<!--                <div class="field-wrap">-->
+<!--                    <div class="field-inline">-->
+<!--                        <span class="text-base">Từ</span>-->
+<!--                        <input id="from" type="date" class="ctl"/>-->
+<!--                        <span class="muted">📅</span>-->
+<!--                    </div>-->
+<!--                    <span class="muted">→</span>-->
+<!--                    <div class="field-inline">-->
+<!--                        <span class="text-base">Đến</span>-->
+<!--                        <input id="to" type="date" class="ctl"/>-->
+<!--                        <span class="muted">📅</span>-->
+<!--                    </div>-->
+
+<!--                    <div class="filter-presets">-->
+<!--                        <button type="button" data-preset="today"  class="btn">Hôm nay</button>-->
+<!--                        <button type="button" data-preset="7d"     class="btn">7 ngày</button>-->
+<!--                        <button type="button" data-preset="30d"    class="btn">30 ngày</button>-->
+<!--                        <button type="button" data-preset="12m"    class="btn">12 tháng</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <select id="gran" class="ctl-select">-->
+<!--                    <option value="D">Theo ngày</option>-->
+<!--                    <option value="W">Theo tuần</option>-->
+<!--                    <option value="M">Theo tháng</option>-->
+<!--                </select>-->
+
+<!--                <button id="apply" type="button" class="px-4 py-2 rounded-lg text-sm font-medium"-->
+<!--                        style="background:var(&#45;&#45;chart-primary);color:white">Áp dụng</button> </div>-->
+<!--        </div>-->
+
+<!--        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3">-->
+<!--            <div class="kpi">-->
+<!--                <div class="ico blue"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M6 4a2 2 0 0 0-2 2v12.5A1.5 1.5 0 0 0 5.5 20H20v-2H6.5a.5.5 0 1 1 0-1H20V6a2 2 0 0 0-2-2H6z"/></svg></div>-->
+<!--                <div class="kmain"><div class="kval" id="k_articles">0</div><div class="kcap truncate">Tổng bài viết</div></div>-->
+<!--                <div class="kright"><span id="t_articles" class="chip up">+0%</span></div>-->
+<!--            </div>-->
+<!--            <div class="kpi">-->
+<!--                <div class="ico green"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 19h16v2H2V3h2v16zm3-6 3-3 3 2 4-5 3 3-1.4 1.4-1.6-1.6-4 5-3-2-3 3L7 13z"/></svg></div>-->
+<!--                <div class="kmain"><div class="kval" id="k_views">0</div><div class="kcap truncate">Lượt xem trang</div></div>-->
+<!--                <div class="kright"><span id="t_views" class="chip up">+0%</span></div>-->
+<!--            </div>-->
+<!--            <div class="kpi">-->
+<!--                <div class="ico purple"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 4h16v10H6l-2 2V4zm2 4h12v2H6V8z"/></svg></div>-->
+<!--                <div class="kmain"><div class="kval" id="k_comments">0</div><div class="kcap truncate">Bình luận</div></div>-->
+<!--                <div class="kright"><span id="t_comments" class="chip up">+0%</span></div>-->
+<!--            </div>-->
+<!--            <div class="kpi">-->
+<!--                <div class="ico orange"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zm-9 7a6 6 0 1 1 12 0v2H7v-2z"/></svg></div>-->
+<!--                <div class="kmain"><div class="kval" id="k_authors">0</div><div class="kcap truncate">Tác giả</div></div>-->
+<!--                <div class="kright"><span id="t_authors" class="chip down">-0%</span></div>-->
+<!--            </div>-->
+<!--            <div class="kpi">-->
+<!--                <div class="ico gray"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M21 5H3v14h18V5zm-2 2v7l-4-4-3 3-2-2-5 5V7h14z"/></svg></div>-->
+<!--                <div class="kmain"><div class="kval" id="k_media">0</div><div class="kcap truncate">Tệp media</div></div>-->
+<!--                <div class="kright"><span id="t_media" class="chip up">+0%</span></div>-->
+<!--            </div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">-->
+<!--            <div class="card p-4">-->
+<!--                <div class="flex items-center justify-between mb-2">-->
+<!--                    <h3 class="font-semibold">Hiệu suất nội dung</h3>-->
+<!--                    <span class="px-2 py-1 rounded-full text-xs" style="background:var(&#45;&#45;info-bg);color:var(&#45;&#45;chart-info)">Theo bộ lọc</span> </div>-->
+<!--                <canvas id="c_perf"></canvas>-->
+<!--            </div>-->
+<!--            <div class="card p-4">-->
+<!--                <div class="flex items-center justify-between mb-2">-->
+<!--                    <h3 class="font-semibold">Nội dung theo danh mục</h3>-->
+<!--                    <span class="px-2 py-1 rounded-full text-xs" style="background:var(&#45;&#45;info-bg);color:var(&#45;&#45;chart-info)">Năm nay</span> </div>-->
+<!--                <canvas id="c_cat"></canvas>-->
+<!--            </div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Lịch sử hệ thống</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_sys" class="small-pie"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hoạt động người dùng</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_user"></canvas></div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Ảnh chụp Catalog</h3><span class="muted text-xs">ngành hàng / sản phẩm / biến thể / media</span></div><canvas id="c_catalog"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">RBAC: Vai trò × Quyền</h3><span class="muted text-xs">roles / permissions</span></div><canvas id="c_rbac"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Nhật ký (24h)</h3><span class="muted text-xs">CREATE / UPDATE / DELETE / STATUS</span></div><canvas id="c_logs" class="small-pie"></canvas></div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Tồn kho: có sẵn vs giữ chỗ</h3><span class="muted text-xs">SKU</span></div><canvas id="c_stock"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Đơn mua theo trạng thái</h3><span class="muted text-xs">PO</span></div><canvas id="c_po" class="small-pie"></canvas></div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Phân bố phân khúc KH</h3><span class="muted text-xs">segments</span></div><canvas id="c_seg" class="small-pie"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Điểm tích lũy theo hạng</h3><span class="muted text-xs">loyalty</span></div><canvas id="c_loy"></canvas></div>-->
+<!--            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hiệu quả khuyến mãi</h3><span class="muted text-xs">discounts + usages</span></div><canvas id="c_disc"></canvas></div>-->
+<!--        </section>-->
+
+<!--        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">-->
+<!--            <div class="card overflow-hidden">-->
+<!--                <div class="p-4 border-b" style="border-color:var(&#45;&#45;bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">Đơn gần nhất</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div></div>-->
+<!--                <div class="p-4 overflow-x-auto">-->
+<!--                    <table class="w-full text-sm">-->
+<!--                        <thead class="text-left muted"><tr><th class="py-2">Mã</th><th class="py-2">Khách</th><th class="py-2">Tổng</th><th class="py-2">TT</th><th class="py-2">Giao</th><th class="py-2">Ngày</th></tr></thead>-->
+<!--                        <tbody id="t_orders"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="card overflow-hidden">-->
+<!--                <div class="p-4 border-b" style="border-color:var(&#45;&#45;bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">SKU tồn thấp</h3><a href="#" class="muted hover:underline text-sm">Tới kho</a></div></div>-->
+<!--                <div class="p-4 overflow-x-auto">-->
+<!--                    <table class="w-full text-sm">-->
+<!--                        <thead class="text-left muted"><tr><th class="py-2">SKU</th><th class="py-2">Tên</th><th class="py-2">Có sẵn</th><th class="py-2">Giữ chỗ</th></tr></thead>-->
+<!--                        <tbody id="t_low"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="card overflow-hidden">-->
+<!--                <div class="p-4 border-b" style="border-color:var(&#45;&#45;bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">PO đang nhận</h3><a href="#" class="muted hover:underline text-sm">Tới mua hàng</a></div></div>-->
+<!--                <div class="p-4 overflow-x-auto">-->
+<!--                    <table class="w-full text-sm">-->
+<!--                        <thead class="text-left muted"><tr><th class="py-2">PO</th><th class="py-2">Nhà cung cấp</th><th class="py-2">Trạng thái</th><th class="py-2">Đã nhận/Tổng</th></tr></thead>-->
+<!--                        <tbody id="t_po"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </section>-->
+<!--    </div>-->
+
+<!--    <script>-->
+<!--        const $ = id => document.getElementById(id);-->
+<!--        const money = v => new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(+v||0);-->
+<!--        const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();-->
+
+<!--        // Chart defaults cho nền sáng-->
+<!--        // Đảm bảo màu chữ và đường viền của Chart.js dùng các biến mới-->
+<!--        Chart.defaults.color = cssVar('&#45;&#45;muted');-->
+<!--        Chart.defaults.borderColor = cssVar('&#45;&#45;bd');-->
+
+<!--        // Lấy các màu chính đã định nghĩa trong CSS-->
+<!--        const chartColors = {-->
+<!--            primary: cssVar('&#45;&#45;chart-primary'),-->
+<!--            danger: cssVar('&#45;&#45;chart-danger'),-->
+<!--            success: cssVar('&#45;&#45;chart-success'),-->
+<!--            warning: cssVar('&#45;&#45;chart-warning'),-->
+<!--            info: cssVar('&#45;&#45;chart-info'),-->
+<!--            vip: cssVar('&#45;&#45;chart-vip'),-->
+<!--            secondary: cssVar('&#45;&#45;chart-secondary'),-->
+<!--            pink: cssVar('&#45;&#45;chart-pink')-->
+<!--        };-->
+<!--        const COLOR_PALETTE = [chartColors.primary, chartColors.danger, chartColors.success, chartColors.warning, chartColors.info, chartColors.vip, chartColors.secondary, chartColors.pink];-->
+
+
+<!--        // =========================================================================-->
+<!--        // PHẦN SEED VÀ LOGIC GIỮ NGUYÊN (VÌ KHÔNG CẦN CHỈNH SỬA DỮ LIỆU)-->
+<!--        // =========================================================================-->
+<!--        function genDailySeed(startISO, months=18){-->
+<!--            const out = [];-->
+<!--            const start = new Date(startISO);-->
+<!--            const end = new Date(start);-->
+<!--            end.setMonth(end.getMonth()+months);-->
+<!--            for(let d=new Date(start); d<end; d.setDate(d.getDate()+1)){-->
+<!--                const m = d.getMonth(); // 0..11-->
+<!--                const season = (m===10||m===11)?1.25:(m===5||m===6)?0.9:1; // Q4 cao, hè nhẹ-->
+<!--                const a = Math.max(6, Math.round(10*season + 4*Math.sin(d.getTime()/8.64e7/14) + rand(-2,2)));-->
+<!--                const v = Math.max(600, Math.round(1200*season + 250*Math.sin(d.getTime()/8.64e7/10) + rand(-120,120))); // views per day-->
+<!--                const c = Math.max(2, Math.round(a*0.35 + rand(-1,1)));-->
+<!--                out.push({date: toISO(d), articles:a, views:v, comments:c});-->
+<!--            }-->
+<!--            return out;-->
+<!--        }-->
+<!--        const rand = (min,max)=>Math.random()*(max-min)+min;-->
+<!--        const toISO = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);-->
+
+<!--        // seed từ 2024-01-01-->
+<!--        const TS = genDailySeed('2024-01-01', 18);-->
+
+<!--        // ===== STATIC SEED cho các phần khác (như bạn đang có) =====-->
+<!--        const DASHBOARD = {-->
+<!--            // Sắp xếp lại để màu sắc tương ứng với mức độ quan trọng: Primary (xanh dương) -> Secondary (đỏ, cam, v.v)-->
+<!--            category:{ labels:["Công nghệ","Kinh doanh","Sức khỏe","Thể thao","Giải trí","Chính trị","Khoa học"], values:[158,145,98,88,76,70,60] },-->
+<!--            system:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[35,42,7,16] },-->
+<!--            userActivity:{ labels:["Đăng nhập","Sửa","Xuất bản","Bình luận","Thích"], values:[120,80,45,200,300] },-->
+<!--            catalog:{ labels:["Ngành hàng","Sản phẩm","Biến thể","Media"], values:[12,154,423,786] },-->
+<!--            rbac:{ labels:["Admin","Biên tập","Tác giả","Xem"], values:[12,34,24,58] },-->
+<!--            activity:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[80,140,20,35] },-->
+<!--            stock:{ labels:["SKU-A","SKU-B","SKU-C","SKU-D","SKU-E","SKU-F"], onHand:[120,80,95,60,150,70], reserved:[20,10,15,5,30,12] },-->
+<!--            // Sắp xếp lại trạng thái PO để khớp với màu Semantic: Warning, Info, Success, Danger, VIP-->
+<!--            poStatus:{ labels:["Nháp","Chờ","Đang nhận","Đã hạch toán","Hủy"], values:[4,8,6,3,1] },-->
+<!--            // Sắp xếp lại Segment KH để khớp với màu Semantic: Info, Success, VIP, Muted-->
+<!--            segments:{ labels:["Mới","Quay lại","VIP","Ngủ đông"], values:[320,510,85,120] },-->
+<!--            loyalty:{ labels:["Đồng","Bạc","Vàng","Bạch kim"], values:[1200,430,140,35] },-->
+<!--            discountEffect:{ labels:["SPRING10","FREESHIP","BLACKFRI","MEMBER5"], orders:[120,240,85,160], revenue:[24000000,36500000,17800000,22200000] },-->
+<!--            recentOrders:[-->
+<!--                {code:"#10021",customer:"Nguyễn A",total:1250000,paymentStatus:"PAID",shippingStatus:"SHIPPED",createdAt:"2025-10-21 09:14"},-->
+<!--                {code:"#10022",customer:"Trần B",total:850000,paymentStatus:"PAID",shippingStatus:"PENDING",createdAt:"2025-10-21 10:05"},-->
+<!--                {code:"#10023",customer:"Lê C",total:2190000,paymentStatus:"PENDING",shippingStatus:"-",createdAt:"2025-10-21 11:44"},-->
+<!--                {code:"#10024",customer:"Phạm D",total:640000,paymentStatus:"PAID",shippingStatus:"DELIVERED",createdAt:"2025-10-21 12:12"}-->
+<!--            ],-->
+<!--            lowSkus:[-->
+<!--                {sku:"XM-AT-001-M",name:"Áo thun A - M",onHand:5,reserved:3},-->
+<!--                {sku:"XM-AT-001-L",name:"Áo thun A - L",onHand:4,reserved:2},-->
+<!--                {sku:"XM-QJ-002-32",name:"Quần jean B - 32",onHand:7,reserved:4},-->
+<!--                {sku:"XM-SN-003-42",name:"Sneaker C - 42",onHand:3,reserved:1}-->
+<!--            ],-->
+<!--            poReceiving:[-->
+<!--                {code:"PO-2401",supplier:"ABC Supply",status:"RECEIVING",receivedQty:120,totalQty:300},-->
+<!--                {code:"PO-2402",supplier:"XYZ Corp",status:"RECEIVING",receivedQty:40,totalQty:100},-->
+<!--                {code:"PO-2403",supplier:"Delta Ltd",status:"AWAITING",receivedQty:0,totalQty:80}-->
+<!--            ]-->
+<!--        };-->
+<!--        // =========================================================================-->
+<!--        // PHẦN LOGIC LỌC VÀ CÁC HÀM PHỤ TRỢ GIỮ NGUYÊN-->
+<!--        // =========================================================================-->
+<!--        function parseISO(s){ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }-->
+<!--        function formatDM(d){ const dd=String(d.getUTCDate()).padStart(2,'0'); const mm=String(d.getUTCMonth()+1).padStart(2,'0'); return `${dd}/${mm}`; }-->
+<!--        function formatMY(d){ const mm=String(d.getUTCMonth()+1).padStart(2,'0'); const yy=String(d.getUTCFullYear()).slice(-2); return `${mm}/${yy}`; }-->
+<!--        function weekKey(d){ // ISO week label-->
+<!--            const tmp=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));-->
+<!--            const day=(tmp.getUTCDay()+6)%7; tmp.setUTCDate(tmp.getUTCDate()-day+3);-->
+<!--            const week1=new Date(Date.UTC(tmp.getUTCFullYear(),0,4));-->
+<!--            const wk = 1+Math.round(((tmp-week1)/86400000-3+((week1.getUTCDay()+6)%7))/7);-->
+<!--            return `W${String(wk).padStart(2,'0')}/${String(tmp.getUTCFullYear()).slice(-2)}`;-->
+<!--        }-->
+
+<!--        function aggregate(rangeFrom, rangeTo, gran){-->
+<!--            const from = parseISO(rangeFrom), to = parseISO(rangeTo);-->
+<!--            const inside = TS.filter(t=>{-->
+<!--                const d=parseISO(t.date);-->
+<!--                return d>=from && d<=to;-->
+<!--            });-->
+
+<!--            const map = new Map();-->
+<!--            const add = (k, a, v, c)=> {-->
+<!--                const o = map.get(k) || {articles:0, views:0, comments:0};-->
+<!--                o.articles += a; o.views += v; o.comments += c; map.set(k,o);-->
+<!--            };-->
+
+<!--            for(const t of inside){-->
+<!--                const d = parseISO(t.date);-->
+<!--                const key = gran==='D' ? formatDM(d) : gran==='W' ? weekKey(d) : formatMY(d);-->
+<!--                add(key, t.articles, t.views, t.comments);-->
+<!--            }-->
+
+<!--            const labels=[...map.keys()];-->
+<!--            const sorter = (a,b)=>{-->
+<!--                const pa=a.split(/[\/W]/).map(Number), pb=b.split(/[\/W]/).map(Number);-->
+<!--                if(a.startsWith('W')&&b.startsWith('W')) return pa[1]-pb[1] || pa[0]-pb[0];-->
+<!--                if(a.includes('/') && a.length===5) return +pa[1]- +pb[1] || +pa[0]- +pb[0];-->
+<!--                return +pa[1]- +pb[1] || +pa[0]- +pb[0];-->
+<!--            };-->
+<!--            labels.sort(sorter);-->
+<!--            const agg = labels.map(k=>map.get(k));-->
+<!--            return {-->
+<!--                labels,-->
+<!--                articles: agg.map(x=>x.articles),-->
+<!--                viewsK:   agg.map(x=>Math.round(x.views/1000)),-->
+<!--                comments: agg.map(x=>x.comments),-->
+<!--                totals: {-->
+<!--                    articles: agg.reduce((s,x)=>s+x.articles,0),-->
+<!--                    views:    agg.reduce((s,x)=>s+x.views,0),-->
+<!--                    comments: agg.reduce((s,x)=>s+x.comments,0)-->
+<!--                }-->
+<!--            };-->
+<!--        }-->
+
+<!--        // ===== Preset ngày =====-->
+<!--        const toISODate = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);-->
+<!--        function setRange(preset){-->
+<!--            const to = new Date(); const from = new Date(to);-->
+<!--            if(preset==='today'){}-->
+<!--            else if(preset==='7d'){ from.setDate(to.getDate()-6); }-->
+<!--            else if(preset==='30d'){ from.setDate(to.getDate()-29); }-->
+<!--            else { from.setMonth(to.getMonth()-11); } // 12 tháng-->
+<!--            $('from').value = toISODate(from);-->
+<!--            $('to').value   = toISODate(to);-->
+<!--        }-->
+<!--        setRange('12m');-->
+<!--        document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{ setRange(b.dataset.preset); render(); }));-->
+
+<!--        // ===== Charts init =====-->
+<!--        let chPerf, chCat, chSys, chUser, chCatalog, chRBAC, chLogs, chStock, chPO, chSeg, chLoy, chDisc;-->
+
+<!--        function make(el,type,labels,datasets,opts){ return new Chart(el,{type,data:{labels,datasets},options:opts||{}}); }-->
+
+<!--        // static charts (không phụ thuộc filter)-->
+<!--        function initStaticCharts(){-->
+<!--            // Chart.js Color Index: 0: Primary, 1: Danger, 2: Success, 3: Warning, 4: Info, 5: VIP, 6: Secondary, 7: Pink-->
+
+<!--            // C_CAT: Dùng các màu trong palette cho các danh mục-->
+<!--            chCat = make($('c_cat'),'bar', DASHBOARD.category.labels,[{label:'Bài viết',data:DASHBOARD.category.values,backgroundColor:COLOR_PALETTE}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});-->
+
+<!--            // C_SYS: Dùng màu Primary, Danger, Secondary, Success-->
+<!--            chSys = make($('c_sys'),'pie', DASHBOARD.system.labels,[{data:DASHBOARD.system.values,backgroundColor:[chartColors.primary, chartColors.danger, chartColors.secondary, chartColors.success]}],{plugins:{legend:{position:'bottom'}}});-->
+
+<!--            // C_USER: Dùng màu Primary (Có thể dùng màu khác nếu muốn nổi bật hơn)-->
+<!--            chUser= make($('c_user'),'bar', DASHBOARD.userActivity.labels,[{label:'Tác vụ',data:DASHBOARD.userActivity.values,backgroundColor:chartColors.primary}],{scales:{y:{beginAtZero:true}}});-->
+
+<!--            // C_CATALOG, C_RBAC, C_LOY: Dùng màu Primary-->
+<!--            chCatalog=make($('c_catalog'),'bar', DASHBOARD.catalog.labels,[{label:'Số lượng',data:DASHBOARD.catalog.values,backgroundColor:chartColors.primary}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});-->
+<!--            chRBAC=make($('c_rbac'),'bar', DASHBOARD.rbac.labels,[{label:'Quyền/role',data:DASHBOARD.rbac.values,backgroundColor:chartColors.primary}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});-->
+<!--            chLogs=make($('c_logs'),'doughnut', DASHBOARD.activity.labels,[{data:DASHBOARD.activity.values,backgroundColor:[chartColors.primary, chartColors.danger, chartColors.secondary, chartColors.success]}],{plugins:{legend:{position:'bottom'}}});-->
+<!--            chLoy  =make($('c_loy'),'bar', DASHBOARD.loyalty.labels,[{label:'Điểm',data:DASHBOARD.loyalty.values,backgroundColor:chartColors.primary}],{scales:{y:{beginAtZero:true}}});-->
+
+<!--            // C_STOCK: Có sẵn (Primary) vs Giữ chỗ (Danger)-->
+<!--            chStock=make($('c_stock'),'bar', DASHBOARD.stock.labels,[{label:'Có sẵn',data:DASHBOARD.stock.onHand,backgroundColor:chartColors.primary},{label:'Giữ chỗ',data:DASHBOARD.stock.reserved,backgroundColor:chartColors.danger}],{scales:{y:{beginAtZero:true}}});-->
+
+<!--            // C_PO (Đơn mua): Dùng màu Semantic theo trạng thái (Nháp/Warning, Chờ/Info, Đang nhận/Primary, Hạch toán/Success, Hủy/Danger)-->
+<!--            // Lưu ý: Vị trí màu phải khớp với thứ tự labels đã chỉnh sửa trong DASHBOARD.poStatus-->
+<!--            chPO   =make($('c_po'),'pie', DASHBOARD.poStatus.labels,[{data:DASHBOARD.poStatus.values,backgroundColor:[chartColors.warning, chartColors.info, chartColors.primary, chartColors.success, chartColors.danger]}],{plugins:{legend:{position:'bottom'}}});-->
+
+<!--            // C_SEG (Phân khúc KH): Mới/Info, Quay lại/Success, VIP/VIP, Ngủ đông/Muted (Secondary)-->
+<!--            chSeg  =make($('c_seg'),'pie', DASHBOARD.segments.labels,[{data:DASHBOARD.segments.values,backgroundColor:[chartColors.info, chartColors.success, chartColors.vip, chartColors.secondary]}],{plugins:{legend:{position:'bottom'}}});-->
+
+<!--            // C_DISC (Khuyến mãi): Số đơn (Primary) vs Doanh thu (Danger - để nổi bật)-->
+<!--            chDisc =make($('c_disc'),'bar', DASHBOARD.discountEffect.labels,[{label:'Số đơn',data:DASHBOARD.discountEffect.orders,backgroundColor:chartColors.primary,yAxisID:'y'},{label:'Doanh thu',data:DASHBOARD.discountEffect.revenue,backgroundColor:chartColors.danger,yAxisID:'y1'}],{scales:{y:{beginAtZero:true},y1:{beginAtZero:true,position:'right',ticks:{callback:v=>money(v)},grid:{drawOnChartArea:false}}},plugins:{legend:{position:'top'}}});-->
+<!--        }-->
+
+<!--        // render với filter cho Perf + KPIs-->
+<!--        function render(){-->
+<!--            const from = $('from').value, to = $('to').value, gran = $('gran').value;-->
+<!--            const agg = aggregate(from,to,gran);-->
+
+<!--            // KPI logic... giữ nguyên-->
+
+<!--            const totalArticles = agg.totals.articles;-->
+<!--            const totalViews = agg.totals.views;-->
+<!--            const totalComments = agg.totals.comments;-->
+<!--            const days = Math.max(1, Math.round((parseISO(to)-parseISO(from))/86400000)+1);-->
+<!--            const prevFrom = new Date(parseISO(from)); prevFrom.setDate(prevFrom.getDate()-days);-->
+<!--            const prevTo = new Date(parseISO(from)); prevTo.setDate(prevTo.getDate()-1);-->
+<!--            const prev = aggregate(toISO(prevFrom), toISO(prevTo), gran);-->
+
+<!--            const pct = (cur,old)=> {-->
+<!--                if(!old || old===0) return 0;-->
+<!--                return ((cur-old)/old)*100;-->
+<!--            };-->
+
+<!--            const dArticles = pct(totalArticles, prev.totals.articles);-->
+<!--            const dViews = pct(totalViews, prev.totals.views);-->
+<!--            const dComments = pct(totalComments, prev.totals.comments);-->
+
+<!--            $('k_articles').textContent = totalArticles.toLocaleString('vi-VN');-->
+<!--            $('k_views').textContent    = totalViews.toLocaleString('vi-VN');-->
+<!--            $('k_comments').textContent = totalComments.toLocaleString('vi-VN');-->
+<!--            $('k_authors').textContent  = 24; // demo tĩnh-->
+<!--            $('k_media').textContent    = 3456;-->
+
+<!--            const setDelta = (el,v)=>{const n=Number(v||0); el.textContent=(n>=0?'+':'')+n.toFixed(1)+'%'; el.className='chip '+(n>0?'up':n<0?'down':'warn');};-->
+<!--            setDelta($('t_articles'), dArticles);-->
+<!--            setDelta($('t_views'), dViews);-->
+<!--            setDelta($('t_comments'), dComments);-->
+<!--            setDelta($('t_authors'), -2.1);-->
+<!--            setDelta($('t_media'), 15.7);-->
+
+<!--            // cập nhật chart Perf (Dùng Primary và Success)-->
+<!--            if(!chPerf){-->
+<!--                chPerf = make($('c_perf'),'line', agg.labels, [-->
+<!--                    // Bài viết: Primary-->
+<!--                    {label:'Bài viết xuất bản', data:agg.articles, tension:.35, fill:true, backgroundColor:'rgba(0,123,255,.1)', borderColor:chartColors.primary, pointBackgroundColor:chartColors.primary},-->
+<!--                    // Lượt xem: Success (Green)-->
+<!--                    {label:'Lượt xem (nghìn)', data:agg.viewsK, tension:.35, fill:true, backgroundColor:'rgba(40,167,69,.1)', borderColor:chartColors.success, pointBackgroundColor:chartColors.success}-->
+<!--                ], {plugins:{legend:{position:'top'}}});-->
+<!--            }else{-->
+<!--                chPerf.data.labels = agg.labels;-->
+<!--                chPerf.data.datasets[0].data = agg.articles;-->
+<!--                chPerf.data.datasets[1].data = agg.viewsK;-->
+<!--                chPerf.update();-->
+<!--            }-->
+
+<!--            // render 3 bảng demo (giữ nguyên)-->
+<!--            $('t_orders').innerHTML = DASHBOARD.recentOrders.map(r=>`-->
+<!--        <tr class="border-t" style="border-color:var(&#45;&#45;bd)">-->
+<!--          <td class="py-2 font-medium">${r.code}</td>-->
+<!--          <td class="py-2">${r.customer}</td>-->
+<!--          <td class="py-2">${money(r.total)}</td>-->
+<!--          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(&#45;&#45;bd); color:var(&#45;&#45;text)">${r.paymentStatus}</span></td>-->
+<!--          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(&#45;&#45;bd); color:var(&#45;&#45;text)">${r.shippingStatus}</span></td>-->
+<!--          <td class="py-2 muted">${r.createdAt}</td>-->
+<!--        </tr>`).join('');-->
+<!--            $('t_low').innerHTML = DASHBOARD.lowSkus.map(r=>`-->
+<!--        <tr class="border-t" style="border-color:var(&#45;&#45;bd)">-->
+<!--          <td class="py-2 font-mono">${r.sku}</td>-->
+<!--          <td class="py-2">${r.name}</td>-->
+<!--          <td class="py-2">${r.onHand}</td>-->
+<!--          <td class="py-2">${r.reserved}</td>-->
+<!--        </tr>`).join('');-->
+<!--            $('t_po').innerHTML = DASHBOARD.poReceiving.map(r=>`-->
+<!--        <tr class="border-t" style="border-color:var(&#45;&#45;bd)">-->
+<!--          <td class="py-2 font-mono">${r.code}</td>-->
+<!--          <td class="py-2">${r.supplier}</td>-->
+<!--          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(&#45;&#45;bd); color:var(&#45;&#45;text)">${r.status}</span></td>-->
+<!--          <td class="py-2">${r.receivedQty}/${r.totalQty}</td>-->
+<!--        </tr>`).join('');-->
+<!--        }-->
+
+<!--        // nút Áp dụng-->
+<!--        $('apply').addEventListener('click', render);-->
+
+<!--        // init all charts-->
+<!--        initStaticCharts();-->
+<!--        render();-->
+<!--    </script>-->
+<!--</section>-->
+<!--</body>-->
+<!--</html>-->
 <!doctype html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title th:text="${title} ?: 'Dashboard'">Dashboard</title>
+    <title>Bảng điều khiển</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <style>
-
-            /* Không dùng @apply vì đang xài CDN Tailwind → viết CSS thuần */
-        .card{
-            background:#fff;
-            border:1px solid #e5e7eb;           /* slate-200 */
-            border-radius:1rem;                  /* rounded-2xl */
-            box-shadow:0 1px 2px rgba(15,23,42,.06); /* shadow-sm */
+        /* ====================================================
+           0) GIẢM KHOẢNG TRỐNG BÊN PHẢI SIDEBAR (~2/3)
+           Chỉ tác động vùng content (không ảnh hưởng sidebar)
+        ==================================================== */
+        main.layout-content,
+        .content-wrapper,
+        .wrap {
+            /* trước đây ~2.5rem -> còn ~0.75–1rem */
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: .75rem !important;
+            padding-bottom: .75rem !important;
         }
-        .muted{ color:#64748b; font-size:.875rem; } /* text-slate-500 text-sm */
-
-        .kpi{
-            position:relative;                   /* QUAN TRỌNG: giữ sparkline bên trong */
-            overflow:hidden;
-            padding:1rem;
-            background:#fff;
-            border:1px solid #e5e7eb;
-            border-radius:1rem;
-            box-shadow:0 1px 2px rgba(15,23,42,.06);
+        /* Nếu .wrap có class p-3 / md:p-5 từ Tailwind, force lại */
+        .wrap.p-3 { padding: .75rem !important; }
+        @media (min-width: 768px){
+            .wrap.md\:p-5 { padding: .75rem 1rem !important; }
         }
-        .kval{ font-size:1.5rem; font-weight:700; line-height:1.2; } /* text-2xl font-bold */
-        .kcap{ font-size:.75rem; color:#64748b; }                     /* text-xs text-slate-500 */
-        .tag{
-            display:inline-flex; align-items:center; gap:.25rem;
-            border-radius:9999px; font-size:.75rem; padding:.25rem .5rem;
-            background:#f1f5f9; color:#475569;                          /* bg-slate-100 text-slate-600 */
+        /* Giảm nhẹ khoảng top của card đầu tiên cho gọn */
+        .wrap > .card:first-child { margin-top: .25rem !important; }
+
+        /*
+        ====================================================
+        1. BIẾN CSS VÀ MÀU SẮC SEMANTIC (Màu tương phản cao)
+        ====================================================
+        */
+        :root{
+            --bg:#F8F9FA;
+            --surface:#FFFFFF;
+            --text:#212529;
+            --muted:#6C757D;
+            --bd:#DEE2E6;
+            --ring:#ADB5BD;
+
+            --up-bg:rgba(40,167,69,.15); --up:#28A745;
+            --down-bg:rgba(220,53,69,.15); --down:#DC3545;
+            --warn-bg:rgba(255,193,7,.15); --warn:#FFC107;
+            --info-bg:rgba(23,162,184,.15); --info:#17A2B8;
+
+            --ico-blue-bg:#e0f2fe; --ico-blue:#0369a1;
+            --ico-green-bg:#dcfce7; --ico-green:#166534;
+            --ico-purple-bg:#ede9fe; --ico-purple:#5b21b6;
+            --ico-orange-bg:#ffedd5; --ico-orange:#9a3412;
+            --ico-gray-bg:#e5e7eb; --ico-gray:#334155;
         }
-        .section-title{ font-size:1rem; font-weight:600; }
-        .btn{ padding:.375rem .75rem; border-radius:.5rem; border:1px solid #cbd5e1; font-size:.875rem; }
-        .seg{ padding:.25rem .5rem; border-radius:9999px; font-size:.75rem; background:#f1f5f9; }
 
-        canvas.small-pie { max-height:200px !important; }
-        canvas.spark{
-            height:48px !important;
-            position:absolute; left:.5rem; right:.5rem; bottom:.5rem;    /* neo trong .kpi */
-            pointer-events:none; z-index:0;                               /* không che text/hover */
+        /* Chart Colors (Áp dụng bảng màu thống nhất) */
+        .chart-colors {
+            --chart-primary:#63a4ed;
+            --chart-danger:#DC3545;
+            --chart-success:#28A745;
+            --chart-warning:#FFC107;
+            --chart-info:#17A2B8;
+            --chart-vip:#6F42C1;
+            --chart-secondary:#FD7E14;
+            --chart-pink:#E83E8C;
         }
-        .kval, .kcap{ position:relative; z-index:1; }                   /* đảm bảo nằm trên sparkline */
 
+        body{background:var(--bg); color:var(--text)}
+        .wrap{max-width:1360px; margin:0 auto}
+        .card{background:var(--surface); border:1px solid var(--bd); border-radius:1rem; box-shadow:0 1px 3px rgba(33,37,41,.1)}
+        .muted{color:var(--muted)}
+        .btn{padding:.45rem .7rem; border-radius:.55rem; border:1px solid var(--bd); font-size:.875rem; background:var(--surface); color:var(--text)}
+        .btn:hover{filter:brightness(0.97)}
+        input[type="date"], select{background:var(--surface); color:var(--text); border:1px solid var(--bd); outline:none}
+        input[type="date"]:focus, select:focus{box-shadow:0 0 0 3px var(--ring)}
 
+        /* Filter gọn */
+        .filter-grid{
+            display:grid; grid-template-columns:minmax(520px,1fr) auto auto;
+            align-items:center; column-gap:.5rem; row-gap:.35rem;
+        }
+        .field-inline{display:flex; align-items:center; gap:.4rem}
+        .field-wrap{display:flex; align-items:center; gap:.75rem; flex-wrap:wrap}
+        .filter-presets{grid-column:1/2; display:flex; justify-content:center; gap:.5rem; flex-wrap:wrap; margin-top:.2rem}
+        .ctl{font-size:.92rem; padding:.45rem .6rem; border-radius:.5rem}
+        .ctl-select{font-size:.92rem; padding:.45rem 2rem .45rem .6rem; border-radius:.5rem}
+
+        /* KPI */
+        .kpi{display:flex; gap:.75rem; align-items:center; padding:.85rem; background:var(--surface); border:1px solid var(--bd); border-radius:1rem; min-height:84px}
+        .ico{flex:0 0 42px; height:42px; display:grid; place-items:center; border-radius:.85rem}
+        .ico.blue{background:var(--ico-blue-bg); color:var(--ico-blue)}
+        .ico.green{background:var(--ico-green-bg); color:var(--ico-green)}
+        .ico.purple{background:var(--ico-purple-bg); color:var(--ico-purple)}
+        .ico.orange{background:var(--ico-orange-bg); color:var(--ico-orange)}
+        .ico.gray{background:var(--ico-gray-bg); color:var(--ico-gray)}
+        .kmain{min-width:0; flex:1}
+        .kval{font-size:1.45rem; line-height:1; font-weight:800; font-variant-numeric:tabular-nums}
+        .kcap{font-size:.84rem; color:var(--muted); margin-top:.2rem; white-space:nowrap}
+        .kright{margin-left:.4rem; display:flex; align-items:center}
+        .chip{display:inline-flex; align-items:center; gap:.3rem; padding:.18rem .55rem; border-radius:999px; font-weight:700; font-size:.74rem; white-space:nowrap; border:1px solid}
+        .chip.up{background:var(--up-bg); color:var(--up); border-color:var(--up)}
+        .chip.down{background:var(--down-bg); color:var(--down); border-color:var(--down)}
+        .chip.warn{background:var(--warn-bg); color:var(--warn); border-color:var(--warn)}
+
+        canvas.small-pie{max-height:200px!important}
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
 
-<!-- ✅ Section đặt đúng trong body và đóng trước </body> -->
+<body class="chart-colors">
 <section layout:fragment="content">
-    <div class="max-w-[1500px] mx-auto p-6 space-y-6">
+    <div class="wrap p-3 md:p-5 space-y-4">
 
-        <!-- Header & Filters -->
-        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-                <h1 class="text-2xl font-bold">Tổng quan</h1>
-            </div>
+        <div class="card p-3 md:p-4">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Bảng điều khiển</h1>
 
-            <form class="flex items-center gap-2 card p-2" th:action="@{/admin/dashboard}" method="get">
-                <input name="from" type="date" class="px-2 py-1 rounded-lg border text-sm"
-                       th:value="${from} ?: ''"/>
-                <span class="text-slate-400">→</span>
-                <input name="to" type="date" class="px-2 py-1 rounded-lg border text-sm"
-                       th:value="${to} ?: ''"/>
-                <select name="gran" class="px-2 py-1 rounded-lg border text-sm" th:value="${gran} ?: 'D'">
-                    <option value="D">Ngày</option>
-                    <option value="W">Tuần</option>
-                    <option value="M">Tháng</option>
+            <div class="filter-grid">
+                <div class="field-wrap">
+                    <div class="field-inline">
+                        <span class="text-base">Từ</span>
+                        <input id="from" type="date" class="ctl"/>
+                        <span class="muted">📅</span>
+                    </div>
+                    <span class="muted">→</span>
+                    <div class="field-inline">
+                        <span class="text-base">Đến</span>
+                        <input id="to" type="date" class="ctl"/>
+                        <span class="muted">📅</span>
+                    </div>
+
+                    <div class="filter-presets">
+                        <button type="button" data-preset="today"  class="btn">Hôm nay</button>
+                        <button type="button" data-preset="7d"     class="btn">7 ngày</button>
+                        <button type="button" data-preset="30d"    class="btn">30 ngày</button>
+                        <button type="button" data-preset="12m"    class="btn">12 tháng</button>
+                    </div>
+                </div>
+
+                <select id="gran" class="ctl-select">
+                    <option value="D">Theo ngày</option>
+                    <option value="W">Theo tuần</option>
+                    <option value="M">Theo tháng</option>
                 </select>
-                <button type="submit" class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-sm">Áp dụng</button>
-                <a class="btn" th:href="@{/admin/dashboard/reports}">Báo cáo nhanh</a>
-            </form>
-        </header>
 
-        <!-- Global KPIs -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4">
-            <div class="kpi"><div class="kval" id="k_rev">0</div><div class="kcap">Doanh thu (đã thanh toán)</div><canvas id="sp_rev" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_ord">0</div><div class="kcap">Số đơn</div><canvas id="sp_ord" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_aov">0</div><div class="kcap">AOV</div><canvas id="sp_aov" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_low">0</div><div class="kcap">SKU tồn thấp</div><canvas id="sp_low" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_users">0</div><div class="kcap">Người dùng / Vai trò</div><canvas id="sp_usr" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_logs">0</div><div class="kcap">Log hôm nay</div><canvas id="sp_log" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_disc">0</div><div class="kcap">ĐH dùng mã giảm</div><canvas id="sp_dis" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-            <div class="kpi"><div class="kval" id="k_po_open">0</div><div class="kcap">PO mở</div><canvas id="sp_po" class="spark absolute bottom-2 left-2 right-2"></canvas></div>
-        </section>
+                <button id="apply" type="button" class="px-4 py-2 rounded-lg text-sm font-medium"
+                        style="background:var(--chart-primary);color:white">Áp dụng</button>
+            </div>
+        </div>
 
-        <!-- Row 1: Sales -->
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Doanh thu theo thời gian</h3><span class="tag">VND</span></div>
-                <canvas id="c_rev"></canvas>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3">
+            <div class="kpi">
+                <div class="ico blue"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M6 4a2 2 0 0 0-2 2v12.5A1.5 1.5 0 0 0 5.5 20H20v-2H6.5a.5.5 0 1 1 0-1H20V6a2 2 0 0 0-2-2H6z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_articles">0</div><div class="kcap truncate">Tổng bài viết</div></div>
+                <div class="kright"><span id="t_articles" class="chip up">+0%</span></div>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Phễu trạng thái đơn</h3><span class="tag">Count</span></div>
-                <canvas id="c_funnel"></canvas>
+            <div class="kpi">
+                <div class="ico green"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 19h16v2H2V3h2v16zm3-6 3-3 3 2 4-5 3 3-1.4 1.4-1.6-1.6-4 5-3-2-3 3L7 13z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_views">0</div><div class="kcap truncate">Lượt xem trang</div></div>
+                <div class="kright"><span id="t_views" class="chip up">+0%</span></div>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Top sản phẩm/biến thể (qty)</h3><span class="tag">Top 10</span></div>
-                <canvas id="c_top"></canvas>
+            <div class="kpi">
+                <div class="ico purple"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 4h16v10H6l-2 2V4zm2 4h12v2H6V8z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_comments">0</div><div class="kcap truncate">Bình luận</div></div>
+                <div class="kright"><span id="t_comments" class="chip up">+0%</span></div>
             </div>
-        </section>
-
-        <!-- Row 2: Catalog & RBAC & Activity -->
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Catalog snapshot</h3><span class="tag">categories/products/variants/media</span></div>
-                <canvas id="c_catalog"></canvas>
+            <div class="kpi">
+                <div class="ico orange"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zm-9 7a6 6 0 1 1 12 0v2H7v-2z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_authors">0</div><div class="kcap truncate">Tác giả</div></div>
+                <div class="kright"><span id="t_authors" class="chip down">-0%</span></div>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">RBAC: Vai trò × Quyền</h3><span class="tag">roles/permissions</span></div>
-                <canvas id="c_rbac"></canvas>
-            </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Activity logs (24h)</h3><span class="tag">CREATE/UPDATE/DELETE/STATUS</span></div>
-                <canvas id="c_logs" class="small-pie"></canvas>
+            <div class="kpi">
+                <div class="ico gray"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M21 5H3v14h18V5zm-2 2v7l-4-4-3 3-2-2-5 5V7h14z"/></svg></div>
+                <div class="kmain"><div class="kval" id="k_media">0</div><div class="kcap truncate">Tệp media</div></div>
+                <div class="kright"><span id="t_media" class="chip up">+0%</span></div>
             </div>
         </section>
 
-        <!-- Row 3: Inventory & Procurement -->
-        <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Tồn kho: On-hand vs Reserved</h3><span class="tag">SKU</span></div>
-                <canvas id="c_stock"></canvas>
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold">Hiệu suất nội dung</h3>
+                    <span class="px-2 py-1 rounded-full text-xs" style="background:var(--info-bg);color:var(--chart-info)">Theo bộ lọc</span>
+                </div>
+                <canvas id="c_perf"></canvas>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">PO theo trạng thái</h3><span class="tag">PO</span></div>
-                <canvas id="c_po" class="small-pie"></canvas>
-            </div>
-        </section>
-
-        <!-- Row 4: Customers & Loyalty & Discounts -->
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Phân bố Segment khách</h3><span class="tag">segments</span></div>
-                <canvas id="c_seg" class="small-pie"></canvas>
-            </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Loyalty: Điểm theo tier</h3><span class="tag">loyalty_accounts</span></div>
-                <canvas id="c_loy"></canvas>
-            </div>
-            <div class="card p-5">
-                <div class="flex items-center justify-between mb-3"><h3 class="section-title">Hiệu quả khuyến mãi</h3><span class="tag">discounts + usages</span></div>
-                <canvas id="c_disc"></canvas>
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold">Nội dung theo danh mục</h3>
+                    <span class="px-2 py-1 rounded-full text-xs" style="background:var(--info-bg);color:var(--chart-info)">Năm nay</span>
+                </div>
+                <canvas id="c_cat"></canvas>
             </div>
         </section>
 
-        <!-- Row 5: Live tables -->
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Lịch sử hệ thống</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_sys" class="small-pie"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hoạt động người dùng</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div><canvas id="c_user"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Ảnh chụp Catalog</h3><span class="muted text-xs">ngành hàng / sản phẩm / biến thể / media</span></div><canvas id="c_catalog"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">RBAC: Vai trò × Quyền</h3><span class="muted text-xs">roles / permissions</span></div><canvas id="c_rbac"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Nhật ký (24h)</h3><span class="muted text-xs">CREATE / UPDATE / DELETE / STATUS</span></div><canvas id="c_logs" class="small-pie"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Tồn kho: có sẵn vs giữ chỗ</h3><span class="muted text-xs">SKU</span></div><canvas id="c_stock"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Đơn mua theo trạng thái</h3><span class="muted text-xs">PO</span></div><canvas id="c_po" class="small-pie"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Phân bố phân khúc KH</h3><span class="muted text-xs">segments</span></div><canvas id="c_seg" class="small-pie"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Điểm tích lũy theo hạng</h3><span class="muted text-xs">loyalty</span></div><canvas id="c_loy"></canvas></div>
+            <div class="card p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Hiệu quả khuyến mãi</h3><span class="muted text-xs">discounts + usages</span></div><canvas id="c_disc"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-5">
             <div class="card overflow-hidden">
-                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">Đơn gần nhất</h3><a th:href="@{/admin/sales/orders}" class="muted hover:underline">Xem tất cả</a></div>
-                <div class="p-5 overflow-x-auto">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">Đơn gần nhất</h3><a href="#" class="muted hover:underline text-sm">Xem tất cả</a></div></div>
+                <div class="p-4 overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="text-left text-slate-500"><tr><th class="py-2">Mã</th><th class="py-2">Khách</th><th class="py-2">Tổng</th><th class="py-2">TT</th><th class="py-2">Ship</th><th class="py-2">Ngày</th></tr></thead>
+                        <thead class="text-left muted"><tr><th class="py-2">Mã</th><th class="py-2">Khách</th><th class="py-2">Tổng</th><th class="py-2">TT</th><th class="py-2">Giao</th><th class="py-2">Ngày</th></tr></thead>
                         <tbody id="t_orders"></tbody>
                     </table>
                 </div>
             </div>
             <div class="card overflow-hidden">
-                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">SKU tồn thấp</h3><a th:href="@{/admin/inventory}" class="muted hover:underline">Tới Inventory</a></div>
-                <div class="p-5 overflow-x-auto">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">SKU tồn thấp</h3><a href="#" class="muted hover:underline text-sm">Tới kho</a></div></div>
+                <div class="p-4 overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="text-left text-slate-500"><tr><th class="py-2">SKU</th><th class="py-2">Tên</th><th class="py-2">On-hand</th><th class="py-2">Reserved</th></tr></thead>
+                        <thead class="text-left muted"><tr><th class="py-2">SKU</th><th class="py-2">Tên</th><th class="py-2">Có sẵn</th><th class="py-2">Giữ chỗ</th></tr></thead>
                         <tbody id="t_low"></tbody>
                     </table>
                 </div>
             </div>
             <div class="card overflow-hidden">
-                <div class="p-5 border-b border-slate-200 flex items-center justify-between"><h3 class="section-title">PO đang nhận</h3><a th:href="@{/admin/procurement/po}" class="muted hover:underline">Tới Procurement</a></div>
-                <div class="p-5 overflow-x-auto">
+                <div class="p-4 border-b" style="border-color:var(--bd)"><div class="flex items-center justify-between"><h3 class="font-semibold">PO đang nhận</h3><a href="#" class="muted hover:underline text-sm">Tới mua hàng</a></div></div>
+                <div class="p-4 overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="text-left text-slate-500"><tr><th class="py-2">PO</th><th class="py-2">Nhà cung cấp</th><th class="py-2">Trạng thái</th><th class="py-2">Received/Qty</th></tr></thead>
+                        <thead class="text-left muted"><tr><th class="py-2">PO</th><th class="py-2">Nhà cung cấp</th><th class="py-2">Trạng thái</th><th class="py-2">Đã nhận/Tổng</th></tr></thead>
                         <tbody id="t_po"></tbody>
                     </table>
                 </div>
@@ -183,163 +757,236 @@
         </section>
     </div>
 
-    <!-- Inject JSON from server -->
-    <script th:inline="javascript">
-        const DASHBOARD = /*[[${json}]]*/ '{}';
-    </script>
-
     <script>
-        const data = (() => { try { return typeof DASHBOARD === 'string' ? JSON.parse(DASHBOARD||'{}') : (DASHBOARD||{}); } catch(e){ return {}; } })();
+        const $ = id => document.getElementById(id);
+        const money = v => new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(+v||0);
+        const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 
-        // Safe getters
-        const g = (obj, path, def) => {
-            try {
-                return path.split('.').reduce((o,k)=> (o && (k in o)) ? o[k] : undefined, obj) ?? def;
-            } catch { return def; }
+        // Chart defaults
+        Chart.defaults.color = cssVar('--muted');
+        Chart.defaults.borderColor = cssVar('--bd');
+
+        const chartColors = {
+            primary: cssVar('--chart-primary'),
+            danger: cssVar('--chart-danger'),
+            success: cssVar('--chart-success'),
+            warning: cssVar('--chart-warning'),
+            info: cssVar('--chart-info'),
+            vip: cssVar('--chart-vip'),
+            secondary: cssVar('--chart-secondary'),
+            pink: cssVar('--chart-pink')
         };
-        const $ = (id)=>document.getElementById(id);
-        const money = (v)=> new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(Number(v||0));
+        const COLOR_PALETTE = [chartColors.primary, chartColors.danger, chartColors.success, chartColors.warning, chartColors.info, chartColors.vip, chartColors.secondary, chartColors.pink];
 
-        // KPIs
-        const revPaid = g(data,'kpis.revenuePaid',0);
-        const orders = g(data,'kpis.orders',0);
-        const low    = g(data,'kpis.lowStock',0);
-        const usersRoles = g(data,'kpis.usersRoles','0 / 0');
-        const logsToday  = g(data,'kpis.logsToday',0);
-        const discOrders = g(data,'kpis.discountOrders',0);
-        const poOpen     = g(data,'kpis.poOpen',0);
+        function genDailySeed(startISO, months=18){
+            const out = [];
+            const start = new Date(startISO);
+            const end = new Date(start);
+            end.setMonth(end.getMonth()+months);
+            for(let d=new Date(start); d<end; d.setDate(d.getDate()+1)){
+                const m = d.getMonth();
+                const season = (m===10||m===11)?1.25:(m===5||m===6)?0.9:1;
+                const a = Math.max(6, Math.round(10*season + 4*Math.sin(d.getTime()/8.64e7/14) + rand(-2,2)));
+                const v = Math.max(600, Math.round(1200*season + 250*Math.sin(d.getTime()/8.64e7/10) + rand(-120,120)));
+                const c = Math.max(2, Math.round(a*0.35 + rand(-1,1)));
+                out.push({date: toISO(d), articles:a, views:v, comments:c});
+            }
+            return out;
+        }
+        const rand = (min,max)=>Math.random()*(max-min)+min;
+        const toISO = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
 
-        $('k_rev').textContent = money(revPaid);
-        $('k_ord').textContent = orders;
-        $('k_aov').textContent = money(orders? (revPaid/orders) : 0);
-        $('k_low').textContent = low;
-        $('k_users').textContent = usersRoles;
-        $('k_logs').textContent = logsToday;
-        $('k_disc').textContent = discOrders;
-        $('k_po_open').textContent = poOpen;
+        const TS = genDailySeed('2024-01-01', 18);
 
-        // Sparklines
-        const mkSpark = (el, arr)=> new Chart(el, {
-            type:'line',
-            data:{ labels: (arr||[]).map((_,i)=>i+1), datasets:[{ data: arr||[], tension:.35, fill:true }] },
-            options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} }
-        });
+        const DASHBOARD = {
+            category:{ labels:["Công nghệ","Kinh doanh","Sức khỏe","Thể thao","Giải trí","Chính trị","Khoa học"], values:[158,145,98,88,76,70,60] },
+            system:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[35,42,7,16] },
+            userActivity:{ labels:["Đăng nhập","Sửa","Xuất bản","Bình luận","Thích"], values:[120,80,45,200,300] },
+            catalog:{ labels:["Ngành hàng","Sản phẩm","Biến thể","Media"], values:[12,154,423,786] },
+            rbac:{ labels:["Admin","Biên tập","Tác giả","Xem"], values:[12,34,24,58] },
+            activity:{ labels:["Tạo","Sửa","Xóa","Trạng thái"], values:[80,140,20,35] },
+            stock:{ labels:["SKU-A","SKU-B","SKU-C","SKU-D","SKU-E","SKU-F"], onHand:[120,80,95,60,150,70], reserved:[20,10,15,5,30,12] },
+            poStatus:{ labels:["Nháp","Chờ","Đang nhận","Đã hạch toán","Hủy"], values:[4,8,6,3,1] },
+            segments:{ labels:["Mới","Quay lại","VIP","Ngủ đông"], values:[320,510,85,120] },
+            loyalty:{ labels:["Đồng","Bạc","Vàng","Bạch kim"], values:[1200,430,140,35] },
+            discountEffect:{ labels:["SPRING10","FREESHIP","BLACKFRI","MEMBER5"], orders:[120,240,85,160], revenue:[24000000,36500000,17800000,22200000] },
+            recentOrders:[
+                {code:"#10021",customer:"Nguyễn A",total:1250000,paymentStatus:"PAID",shippingStatus:"SHIPPED",createdAt:"2025-10-21 09:14"},
+                {code:"#10022",customer:"Trần B",total:850000,paymentStatus:"PAID",shippingStatus:"PENDING",createdAt:"2025-10-21 10:05"},
+                {code:"#10023",customer:"Lê C",total:2190000,paymentStatus:"PENDING",shippingStatus:"-",createdAt:"2025-10-21 11:44"},
+                {code:"#10024",customer:"Phạm D",total:640000,paymentStatus:"PAID",shippingStatus:"DELIVERED",createdAt:"2025-10-21 12:12"}
+            ],
+            lowSkus:[
+                {sku:"XM-AT-001-M",name:"Áo thun A - M",onHand:5,reserved:3},
+                {sku:"XM-AT-001-L",name:"Áo thun A - L",onHand:4,reserved:2},
+                {sku:"XM-QJ-002-32",name:"Quần jean B - 32",onHand:7,reserved:4},
+                {sku:"XM-SN-003-42",name:"Sneaker C - 42",onHand:3,reserved:1}
+            ],
+            poReceiving:[
+                {code:"PO-2401",supplier:"ABC Supply",status:"RECEIVING",receivedQty:120,totalQty:300},
+                {code:"PO-2402",supplier:"XYZ Corp",status:"RECEIVING",receivedQty:40,totalQty:100},
+                {code:"PO-2403",supplier:"Delta Ltd",status:"AWAITING",receivedQty:0,totalQty:80}
+            ]
+        };
 
-        mkSpark($('sp_rev'), g(data,'sparklines.revenue',[]));
-        mkSpark($('sp_ord'), g(data,'sparklines.orders',[]));
-        mkSpark($('sp_aov'), g(data,'sparklines.aov',[]));
-        mkSpark($('sp_low'), g(data,'sparklines.lowStock',[]));
-        mkSpark($('sp_usr'), g(data,'sparklines.users',[]));
-        mkSpark($('sp_log'), g(data,'sparklines.logs',[]));
-        mkSpark($('sp_dis'), g(data,'sparklines.discountOrders',[]));
-        mkSpark($('sp_po'),  g(data,'sparklines.poOpen',[]));
+        function parseISO(s){ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }
+        function formatDM(d){ const dd=String(d.getUTCDate()).padStart(2,'0'); const mm=String(d.getUTCMonth()+1).padStart(2,'0'); return `${dd}/${mm}`; }
+        function formatMY(d){ const mm=String(d.getUTCMonth()+1).padStart(2,'0'); const yy=String(d.getUTCFullYear()).slice(-2); return `${mm}/${yy}`; }
+        function weekKey(d){
+            const tmp=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));
+            const day=(tmp.getUTCDay()+6)%7; tmp.setUTCDate(tmp.getUTCDate()-day+3);
+            const week1=new Date(Date.UTC(tmp.getUTCFullYear(),0,4));
+            const wk = 1+Math.round(((tmp-week1)/86400000-3+((week1.getUTCDay()+6)%7))/7);
+            return `W${String(wk).padStart(2,'0')}/${String(tmp.getUTCFullYear()).slice(-2)}`;
+        }
 
-        // Helper chart factory
-        const make = (el,type,labels,values,opts)=> new Chart(el,{type,
-            data:{ labels: labels||[], datasets: values }, options: opts||{} });
+        function aggregate(rangeFrom, rangeTo, gran){
+            const from = parseISO(rangeFrom), to = parseISO(rangeTo);
+            const inside = TS.filter(t=>{
+                const d=parseISO(t.date);
+                return d>=from && d<=to;
+            });
 
-        // Sales
-        const revLabels = g(data,'revenueSeries.labels',[]);
-        const revVals   = g(data,'revenueSeries.values',[]);
-        make($('c_rev'),'line', revLabels, [{ label:'Doanh thu', data:revVals, tension:.35, fill:true }],
-            { plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:v=>money(v) } } } });
+            const map = new Map();
+            const add = (k, a, v, c)=> {
+                const o = map.get(k) || {articles:0, views:0, comments:0};
+                o.articles += a; o.views += v; o.comments += c; map.set(k,o);
+            };
 
-        const funnelLabels = g(data,'orderFunnel.labels',[]);
-        const funnelVals   = g(data,'orderFunnel.values',[]);
-        make($('c_funnel'),'bar', funnelLabels, [{ label:'Đơn', data:funnelVals }],
-            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+            for(const t of inside){
+                const d = parseISO(t.date);
+                const key = gran==='D' ? formatDM(d) : gran==='W' ? weekKey(d) : formatMY(d);
+                add(key, t.articles, t.views, t.comments);
+            }
 
-        const topLabels = g(data,'topVariants.labels',[]);
-        const topVals   = g(data,'topVariants.values',[]);
-        make($('c_top'),'bar', topLabels, [{ label:'Qty', data:topVals }],
-            { indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{ beginAtZero:true } } });
+            const labels=[...map.keys()];
+            const sorter = (a,b)=>{
+                const pa=a.split(/[\/W]/).map(Number), pb=b.split(/[\/W]/).map(Number);
+                if(a.startsWith('W')&&b.startsWith('W')) return pa[1]-pb[1] || pa[0]-pb[0];
+                if(a.includes('/') && a.length===5) return +pa[1]- +pb[1] || +pa[0]- +pb[0];
+                return +pa[1]- +pb[1] || +pa[0]- +pb[0];
+            };
+            labels.sort(sorter);
+            const agg = labels.map(k=>map.get(k));
+            return {
+                labels,
+                articles: agg.map(x=>x.articles),
+                viewsK:   agg.map(x=>Math.round(x.views/1000)),
+                comments: agg.map(x=>x.comments),
+                totals: {
+                    articles: agg.reduce((s,x)=>s+x.articles,0),
+                    views:    agg.reduce((s,x)=>s+x.views,0),
+                    comments: agg.reduce((s,x)=>s+x.comments,0)
+                }
+            };
+        }
 
-        // Catalog
-        const catLabels = g(data,'catalog.labels',[]);
-        const catVals   = g(data,'catalog.values',[]);
-        make($('c_catalog'),'bar', catLabels, [{ label:'Count', data:catVals }],
-            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+        const toISODate = d => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        function setRange(preset){
+            const to = new Date(); const from = new Date(to);
+            if(preset==='today'){}
+            else if(preset==='7d'){ from.setDate(to.getDate()-6); }
+            else if(preset==='30d'){ from.setDate(to.getDate()-29); }
+            else { from.setMonth(to.getMonth()-11); }
+            $('from').value = toISODate(from);
+            $('to').value   = toISODate(to);
+        }
+        setRange('12m');
+        document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{ setRange(b.dataset.preset); render(); }));
 
-        // RBAC
-        const rbacLabels = g(data,'rbac.labels',[]);
-        const rbacVals   = g(data,'rbac.values',[]);
-        make($('c_rbac'),'bar', rbacLabels, [{ label:'Số quyền/role', data:rbacVals }],
-            { plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } });
+        let chPerf, chCat, chSys, chUser, chCatalog, chRBAC, chLogs, chStock, chPO, chSeg, chLoy, chDisc;
+        function make(el,type,labels,datasets,opts){ return new Chart(el,{type,data:{labels,datasets},options:opts||{}}); }
 
-        // Activity logs
-        const logLabels = g(data,'activity.labels',[]);
-        const logVals   = g(data,'activity.values',[]);
-        make($('c_logs'),'doughnut', logLabels, [{ data:logVals }],
-            { plugins:{legend:{ position:'bottom' } } });
+        function initStaticCharts(){
+            chCat = make($('c_cat'),'bar', DASHBOARD.category.labels,[{label:'Bài viết',data:DASHBOARD.category.values,backgroundColor:COLOR_PALETTE}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+            chSys = make($('c_sys'),'pie', DASHBOARD.system.labels,[{data:DASHBOARD.system.values,backgroundColor:[chartColors.primary, chartColors.danger, chartColors.secondary, chartColors.success]}],{plugins:{legend:{position:'bottom'}}});
+            chUser= make($('c_user'),'bar', DASHBOARD.userActivity.labels,[{label:'Tác vụ',data:DASHBOARD.userActivity.values,backgroundColor:chartColors.primary}],{scales:{y:{beginAtZero:true}}});
+            chCatalog=make($('c_catalog'),'bar', DASHBOARD.catalog.labels,[{label:'Số lượng',data:DASHBOARD.catalog.values,backgroundColor:chartColors.primary}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+            chRBAC=make($('c_rbac'),'bar', DASHBOARD.rbac.labels,[{label:'Quyền/role',data:DASHBOARD.rbac.values,backgroundColor:chartColors.primary}],{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}});
+            chLogs=make($('c_logs'),'doughnut', DASHBOARD.activity.labels,[{data:DASHBOARD.activity.values,backgroundColor:[chartColors.primary, chartColors.danger, chartColors.secondary, chartColors.success]}],{plugins:{legend:{position:'bottom'}}});
+            chLoy  =make($('c_loy'),'bar', DASHBOARD.loyalty.labels,[{label:'Điểm',data:DASHBOARD.loyalty.values,backgroundColor:chartColors.primary}],{scales:{y:{beginAtZero:true}}});
+            chStock=make($('c_stock'),'bar', DASHBOARD.stock.labels,[{label:'Có sẵn',data:DASHBOARD.stock.onHand,backgroundColor:chartColors.primary},{label:'Giữ chỗ',data:DASHBOARD.stock.reserved,backgroundColor:chartColors.danger}],{scales:{y:{beginAtZero:true}}});
+            chPO   =make($('c_po'),'pie', DASHBOARD.poStatus.labels,[{data:DASHBOARD.poStatus.values,backgroundColor:[chartColors.warning, chartColors.info, chartColors.primary, chartColors.success, chartColors.danger]}],{plugins:{legend:{position:'bottom'}}});
+            chSeg  =make($('c_seg'),'pie', DASHBOARD.segments.labels,[{data:DASHBOARD.segments.values,backgroundColor:[chartColors.info, chartColors.success, chartColors.vip, chartColors.secondary]}],{plugins:{legend:{position:'bottom'}}});
+            chDisc =make($('c_disc'),'bar', DASHBOARD.discountEffect.labels,[{label:'Số đơn',data:DASHBOARD.discountEffect.orders,backgroundColor:chartColors.primary,yAxisID:'y'},{label:'Doanh thu',data:DASHBOARD.discountEffect.revenue,backgroundColor:chartColors.danger,yAxisID:'y1'}],{scales:{y:{beginAtZero:true},y1:{beginAtZero:true,position:'right',ticks:{callback:v=>money(v)},grid:{drawOnChartArea:false}}},plugins:{legend:{position:'top'}}});
+        }
 
-        // Inventory
-        const stkLabels = g(data,'stock.labels',[]);
-        const onVals    = g(data,'stock.onHand',[]);
-        const rsVals    = g(data,'stock.reserved',[]);
-        make($('c_stock'),'bar', stkLabels, [
-            { label:'On-hand', data:onVals },
-            { label:'Reserved', data:rsVals }
-        ], { scales:{ y:{ beginAtZero:true } } });
+        function render(){
+            const from = $('from').value, to = $('to').value, gran = $('gran').value;
+            const agg = aggregate(from,to,gran);
 
-        // PO status
-        const poLabels = g(data,'poStatus.labels',[]);
-        const poVals   = g(data,'poStatus.values',[]);
-        make($('c_po'),'pie', poLabels, [{ data:poVals }],
-            { plugins:{ legend:{ position:'bottom' } } });
+            const totalArticles = agg.totals.articles;
+            const totalViews = agg.totals.views;
+            const totalComments = agg.totals.comments;
+            const days = Math.max(1, Math.round((parseISO(to)-parseISO(from))/86400000)+1);
+            const prevFrom = new Date(parseISO(from)); prevFrom.setDate(prevFrom.getDate()-days);
+            const prevTo = new Date(parseISO(from)); prevTo.setDate(prevTo.getDate()-1);
+            const prev = aggregate(toISO(prevFrom), toISO(prevTo), gran);
 
-        // Customers & Loyalty & Discounts
-        const segLabels = g(data,'segments.labels',[]);
-        const segVals   = g(data,'segments.values',[]);
-        make($('c_seg'),'pie', segLabels, [{ data:segVals }],
-            { plugins:{ legend:{ position:'bottom' } } });
+            const pct = (cur,old)=> {
+                if(!old || old===0) return 0;
+                return ((cur-old)/old)*100;
+            };
 
-        const loyLabels = g(data,'loyalty.labels',[]);
-        const loyVals   = g(data,'loyalty.values',[]);
-        make($('c_loy'),'bar', loyLabels, [{ label:'Points', data:loyVals }],
-            { scales:{ y:{ beginAtZero:true } } });
+            const dArticles = pct(totalArticles, prev.totals.articles);
+            const dViews = pct(totalViews, prev.totals.views);
+            const dComments = pct(totalComments, prev.totals.comments);
 
-        const disLabels = g(data,'discountEffect.labels',[]);
-        const disOrder  = g(data,'discountEffect.orders',[]);
-        const disRev    = g(data,'discountEffect.revenue',[]);
-        make($('c_disc'),'bar', disLabels, [
-            { label:'Số đơn', data:disOrder },
-            { label:'Doanh thu', data:disRev, yAxisID:'y1' }
-        ], { scales:{ y:{ beginAtZero:true }, y1:{ beginAtZero:true, position:'right', ticks:{ callback:v=>money(v) } } } });
+            $('k_articles').textContent = totalArticles.toLocaleString('vi-VN');
+            $('k_views').textContent    = totalViews.toLocaleString('vi-VN');
+            $('k_comments').textContent = totalComments.toLocaleString('vi-VN');
+            $('k_authors').textContent  = 24;
+            $('k_media').textContent    = 3456;
 
-        // Tables
-        const recent = g(data,'recentOrders',[]);
-        $('t_orders').innerHTML = (recent||[]).map(r=>`
-    <tr class="border-t border-slate-200">
-      <td class="py-2 font-medium">${r.code??''}</td>
-      <td class="py-2">${r.customer??''}</td>
-      <td class="py-2">${money(r.total)}</td>
-      <td class="py-2"><span class="seg">${r.paymentStatus??''}</span></td>
-      <td class="py-2"><span class="seg">${r.shippingStatus??''}</span></td>
-      <td class="py-2 text-slate-500">${r.createdAt??''}</td>
-    </tr>
-  `).join('');
+            const setDelta = (el,v)=>{const n=Number(v||0); el.textContent=(n>=0?'+':'')+n.toFixed(1)+'%'; el.className='chip '+(n>0?'up':n<0?'down':'warn');};
+            setDelta($('t_articles'), dArticles);
+            setDelta($('t_views'), dViews);
+            setDelta($('t_comments'), dComments);
+            setDelta($('t_authors'), -2.1);
+            setDelta($('t_media'), 15.7);
 
-        const lows = g(data,'lowSkus',[]);
-        $('t_low').innerHTML = (lows||[]).map(r=>`
-    <tr class="border-t border-slate-200">
-      <td class="py-2 font-mono">${r.sku??''}</td>
-      <td class="py-2">${r.name??''}</td>
-      <td class="py-2">${r.onHand??0}</td>
-      <td class="py-2">${r.reserved??0}</td>
-    </tr>
-  `).join('');
+            if(!chPerf){
+                chPerf = make($('c_perf'),'line', agg.labels, [
+                    {label:'Bài viết xuất bản', data:agg.articles, tension:.35, fill:true, backgroundColor:'rgba(0,123,255,.1)', borderColor:chartColors.primary, pointBackgroundColor:chartColors.primary},
+                    {label:'Lượt xem (nghìn)', data:agg.viewsK, tension:.35, fill:true, backgroundColor:'rgba(40,167,69,.1)', borderColor:chartColors.success, pointBackgroundColor:chartColors.success}
+                ], {plugins:{legend:{position:'top'}}});
+            }else{
+                chPerf.data.labels = agg.labels;
+                chPerf.data.datasets[0].data = agg.articles;
+                chPerf.data.datasets[1].data = agg.viewsK;
+                chPerf.update();
+            }
 
-        const receiving = g(data,'poReceiving',[]);
-        $('t_po').innerHTML = (receiving||[]).map(r=>`
-    <tr class="border-t border-slate-200">
-      <td class="py-2 font-mono">${r.code??''}</td>
-      <td class="py-2">${r.supplier??''}</td>
-      <td class="py-2"><span class="seg">${r.status??''}</span></td>
-      <td class="py-2">${(r.receivedQty??0) + '/' + (r.totalQty??0)}</td>
-    </tr>
-  `).join('');
+            $('t_orders').innerHTML = DASHBOARD.recentOrders.map(r=>`
+        <tr class="border-t" style="border-color:var(--bd)">
+          <td class="py-2 font-medium">${r.code}</td>
+          <td class="py-2">${r.customer}</td>
+          <td class="py-2">${money(r.total)}</td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bd); color:var(--text)">${r.paymentStatus}</span></td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bd); color:var(--text)">${r.shippingStatus}</span></td>
+          <td class="py-2 muted">${r.createdAt}</td>
+        </tr>`).join('');
+            $('t_low').innerHTML = DASHBOARD.lowSkus.map(r=>`
+        <tr class="border-t" style="border-color:var(--bd)">
+          <td class="py-2 font-mono">${r.sku}</td>
+          <td class="py-2">${r.name}</td>
+          <td class="py-2">${r.onHand}</td>
+          <td class="py-2">${r.reserved}</td>
+        </tr>`).join('');
+            $('t_po').innerHTML = DASHBOARD.poReceiving.map(r=>`
+        <tr class="border-t" style="border-color:var(--bd)">
+          <td class="py-2 font-mono">${r.code}</td>
+          <td class="py-2">${r.supplier}</td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bd); color:var(--text)">${r.status}</span></td>
+          <td class="py-2">${r.receivedQty}/${r.totalQty}</td>
+        </tr>`).join('');
+        }
+
+        $('apply').addEventListener('click', render);
+
+        initStaticCharts();
+        render();
     </script>
-</section> <!-- ✅ Đóng section đúng chỗ -->
-
+</section>
 </body>
 </html>

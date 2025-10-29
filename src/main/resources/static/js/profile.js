@@ -1,111 +1,272 @@
-function csrf() {
-    const m = document.cookie.split('; ').find(x => x.startsWith('XSRF-TOKEN='));
-    return m ? decodeURIComponent(m.split('=')[1]) : null;
-}
+// /js/profile.js
+// @ts-nocheck
 
+/* ---------- Helpers ---------- */
+
+function csrf() {
+  const m = document.cookie.split('; ').find(x => x.startsWith('XSRF-TOKEN='));
+  return m ? decodeURIComponent(m.split('=')[1]) : null;
+}
 
 function readInit() {
-    const el = document.getElementById('initProfile');
-    const d = (el?.dataset.dob || '').trim();
-    const gd = (el?.dataset.gender || '').trim();
-    const h = (el?.dataset.height || '').trim();
-    const w = (el?.dataset.weight || '').trim();
-    const p = (el?.dataset.phone || '').trim();
-    return {
-        dob: d || null, gender: gd || null,
-        height: h ? parseInt(h, 10) : null,
-        weight: w ? parseInt(w, 10) : null,
-        phone: p || null
-    };
-}
-function openModal(id){ const m=document.getElementById(id); m.style.display='flex'; m.setAttribute('aria-hidden','false'); }
-function closeModal(id){ const m=document.getElementById(id); m.style.display='none'; m.setAttribute('aria-hidden','true'); }
-
-function submitChangePassword(){
-    const oldP = document.getElementById('p_old').value.trim();
-    const newP = document.getElementById('p_new').value.trim();
-    const newP2= document.getElementById('p_new2').value.trim();
-    const err = document.getElementById('p_err');
-    if(!oldP || !newP || !newP2){ err.textContent='Vui lòng nhập đầy đủ các trường.'; err.style.display='block'; return; }
-    if(newP !== newP2){ err.textContent='Mật khẩu nhập lại không khớp.'; err.style.display='block'; return; }
-    err.style.display='none';
-    // TODO: fetch('/auth/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oldP,newP})})
+  const el = document.getElementById('initProfile');
+  if (!el) {
+    return { dob: null, gender: null, height: null, weight: null, phone: null, authm: 'local', name: '' };
+  }
+  const toNumber = (value) => {
+    if (value === undefined || value === null || value.trim() === '') return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  };
+  return {
+    dob: (el.dataset.dob || '').trim() || null,
+    gender: (el.dataset.gender || '').trim() || null,
+    height: toNumber(el.dataset.height || ''),
+    weight: toNumber(el.dataset.weight || ''),
+    phone: (el.dataset.phone || '').trim() || null,
+    authm: (el.dataset.authm || 'local').toLowerCase(),
+    name: el.dataset.name || ''
+  };
 }
 
-// Submit POST /logout (Spring Security)
-document.getElementById('logoutBtn')?.addEventListener('click', function(){
-    document.getElementById('logoutForm').submit();
-});
+/* ---------- Modal controller ---------- */
 
-function openEditModal() {
-    const init = readInit();
-    // DOB
-    if (init.dob) {
-        const [y, m, d] = init.dob.split('-').map(n => parseInt(n, 10));
-        document.getElementById('m_y').value = y;
-        document.getElementById('m_m').value = m;
-        document.getElementById('m_d').value = d;
-    } else {
-        document.getElementById('m_y').value = '';
-        document.getElementById('m_m').value = '';
-        document.getElementById('m_d').value = '';
-    }
-    // Gender
-    document.querySelectorAll('input[name="m_gender"]').forEach(x => x.checked = false);
-    if (init.gender) {
-        const r = document.querySelector(`input[name="m_gender"][value="${init.gender}"]`);
-        if (r) r.checked = true;
-    }
-    // Phone
-    document.getElementById('m_phone').value = init.phone || '';
-    // H/W
-    const h = document.getElementById('m_h');
-    const w = document.getElementById('m_w');
-    h.value = (init.height ?? 160);
-    w.value = (init.weight ?? 50);
-    document.getElementById('m_h_out').textContent = h.value;
-    document.getElementById('m_w_out').textContent = w.value;
-    h.oninput = () => document.getElementById('m_h_out').textContent = h.value;
-    w.oninput = () => document.getElementById('m_w_out').textContent = w.value;
-
-    document.getElementById('editModal').style.display = 'flex';
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-lock');
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-lock');
 }
 
-async function submitEdit() {
-    const err = document.getElementById('m_err');
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+/* ---------- Profile modal ---------- */
+
+window.openEditModal = function () {
+  const init = readInit();
+
+  const nameInput = document.getElementById('m_fullname');
+  if (nameInput) nameInput.value = init.name || '';
+
+  const dobInput = document.getElementById('m_dob');
+  if (dobInput) dobInput.value = init.dob || '';
+
+  const genderSelect = document.getElementById('m_gender');
+  if (genderSelect) genderSelect.value = init.gender || '';
+
+  const phoneInput = document.getElementById('m_phone');
+  if (phoneInput) phoneInput.value = init.phone || '';
+
+  const heightInput = document.getElementById('m_height');
+  if (heightInput) heightInput.value = init.height ?? '';
+
+  const weightInput = document.getElementById('m_weight');
+  if (weightInput) weightInput.value = init.weight ?? '';
+
+  const err = document.getElementById('m_err');
+  if (err) {
     err.style.display = 'none';
     err.textContent = '';
+  }
 
-    const d = document.getElementById('m_d').value;
-    const m = document.getElementById('m_m').value;
-    const y = document.getElementById('m_y').value;
-    const dob = (d && m && y) ? `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
-    const genderRadio = document.querySelector('input[name="m_gender"]:checked');
+  openModal('modal-info');
+};
 
-    const payload = {
-        phone: document.getElementById('m_phone').value || null,
-        gender: genderRadio ? genderRadio.value : null,
-        dob: dob,
-        heightCm: Number(document.getElementById('m_h').value),
-        weightKg: Number(document.getElementById('m_w').value)
-    };
+window.submitEdit = async function () {
+  const err = document.getElementById('m_err');
+  if (err) {
+    err.style.display = 'none';
+    err.textContent = '';
+  }
 
-    try {
-        const res = await fetch('/api/profile/complete', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrf() || ''},
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-            throw new Error(await res.text());
-        }
-        location.reload();
-    } catch (e) {
-        err.textContent = e.message || 'Cập nhật thất bại';
-        err.style.display = 'block';
+  const phoneRaw = document.getElementById('m_phone')?.value?.trim() || '';
+  const genderVal = document.getElementById('m_gender')?.value?.trim() || '';
+  const dobVal = document.getElementById('m_dob')?.value?.trim() || '';
+
+  const heightRaw = document.getElementById('m_height')?.value?.trim() || '';
+  const weightRaw = document.getElementById('m_weight')?.value?.trim() || '';
+
+  const toNullableNumber = (value) => {
+    if (!value) return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  };
+
+  const payload = {
+    phone: phoneRaw || null,
+    gender: genderVal || null,
+    dob: dobVal || null,
+    heightCm: toNullableNumber(heightRaw),
+    weightKg: toNullableNumber(weightRaw)
+  };
+
+  try {
+    const res = await fetch('/api/profile/complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': csrf() || ''
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg || 'Cập nhật thất bại');
     }
-}
+    location.reload();
+  } catch (e) {
+    if (err) {
+      err.textContent = e.message || 'Cập nhật thất bại';
+      err.style.display = 'block';
+    }
+  }
+};
+
+/* ---------- Password modal ---------- */
+
+window.openPasswordModal = function () {
+  const init = readInit();
+
+  const oldGroup = document.getElementById('old-password-group');
+  if (oldGroup) {
+    oldGroup.style.display = init.authm === 'local' ? '' : 'none';
+  }
+
+  const clear = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  };
+  clear('p_old');
+  clear('p_new');
+  clear('p_new2');
+
+  const err = document.getElementById('p_err');
+  if (err) {
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+
+  openModal('modal-password');
+};
+
+window.submitChangePassword = async function () {
+  const init = readInit();
+  const authm = init.authm || 'local';
+
+  const oldPInput = document.getElementById('p_old');
+  const oldP = oldPInput ? oldPInput.value.trim() : '';
+  const newP = document.getElementById('p_new')?.value?.trim() || '';
+  const newP2 = document.getElementById('p_new2')?.value?.trim() || '';
+  const err = document.getElementById('p_err');
+
+  if (err) {
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+
+  if (!newP || !newP2) {
+    if (err) {
+      err.textContent = 'Vui lòng nhập đầy đủ thông tin.';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  if (newP !== newP2) {
+    if (err) {
+      err.textContent = 'Mật khẩu nhập lại không khớp.';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  if (authm === 'local' && !oldP) {
+    if (err) {
+      err.textContent = 'Vui lòng nhập mật khẩu hiện tại.';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  const payload = authm === 'local' ? { oldP, newP } : { newP };
+
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      if (err) {
+        if (msg.includes('old password incorrect')) {
+          err.textContent = 'Mật khẩu hiện tại không đúng.';
+        } else if (msg.includes('weak password')) {
+          err.textContent = 'Mật khẩu mới chưa đủ mạnh.';
+        } else if (msg.includes('oldP required')) {
+          err.textContent = 'Vui lòng nhập mật khẩu hiện tại.';
+        } else {
+          err.textContent = msg || 'Cập nhật thất bại';
+        }
+        err.style.display = 'block';
+      }
+      return;
+    }
+    location.reload();
+  } catch (e) {
+    if (err) {
+      err.textContent = e.message || 'Cập nhật thất bại';
+      err.style.display = 'block';
+    }
+  }
+};
+
+/* ---------- Global events ---------- */
+
+document.addEventListener('DOMContentLoaded', function () {
+  closeModal('modal-info');
+  closeModal('modal-password');
+
+  document.addEventListener('click', function (e) {
+    if (e.target.matches('[data-close], .modal__overlay')) {
+      const modal = e.target.closest('.modal');
+      if (modal) {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-lock');
+      }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal.is-open').forEach(modal => {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      });
+      document.body.classList.remove('modal-lock');
+    }
+  });
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function () {
+      const form = document.getElementById('logoutForm');
+      if (form) form.submit();
+    });
+  }
+});
+

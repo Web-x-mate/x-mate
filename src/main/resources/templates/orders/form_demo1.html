@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <style>
+        :root {
+            --bg:#f5f7fb; --surface:#fff; --text:#0f172a; --muted:#475569; --bd:#e2e8f0;
+            --primary:#0ea5e9; --primary-hover:#0284c7; --primary-ring:#bae6fd;
+            --danger:#ef4444;
+        }
+
+        body { font-family: "Inter", system-ui, sans-serif; font-weight: 400; color: var(--text); }
+
+        .wrap { max-width:1200px; margin:0 auto; }
+        .card { background:var(--surface); border:1px solid var(--bd); border-radius:14px; box-shadow:0 1px 2px rgba(2,6,23,.05); }
+
+        /* Tiêu đề */
+        .section-title { display:flex; align-items:center; justify-content:center; margin:24px 12px 10px; }
+        .section-title h1 {
+            font-size:32px;
+            font-weight:800;
+            margin:0;
+            color:var(--text);
+        }
+
+        /* Inputs */
+        .field {
+            width:100%;
+            padding:.6rem .8rem;
+            border:1px solid var(--bd);
+            border-radius:12px;
+            background:#fff;
+            font-size:.95rem;
+            font-weight:400; /* không in đậm */
+        }
+
+        .label {
+            display:block;
+            font-size:.85rem;
+            color:var(--muted);
+            margin-bottom:.35rem;
+            font-weight:400; /* không in đậm */
+        }
+
+        /* Select */
+        .select-wrap { position:relative; width:100%; }
+        .field.select-lg {
+            appearance:none; -webkit-appearance:none; -moz-appearance:none;
+            padding:.75rem 2.2rem .75rem 1rem;
+            border-radius:12px;
+            border:1px solid var(--bd);
+            background:#fff;
+            font-size:.95rem;
+            font-weight:400;
+            color:var(--text);
+            transition:.18s ease;
+        }
+        .field.select-lg:hover { box-shadow:0 1px 2px rgba(2,6,23,.05); }
+        .field.select-lg:focus { outline:3px solid var(--primary-ring); outline-offset:2px; border-color:var(--primary); }
+        .select-wrap::after {
+            content:""; position:absolute; right:12px; top:50%;
+            width:10px; height:10px; transform:translateY(-50%) rotate(45deg);
+            border-right:2px solid #64748b; border-bottom:2px solid #64748b;
+            pointer-events:none; opacity:.85;
+        }
+
+        /* Buttons */
+        .btn {
+            display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+            font-weight:600; line-height:1.1;
+            border:1px solid transparent;
+            white-space:nowrap; cursor:pointer; transition:.18s ease;
+        }
+        .btn-lg { font-size:1rem; padding:.75rem 1.1rem; border-radius:12px; min-width:130px; box-shadow:0 1px 2px rgba(2,6,23,.05); }
+        .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff !important; font-weight:700; }
+        .btn-primary:hover { background:var(--primary-hover); }
+        .btn-outline { background:#fff; color:var(--text); border:1px solid var(--bd); }
+        .btn-outline:hover { filter:brightness(.98); }
+        .btn-danger { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+        .btn-outline-primary { border:1px solid var(--primary); color:var(--primary); background:#fff; }
+        .btn-outline-primary:hover { background:#eff6ff; }
+
+        /* Layout helpers */
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+        .stack { display:grid; gap:12px; }
+        @media (max-width:992px){ .grid-2,.grid-3{grid-template-columns:1fr;} }
+
+        /* Table */
+        .table { width:100%; border-collapse:separate; border-spacing:0; }
+        .table thead th {
+            font-size:.83rem; text-transform:uppercase; letter-spacing:.02em;
+            color:var(--muted); padding:.6rem .75rem;
+            border-bottom:1px solid var(--bd); background:#fafafa;
+            font-weight:500;
+        }
+        .table tbody td {
+            padding:.6rem .6rem;
+            border-bottom:1px solid var(--bd);
+            vertical-align:middle;
+            font-weight:400;
+        }
+        .table tbody tr:hover { background:#f8fafc; }
+        .cell-actions { display:flex; gap:8px; justify-content:center; }
+
+        /* Hàng nút dưới cùng */
+        .form-actions {
+            display:flex;
+            justify-content:flex-end; /* căn phải */
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top:12px;
+        }
+    </style>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="wrap">
+        <div class="section-title">
+            <h1 th:text="${form.id != null} ? 'Sửa đơn hàng' : 'Tạo đơn hàng'">Tạo đơn hàng</h1>
+        </div>
+
+        <div class="card" style="margin:12px;padding:16px">
+            <form th:action="${form.id != null} ? @{'/admin/sales/orders/' + ${form.id} + '/edit'} : @{/admin/sales/orders/new}"
+                  method="post" class="stack">
+
+                <!-- Hàng 1 -->
+                <div class="grid-2">
+                    <div>
+                        <label class="label">Khách hàng</label>
+                        <div class="select-wrap">
+                            <select class="field select-lg" name="customerId" required>
+                                <option value="" disabled th:selected="${form.customerId == null}">Chọn khách hàng</option>
+                                <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.fullname}" th:selected="${form.customerId != null and form.customerId == c.id}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label">Mã giảm giá</label>
+                        <input class="field" name="code" th:value="${form.code}" placeholder="Để trống sẽ tự sinh">
+                    </div>
+                </div>
+
+                <!-- Hàng 2 -->
+                <div class="grid-3">
+                    <div>
+                        <label class="label">Trạng thái</label>
+                        <div class="select-wrap">
+                            <select class="field select-lg" name="status">
+                                <option value="" disabled th:selected="${form.status == null}">Chọn trạng thái</option>
+                                <option th:each="s: ${orderStatuses}" th:value="${s}" th:text="${#strings.replace(s.name(),'_',' ')}" th:selected="${form.status == s}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label">Thanh toán</label>
+                        <div class="select-wrap">
+                            <select class="field select-lg" name="paymentStatus">
+                                <option value="" disabled th:selected="${form.paymentStatus == null}">Chọn thanh toán</option>
+                                <option th:each="s: ${paymentStatuses}" th:value="${s}" th:text="${#strings.replace(s.name(),'_',' ')}" th:selected="${form.paymentStatus == s}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label">Phương thức giao hàng</label>
+                        <div class="select-wrap">
+                            <select class="field select-lg" name="shippingStatus">
+                                <option value="" disabled th:selected="${form.shippingStatus == null}">Chọn vận chuyển</option>
+                                <option th:each="s: ${shippingStatuses}" th:value="${s}" th:text="${#strings.replace(s.name(),'_',' ')}" th:selected="${form.shippingStatus == s}"></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Địa chỉ -->
+                <div>
+                    <label class="label">Địa chỉ</label>
+                    <input class="field" name="shippingAddress" th:value="${form.shippingAddress}" placeholder="Địa chỉ giao hàng">
+                </div>
+
+                <!-- Giảm giá / Phí ship -->
+                <div class="grid-2">
+                    <div>
+                        <label class="label">Giảm giá</label>
+                        <input class="field" type="number" step="0.01" name="discountAmount" th:value="${form.discountAmount}">
+                    </div>
+                    <div>
+                        <label class="label">Phí giao hàng</label>
+                        <input class="field" type="number" step="0.01" name="shippingFee" th:value="${form.shippingFee}">
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div class="card" style="padding:12px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px">
+                        <h3 style="margin:0;font-size:18px;font-weight:600">Chi tiết sản phẩm</h3>
+                        <button type="button" class="btn btn-outline-primary btn-lg" onclick="addRow()">Thêm sản phẩm</button>
+                    </div>
+                    <div style="margin-top:8px;overflow:auto">
+                        <table class="table align-middle" id="itemsTable">
+                            <thead>
+                            <tr><th>Mã hàng</th><th>Giá cả</th><th>Số lượng</th><th style="width:80px;text-align:center"> </th></tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${form.variantIds == null or #lists.isEmpty(form.variantIds)}">
+                                <td><input class="field" name="variantIds" placeholder="VD: 1234"></td>
+                                <td><input class="field" type="number" step="0.01" name="prices" placeholder="0.00"></td>
+                                <td><input class="field" type="number" name="qtys" value="1" min="1"></td>
+                                <td class="cell-actions">
+                                    <button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${form.variantIds != null and !#lists.isEmpty(form.variantIds)}"
+                                th:each="i : ${#numbers.sequence(0, form.variantIds.size() - 1)}">
+                                <td><input class="field" name="variantIds" th:value="${form.variantIds[i]}"></td>
+                                <td><input class="field" type="number" step="0.01" name="prices" th:value="${form.prices[i]}"></td>
+                                <td><input class="field" type="number" name="qtys" th:value="${form.qtys[i]}" min="1"></td>
+                                <td class="cell-actions">
+                                    <button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-lg" type="submit" th:text="${form.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
+                    <a th:href="@{/admin/sales/orders}" class="btn btn-outline btn-lg">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addRow() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input class="field" name="variantIds" placeholder="VD: 1234"></td>
+                <td><input class="field" type="number" step="0.01" name="prices" placeholder="0.00"></td>
+                <td><input class="field" type="number" name="qtys" value="1" min="1"></td>
+                <td class="cell-actions"><button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button></td>`;
+            tbody.appendChild(tr);
+        }
+        function removeRow(btn) { btn.closest('tr').remove(); }
+    </script>
+</section>
+</body>
+</html>

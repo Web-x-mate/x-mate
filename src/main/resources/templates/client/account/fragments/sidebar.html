@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="sidebar(active)">
+    <aside class="account-sidebar">
+        <ul class="account-menu">
+            <li class="account-menu__item"
+                th:classappend="${active == 'profile'} ? ' is-active'">
+                <a th:href="@{/account/profile}">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/profile.png}" alt="Thông tin tài khoản">
+                    </span>
+                    <span>Thông tin tài khoản</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            </li>
+
+            <li class="account-menu__item"
+                th:classappend="${active == 'orders'} ? ' is-active'">
+                <a th:href="@{/account/orders}">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/orders.avif}" alt="Lịch sử đơn hàng">
+                    </span>
+                    <span>Lịch sử đơn hàng</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            </li>
+
+            <li class="account-menu__item"
+                th:classappend="${active == 'vouchers'} ? ' is-active'">
+                <a th:href="@{/account/vouchers}">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/voucher.png}" alt="Ví Voucher">
+                    </span>
+                    <span>Ví Voucher</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            </li>
+
+            <li class="account-menu__item"
+                th:classappend="${active == 'addresses'} ? ' is-active'">
+                <a th:href="@{/account/addresses}">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/address.png}" alt="Sổ địa chỉ">
+                    </span>
+                    <span>Sổ địa chỉ</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            </li>
+
+            <li class="account-menu__item"
+                th:classappend="${active == 'reviews'} ? ' is-active'">
+                <a th:href="@{/account/reviews}">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/feedback.webp}" alt="Đánh giá & phản hồi">
+                    </span>
+                    <span>Đánh giá & phản hồi</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            </li>
+
+            <li class="account-menu__item">
+                <button id="logoutBtn" type="button">
+                    <span class="account-menu__icon">
+                        <img th:src="@{/images/logout.webp}" alt="Đăng xuất">
+                    </span>
+                    <span>Đăng xuất</span>
+                    <span aria-hidden="true">→</span>
+                </button>
+            </li>
+        </ul>
+
+        <form id="logoutForm" th:action="@{/auth/logout}" method="post" style="display:none">
+            <input th:if="${_csrf != null}"
+                   type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+        </form>
+    </aside>
+</th:block>
+</body>
+</html>
+

@@ -1,77 +1,160 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block layout:fragment="headExtras">
+        <style>
+            :root{
+                --bg:#0f172a;--surface:#1e293b;--text:#f8fafc;--muted:#94a3b8;--bd:#334155;--ring:#475569;--highlight:#38bdf8;
+            }
+            .topbar{
+                display:flex;align-items:center;padding:1rem 1.5rem;background:var(--surface);color:var(--text);
+                border-bottom:1px solid var(--bd);box-shadow:0 2px 4px rgba(0,0,0,.5);height:64px;flex-shrink:0;width:100%;
+            }
+            .topbar .logo{height:24px;filter:brightness(1.5)}
+            .topbar .brand{font-size:1.25rem;font-weight:700;margin-left:.75rem}
+            .topbar .topbar-right{margin-left:auto}
+            .topbar .topbar-right a{color:var(--highlight);text-decoration:none;padding:.5rem;border-radius:.5rem}
+            .topbar .topbar-right a:hover{background:var(--ring)}
+            .sidebar{background:var(--surface);color:var(--text);height:100%;overflow-y:auto;width:260px;flex-shrink:0;border-right:1px solid var(--bd)}
+            .sidebar .mgroup{padding:.5rem 1rem;border-bottom:1px solid var(--bd)}
+            .sidebar summary{font-size:1rem;font-weight:700;padding:.5rem 0;cursor:pointer;color:var(--muted);user-select:none}
+            .sidebar summary:hover{color:var(--text)}
+            .sidebar details[open]>summary{color:var(--text)}
+            .sidebar a{display:block;padding:.4rem 1rem;margin-top:.25rem;text-decoration:none;color:var(--muted);border-radius:.5rem;transition:all .2s}
+            .sidebar a:hover{background:var(--ring);color:var(--text)}
+            .sidebar a.active{background:var(--highlight);color:var(--bg)!important;font-weight:600}
+            .footer{padding:1rem;text-align:center;color:var(--muted);background:var(--surface);border-top:1px solid var(--bd);flex-shrink:0;width:100%}
+        </style>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const path = window.location.pathname;
+                const links = document.querySelectorAll('.sidebar a');
+                links.forEach(link => {
+                    const href = link.getAttribute('href') || link.getAttribute('th:href');
+                    if (!href) return;
+                    if (path.startsWith(href)) {
+                        link.classList.add('active');
+                        const details = link.closest('details');
+                        if (details) {
+                            details.setAttribute('open','');
+                            const sum = details.querySelector('summary');
+                            if (sum) sum.style.color = 'var(--highlight)';
+                        }
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</head>
+
 <body>
-  <th:block layout:fragment="headExtras"></th:block>
+<th:block layout:fragment="headExtras"></th:block>
 
-  <th:block layout:fragment="header">
+<!-- HEADER / TOPBAR -->
+<th:block layout:fragment="header">
     <div class="topbar">
-      <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
-      <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
-      <div class="topbar-right">
-        <a th:href="@{/admin/settings/profile}">Profile</a>
-      </div>
+        <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
+        <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
+        <div class="topbar-right">
+            <a th:href="@{/settings/profile}">Profile</a>
+            <form th:action="@{/auth/logout}" method="post" style="display:inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
     </div>
-  </th:block>
+</th:block>
 
-  <th:block layout:fragment="sidebar">
-      <nav class="sidebar">
-          <details class="mgroup" data-key="m_dashboard" open>
-              <summary>Dashboard</summary>
-              <a th:href="@{/admin}">Tổng quan</a>
+<!-- SIDEBAR -->
+<th:block layout:fragment="sidebar">
+    <nav class="sidebar">
 
-          </details>
+        <!-- Dashboard (luôn hiển thị, không sec:authorize) -->
+        <details class="mgroup" data-key="m_dashboard" open>
+            <summary>Dashboard</summary>
+            <a th:href="@{/admin}">Tổng quan</a>
+        </details>
 
-          <details class="mgroup" data-key="m_sales">
-              <summary>Sales</summary>
-              <a th:href="@{/admin/sales/orders}">Orders</a>
-              <a th:href="@{/admin/discounts}">Discounts</a>
-          </details>
+        <!-- Sales -->
+        <details class="mgroup" data-key="m_sales"
+                 sec:authorize="hasAnyAuthority('ORDER_VIEW','DISCOUNT_VIEW','ROLE_ADMIN')">
+            <summary>Sales</summary>
+            <a th:href="@{/admin/sales/orders}"
+               sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">Orders</a>
+            <a th:href="@{/admin/discounts}"
+               sec:authorize="hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">Discounts</a>
+        </details>
 
-          <details class="mgroup" data-key="m_catalog">
-              <summary>Catalog</summary>
-              <a th:href="@{/admin/catalog/categories}">Categories</a>
-              <a th:href="@{/admin/catalog/products}">Products</a>
+        <!-- Catalog -->
+        <details class="mgroup" data-key="m_catalog"
+                 sec:authorize="hasAnyAuthority('CATEGORY_VIEW','PRODUCT_VIEW','ROLE_ADMIN')">
+            <summary>Catalog</summary>
+            <a th:href="@{/admin/catalog/categories}"
+               sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">Categories</a>
+            <a th:href="@{/admin/catalog/products}"
+               sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">Products</a>
+        </details>
 
-          </details>
+        <!-- Inventory -->
+        <details class="mgroup" data-key="m_inventory"
+                 sec:authorize="hasAnyAuthority('INVENTORY_VIEW','ROLE_ADMIN')">
+            <summary>Inventory</summary>
+            <a th:href="@{/admin/inventory}"
+               sec:authorize="hasAnyAuthority('INVENTORY_VIEW','ROLE_ADMIN')">Stock</a>
+        </details>
 
-          <details class="mgroup" data-key="m_inventory">
-              <summary>Inventory</summary>
-              <a th:href="@{/admin/inventory}">Stock</a>
-          </details>
+        <!-- Customers -->
+        <details class="mgroup" data-key="m_customers"
+                 sec:authorize="hasAnyAuthority('CUSTOMER_VIEW','MEMBERSHIP_TIER_VIEW','ROLE_ADMIN')">
+            <summary>Customers</summary>
+            <a th:href="@{/admin/customers}"
+               sec:authorize="hasAnyAuthority('CUSTOMER_VIEW','ROLE_ADMIN')">Customers</a>
+            <a th:href="@{/admin/membership-tiers}"
+               sec:authorize="hasAnyAuthority('MEMBERSHIP_TIER_VIEW','ROLE_ADMIN')">Membership Tier</a>
+        </details>
 
-          <details class="mgroup" data-key="m_customers">
-              <summary>Customers</summary>
-              <a th:href="@{/admin/customers}">Customers</a>
-              <a th:href="@{/admin/customers/segments}">Segments</a>
-          </details>
+        <!-- Procurement -->
+        <details class="mgroup" data-key="m_procurement"
+                 sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','PO_VIEW','ROLE_ADMIN')">
+            <summary>Procurement</summary>
+            <a th:href="@{/admin/procurement/suppliers}"
+               sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','ROLE_ADMIN')">Suppliers</a>
+            <a th:href="@{/admin/procurement/po}"
+               sec:authorize="hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">Purchase Orders</a>
+        </details>
 
-          <details class="mgroup" data-key="m_procurement">
-              <summary>Procurement</summary>
-              <a th:href="@{/admin/procurement/suppliers}">Suppliers</a>
-              <a th:href="@{/admin/procurement/po}">Purchase Orders</a>
-              <a th:href="@{/admin/procurement/batches(variantId=1)}">Batches</a>
-          </details>
+        <!-- System -->
+        <details class="mgroup" data-key="m_system"
+                 sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_VIEW','PERMISSION_VIEW','ACTIVITY_LOG_VIEW','ROLE_ADMIN')">
+            <summary>System</summary>
+            <a th:href="@{/admin/system/users}"
+               sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_ADMIN')">Users</a>
+            <a th:href="@{/admin/system/roles}"
+               sec:authorize="hasAnyAuthority('ROLE_VIEW','ROLE_ADMIN')">Roles</a>
+            <a th:href="@{/admin/system/permissions}"
+               sec:authorize="hasAnyAuthority('PERMISSION_VIEW','ROLE_ADMIN')">Permissions</a>
+            <a th:href="@{/admin/system/activity-logs}"
+               sec:authorize="hasAnyAuthority('ACTIVITY_LOG_VIEW','ROLE_ADMIN')">Activity Logs</a>
+        </details>
 
-          <details class="mgroup" data-key="m_system">
-              <summary>System</summary>
-              <a th:href="@{/admin/system/users}">Users</a>
-              <a th:href="@{/admin/system/roles}">Roles</a>
-              <a th:href="@{/admin/system/permissions}">Permissions</a>
-              <a th:href="@{/admin/system/activity-logs}">Activity Logs</a>
-          </details>
+<!--        &lt;!&ndash; Tools &ndash;&gt;-->
+<!--        <details class="mgroup" data-key="m_tools"-->
+<!--                 sec:authorize="hasAnyAuthority('IMPORT_EXPORT_VIEW','ROLE_ADMIN')">-->
+<!--            <summary>Tools</summary>-->
+<!--            <a th:href="@{/admin/tools/import-export}"-->
+<!--               sec:authorize="hasAnyAuthority('IMPORT_EXPORT_VIEW','ROLE_ADMIN')">Import/Export</a>-->
+<!--        </details>-->
 
-          <details class="mgroup" data-key="m_tools">
-              <summary>Tools</summary>
-              <a th:href="@{/admin/tools/import-export}">Import/Export</a>
-          </details>
-      </nav>
-  </th:block>
+    </nav>
+</th:block>
 
-
-  <th:block layout:fragment="footer">
+<!-- FOOTER -->
+<th:block layout:fragment="footer">
     <div class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> Xmate</div>
-  </th:block>
+</th:block>
 
-  <th:block layout:fragment="bodyExtras"></th:block>
+<th:block layout:fragment="bodyExtras"></th:block>
 </body>
 </html>

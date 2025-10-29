@@ -1,186 +1,350 @@
+
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${discount.id != null} ? 'Sửa mã giảm giá' : 'Tạo mã giảm giá'">Mã giảm giá</title>
+
+    <style>
+        :root{
+            --bg:#F6F8FB;
+            --surface:#fff;
+            --muted:#6b7280;
+            --ring:#93c5fd;
+            --primary:#3b82f6;
+            --primary-600:#2563eb;
+            --success:#22c55e;
+            --warning:#f59e0b;
+            --danger:#ef4444;
+            --card-head:#eff6ff;
+            --card-head-green:#ecfdf5;
+            --bd:#e5e7eb;
+            --control-h:42px;
+        }
+
+        /* ===== Lưới & căn chỉnh ===== */
+        .grid-2{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:20px;
+            align-items:stretch;
+        }
+        @media (max-width: 992px){ .grid-2{ grid-template-columns: 1fr; } }
+
+        .form-grid-2{
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap:16px;
+            /* QUAN TRỌNG: căn đỉnh để Status và Preview cùng mép trên */
+            align-items:start;
+        }
+        @media (max-width: 768px){ .form-grid-2{ grid-template-columns: 1fr; } }
+
+        .card{
+            background:var(--surface);
+            border:1px solid var(--bd);
+            border-radius:14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+            overflow:clip;
+            display:flex; flex-direction:column; height:100%;
+        }
+        .card-head{
+            min-height:56px;
+            display:flex; align-items:center; gap:10px;
+            padding:12px 16px;
+            font-weight:800;
+            border-bottom:1px solid var(--bd);
+            background:var(--card-head);
+        }
+        .card-head.badge-green{ background:var(--card-head-green); }
+        .card-body{ padding:16px; display:flex; flex-direction:column; gap:16px; }
+
+        /* Field helpers */
+        .label{ font-size:.9rem; color:var(--muted); margin-bottom:.25rem; font-weight:600; }
+        .field, .select, .datetime{
+            width:100%;
+            padding:.65rem .85rem;
+            border:1px solid var(--bd); border-radius:.7rem;
+            outline:none; transition: .15s ease;
+            font-size:1rem; box-sizing:border-box;
+            background:#fff;
+            height: var(--control-h);
+        }
+        /* datetime có padding khác nhưng vẫn giữ chiều cao đồng nhất */
+        .datetime{ padding:.45rem .75rem; }
+
+        .field:focus, .select:focus, .datetime:focus{
+            border-color:var(--primary);
+            box-shadow:0 0 0 3px rgba(59,130,246,.2);
+        }
+
+        .with-suffix{ position:relative; }
+        .with-suffix .field{ padding-right:44px; }
+        .with-suffix .suffix{
+            position:absolute; right:12px; top:50%; transform:translateY(-50%);
+            color:var(--muted); font-weight:700; font-size:.95rem; pointer-events:none;
+        }
+
+        .hint{ color:var(--muted); font-size:.85rem; }
+
+        /* Preview */
+        .preview-box{
+            border:1px dashed var(--bd);
+            border-radius:12px;
+            padding:12px 14px;
+            background:#fafafa;
+        }
+
+        /* Toolbar dưới */
+        .toolbar-bottom{
+            display:flex; justify-content:flex-end; gap:12px;
+            margin-top:16px;
+        }
+        .btn{
+            border:1px solid transparent; border-radius:.8rem;
+            padding:.7rem 1.1rem; font-weight:800; cursor:pointer;
+            transition:.15s ease; font-size:1rem;
+            height:44px; display:inline-flex; align-items:center;
+        }
+        .btn-primary{ background:var(--primary); color:#fff; }
+        .btn-primary:hover{ background:var(--primary-600); }
+        .btn-secondary{ background:#eef2ff; color:#1f2937; border-color:var(--bd); }
+        .btn-secondary:hover{ background:#e0e7ff; }
+
+        .chip{ display:inline-flex; align-items:center; gap:8px; font-weight:800;
+            background:#eaf2ff; color:#1d4ed8; border-radius:999px; padding:.35rem .75rem; }
+
+        .banner{
+            background:linear-gradient(90deg,#f8fafc,#eef2ff);
+            border:1px solid var(--bd); border-radius:12px;
+            padding:10px 14px; font-weight:700; display:flex; align-items:center; gap:12px;
+            margin:10px 0 14px;
+        }
+        .muted{ color:var(--muted); font-weight:600; }
+    </style>
+</head>
+
 <body>
 <section layout:fragment="content">
-    <h1 th:text="${discount.id != null} ? 'Edit discount' : 'Create discount'">Create discount</h1>
+
+    <h1 class="page-title mb-3 fw-bold" th:text="${discount.id != null} ? 'Sửa mã giảm giá' : 'Tạo mã giảm giá'">Mã giảm giá</h1>
 
     <form method="post"
           th:object="${discount}"
-          th:action="${discount.id != null} ? @{'/admin/discounts/' + ${discount.id} + '/edit'} : @{/admin/discounts/new}"
-          class="vstack gap-3">
+          th:action="${discount.id != null} ? @{'/admin/discounts/' + ${discount.id} + '/edit'} : @{/admin/discounts/new}">
 
-        <!-- Row 1 -->
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Type</label>
-                <select class="form-select" th:field="*{type}" id="typeSelect">
-                    <option value="CODE">CODE</option>
-                    <option value="AUTO">AUTO</option>
-                </select>
-            </div>
+        <!-- ===== HÀNG TRÊN: 2 CARD CỐ ĐỊNH ===== -->
+        <div class="grid-2">
 
-            <div class="col-md-3" id="codeWrap">
-                <label class="form-label">Code</label>
-                <input class="form-control" th:field="*{code}" placeholder="SAVE10"/>
-                <div class="form-text">Để trống nếu là AUTO.</div>
-            </div>
+            <!-- Thông tin chung (trái) -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="chip">Thông tin chung</span>
+                    <span th:text="${discount.code} ?: ''" style="font-weight:700;color:#374151"></span>
+                </div>
 
-            <div class="col-md-3">
-                <label class="form-label">Value type</label>
-                <select class="form-select" th:field="*{valueType}">
-                    <option value="PERCENT">PERCENT</option>
-                    <option value="FIXED">FIXED</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Value amount</label>
-                <input class="form-control" type="number" min="0" step="0.01"
-                       th:field="*{valueAmount}" placeholder="10 hoặc 50000"/>
-            </div>
-        </div>
-
-        <!-- Row 2 -->
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Min order</label>
-                <input class="form-control" type="number" min="0" step="0.01"
-                       th:field="*{minOrder}" placeholder="0"/>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Usage limit</label>
-                <input class="form-control" type="number" min="0" step="1"
-                       th:field="*{usageLimit}" placeholder="Ví dụ 100 (để trống = không giới hạn)"/>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Start at</label>
-                <input class="form-control" type="datetime-local"
-                       th:value="${discount.startAt != null ? #temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm') : null}"
-                       name="startAt"/>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">End at</label>
-                <input class="form-control" type="datetime-local"
-                       th:value="${discount.endAt != null ? #temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm') : null}"
-                       name="endAt"/>
-            </div>
-        </div>
-
-        <!-- Row 3 -->
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Status</label>
-                <select class="form-select" th:field="*{status}">
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
-                </select>
-            </div>
-
-            <!-- Conditions UI -->
-            <div class="col-md-9">
-                <!-- === Conditions (UI) === -->
-                <div class="card">
-                    <div class="card-body vstack gap-3">
-                        <h5 class="card-title mb-0">Conditions</h5>
-
-                        <!-- 1) Scope -->
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Scope type</label>
-                                <select class="form-select" id="c-scope-type">
-                                    <option value="">-- None (áp toàn bộ) --</option>
-                                    <option value="categoryIds">By Categories</option>
-                                    <option value="productIds">By Products</option>
-                                    <option value="variantIds">By Variants</option>
-                                </select>
-                            </div>
-                            <div class="col-md-8">
-                                <label class="form-label">IDs (phân tách dấu phẩy)</label>
-                                <input type="text" class="form-control" id="c-scope-ids" placeholder="vd: 3,5,12"/>
-                                <div class="form-text">Để trống nếu không lọc theo scope.</div>
-                            </div>
+                <!-- GIỮ THỨ TỰ FIELD: Loại & Mã giảm cùng hàng; Loại giảm giá & Giá trị cùng hàng -->
+                <div class="card-body">
+                    <div class="form-grid-2">
+                        <!-- Loại -->
+                        <div>
+                            <label class="label">Loại</label>
+                            <select class="select" th:field="*{type}">
+                                <option value="CODE">CODE</option>
+                                <option value="AUTO">AUTO</option>
+                            </select>
                         </div>
 
-                        <!-- 2) Include mode -->
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Include mode</label>
-                                <select class="form-select" id="c-include-mode">
-                                    <option value="">(Mặc định: ANY)</option>
-                                    <option value="ANY">ANY</option>
-                                    <option value="ALL">ALL</option>
-                                </select>
-                                <div class="form-text">ANY: khớp bất kỳ ID nào; ALL: yêu cầu khớp tất cả ID.</div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Min qty / item</label>
-                                <input type="number" min="0" step="1" class="form-control" id="c-min-qty"
-                                       placeholder="vd: 1"/>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Cap / item (FIXED)</label>
-                                <input type="number" min="0" step="0.01" class="form-control" id="c-cap-item"
-                                       placeholder="vd: 50000"/>
-                                <div class="form-text">Giới hạn giảm tối đa cho mỗi item (đơn vị tiền). Tuỳ chọn.</div>
-                            </div>
+                        <!-- Mã giảm -->
+                        <div>
+                            <label class="label">Mã giảm</label>
+                            <input class="field" th:field="*{code}" placeholder="VD: SALE10"/>
+                            <div class="hint">Để trống nếu là <b>AUTO</b> (hệ thống tự áp dụng).</div>
                         </div>
 
-                        <!-- 3) Cap order -->
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Cap / order (FIXED)</label>
-                                <input type="number" min="0" step="0.01" class="form-control" id="c-cap-order"
-                                       placeholder="vd: 150000"/>
-                                <div class="form-text">Giới hạn giảm tối đa cho cả đơn hàng (đơn vị tiền). Tuỳ chọn.</div>
-                            </div>
-                            <div class="col-md-8">
-                                <label class="form-label">Ghi chú</label>
-                                <div class="small text-muted">
-                                    • Nếu <b>valueType = PERCENT</b> thì cap rất hữu ích để “khống chế” mức giảm.<br/>
-                                    • Nếu không nhập gì, JSON sẽ để trống các trường tương ứng.
-                                </div>
-                            </div>
+                        <!-- Loại giảm giá -->
+                        <div>
+                            <label class="label">Loại giảm giá</label>
+                            <select class="select" th:field="*{valueType}" id="valueType">
+                                <option value="PERCENT">PERCENT</option>
+                                <option value="FIXED">FIXED</option>
+                            </select>
                         </div>
 
-                        <!-- 4) Hidden textarea bind với entity -->
-                        <textarea class="d-none" th:field="*{conditionsJson}" id="conditionsJson"></textarea>
+                        <!-- Giá trị + suffix -->
+                        <div class="with-suffix">
+                            <label class="label">Giá trị</label>
+                            <input class="field" type="number" min="0" step="0.01" th:field="*{valueAmount}" id="valueAmount"/>
+                            <span class="suffix" id="suffixSymbol">%</span>
+                            <div class="hint">Nếu <b>PERCENT</b> ⇒ nhập phần trăm (%). Nếu <b>FIXED</b> ⇒ nhập số tiền (₫).</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Thiết lập áp dụng (phải) -->
+            <div class="card">
+                <div class="card-head badge-green">
+                    <span class="chip" style="background:#dcfce7;color:#065f46">Thiết lập áp dụng</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-grid-2">
+                        <!-- Min order -->
+                        <div>
+                            <label class="label">Giá trị thấp nhất (₫)</label>
+                            <input class="field" type="number" min="0" step="0.01" th:field="*{minOrder}" placeholder="0"/>
+                        </div>
+
+                        <!-- Usage limit -->
+                        <div>
+                            <label class="label">Số lượng áp dụng</label>
+                            <input class="field" type="number" min="0" step="1" th:field="*{usageLimit}" placeholder="VD: 100 (để trống = không giới hạn)"/>
+                        </div>
+
+                        <!-- Start -->
+                        <div>
+                            <label class="label">Ngày áp dụng</label>
+                            <input class="datetime" type="datetime-local"
+                                   th:value="${discount.startAt != null ? #temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm') : null}"
+                                   name="startAt"/>
+                        </div>
+
+                        <!-- End -->
+                        <div>
+                            <label class="label">Ngày hết hạn</label>
+                            <input class="datetime" type="datetime-local"
+                                   th:value="${discount.endAt != null ? #temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm') : null}"
+                                   name="endAt"/>
+                        </div>
+
+                        <!-- Status (cùng hàng với Preview) -->
+                        <div>
+                            <label class="label">Tình trạng</label>
+                            <select class="select" th:field="*{status}">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
+                        </div>
+
+                        <!-- Preview (cùng hàng với Tình trạng) -->
+                        <div>
+                            <label class="label">Preview</label>
+                            <div class="preview-box" id="previewBox">
+                                <div class="muted" style="font-weight:800; margin-bottom:.25rem">Thông tin nhanh</div>
+                                <div> Mã: <b id="pv-code" th:text="*{code} ?: '-'">SALE10</b></div>
+                                <div> Loại: <b id="pv-type" th:text="*{type} ?: '-'">CODE</b></div>
+                                <div> Giảm: <b id="pv-value">10 %</b></div>
+                                <div> Áp dụng từ: <span th:text="${discount.startAt != null ? #temporals.format(discount.startAt,'dd/MM/yyyy HH:mm') : '-'}"></span></div>
+                                <div> Hết hạn: <span th:text="${discount.endAt != null ? #temporals.format(discount.endAt,'dd/MM/yyyy HH:mm') : '-'}"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /grid-2 -->
+
+        <!-- ===== HÀNG DƯỚI: Điều kiện áp dụng (tuỳ chọn) ===== -->
+        <div class="banner">
+            <span>Điều kiện áp dụng (tuỳ chọn)</span>
+            <span class="muted">Nên dùng <b>cap</b> khi <b>PERCENT</b> để tránh giảm quá sâu.</span>
         </div>
 
-        <!-- Actions -->
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" type="submit"
-                    th:text="${discount.id != null} ? 'Update' : 'Create'">Create</button>
-            <a class="btn btn-secondary" th:href="@{/admin/discounts}">Cancel</a>
+        <div class="card">
+            <div class="card-body">
+                <div class="form-grid-2">
+                    <!-- Scope -->
+                    <div>
+                        <label class="label">Phạm vi</label>
+                        <select class="select" id="c-scope-type">
+                            <option value="">— Toàn bộ —</option>
+                            <option value="categoryIds">Theo danh mục</option>
+                            <option value="productIds">Theo sản phẩm</option>
+                            <option value="variantIds">Theo biến thể</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="label">Danh sách IDs (phân tách dấu phẩy)</label>
+                        <input class="field" id="c-scope-ids" placeholder="VD: 3,5,12"/>
+                        <div class="hint">Để trống nếu không lọc theo phạm vi.</div>
+                    </div>
+
+                    <!-- Include mode / Min qty -->
+                    <div>
+                        <label class="label">Include mode</label>
+                        <select class="select" id="c-include-mode">
+                            <option value="">(Mặc định: ANY)</option>
+                            <option value="ANY">ANY</option>
+                            <option value="ALL">ALL</option>
+                        </select>
+                        <div class="hint">ANY: khớp 1 trong các ID; ALL: yêu cầu khớp tất cả ID.</div>
+                    </div>
+
+                    <div>
+                        <label class="label">Số lượng tối thiểu / item</label>
+                        <input class="field" id="c-min-qty" type="number" min="0" step="1" placeholder="VD: 1"/>
+                    </div>
+
+                    <!-- Caps -->
+                    <div>
+                        <label class="label">Giới hạn mỗi item (₫)</label>
+                        <input class="field" id="c-cap-item" type="number" min="0" step="0.01" placeholder="VD: 50000"/>
+                        <div class="hint">Giới hạn giảm tối đa cho mỗi item (đơn vị tiền). Tuỳ chọn.</div>
+                    </div>
+
+                    <div>
+                        <label class="label">Giới hạn theo đơn (₫)</label>
+                        <input class="field" id="c-cap-order" type="number" min="0" step="0.01" placeholder="VD: 150000"/>
+                    </div>
+                </div>
+
+                <!-- Hidden bind -->
+                <textarea class="d-none" th:field="*{conditionsJson}" id="conditionsJson"></textarea>
+            </div>
+        </div>
+
+        <!-- ===== Toolbar dưới ===== -->
+        <div class="toolbar-bottom">
+            <a class="btn btn-secondary" th:href="@{/admin/discounts}">Quay lại</a>
+            <button class="btn btn-primary" type="submit" th:text="${discount.id != null} ? 'Lưu thay đổi' : 'Tạo mới'">Lưu thay đổi</button>
         </div>
     </form>
 
+    <!-- ===== Scripts: suffix + preview + conditions JSON ===== -->
     <script th:inline="javascript">
-        // Ẩn/hiện ô Code theo Type
         (function(){
-            const typeSel = document.getElementById('typeSelect');
-            const codeWrap = document.getElementById('codeWrap');
-            function toggleCode() {
-                if (!typeSel || !codeWrap) return;
-                codeWrap.style.display = (typeSel.value === 'AUTO') ? 'none' : '';
-            }
-            toggleCode();
-            typeSel && typeSel.addEventListener('change', toggleCode);
-        })();
-    </script>
+            const vt = document.getElementById('valueType');
+            const va = document.getElementById('valueAmount');
+            const suffix = document.getElementById('suffixSymbol');
+            const pvValue = document.getElementById('pv-value');
+            const pvCode  = document.getElementById('pv-code');
+            const pvType  = document.getElementById('pv-type');
 
-    <!-- Conditions JSON builder -->
-    <script th:inline="javascript">
+            function fmt(n, isMoney){
+                const v = Number(n || 0);
+                return isMoney ? v.toLocaleString('vi-VN') + ' ₫' : v.toLocaleString('vi-VN') + ' %';
+            }
+            function render(){
+                const type = vt?.value || 'PERCENT';
+                const val  = parseFloat(va?.value || '0');
+                if (suffix) suffix.textContent = (type === 'PERCENT') ? '%' : '₫';
+                if (pvValue) pvValue.textContent = (type === 'PERCENT') ? fmt(val,false) : fmt(val,true);
+                if (pvCode)  pvCode.textContent  = document.querySelector('[name="code"]')?.value || '-';
+                if (pvType)  pvType.textContent  = document.querySelector('[name="type"]')?.value || '-';
+            }
+            vt?.addEventListener('change', render);
+            va?.addEventListener('input', render);
+            document.querySelector('[name="code"]')?.addEventListener('input', render);
+            document.querySelector('[name="type"]')?.addEventListener('change', render);
+            render();
+        })();
+
+        // Conditions JSON builder (giữ nguyên)
         (function(){
             const ta = document.getElementById('conditionsJson');
             const scopeType   = document.getElementById('c-scope-type');
@@ -190,30 +354,24 @@
             const capItem     = document.getElementById('c-cap-item');
             const capOrder    = document.getElementById('c-cap-order');
 
-            function safeParse(json) {
-                if (!json) return null;
-                try { return JSON.parse(json); } catch(e){ return null; }
-            }
+            function safeParse(json){ if(!json) return null; try{return JSON.parse(json);}catch(e){return null;} }
             function arrayToCsv(arr){ return Array.isArray(arr) ? arr.join(',') : ''; }
             function csvToNumArray(csv){
                 if (!csv || !csv.trim()) return [];
-                return csv.split(',').map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n));
+                return csv.split(',').map(s=>s.trim()).filter(Boolean).map(Number).filter(n=>!isNaN(n));
             }
 
-            // Hydrate từ JSON có sẵn
+            // hydrate
             (function(){
                 const data = safeParse(ta.value);
                 if (!data) return;
                 if (data.scope && typeof data.scope === 'object') {
                     if (Array.isArray(data.scope.categoryIds)) {
-                        scopeType.value = 'categoryIds';
-                        scopeIds.value  = arrayToCsv(data.scope.categoryIds);
+                        scopeType.value = 'categoryIds'; scopeIds.value = arrayToCsv(data.scope.categoryIds);
                     } else if (Array.isArray(data.scope.productIds)) {
-                        scopeType.value = 'productIds';
-                        scopeIds.value  = arrayToCsv(data.scope.productIds);
+                        scopeType.value = 'productIds'; scopeIds.value = arrayToCsv(data.scope.productIds);
                     } else if (Array.isArray(data.scope.variantIds)) {
-                        scopeType.value = 'variantIds';
-                        scopeIds.value  = arrayToCsv(data.scope.variantIds);
+                        scopeType.value = 'variantIds'; scopeIds.value = arrayToCsv(data.scope.variantIds);
                     }
                 }
                 if (data.includeMode) includeMode.value = data.includeMode;
@@ -227,27 +385,21 @@
                 const ids = csvToNumArray(scopeIds.value);
                 if (scopeType.value && ids.length) obj.scope = { [scopeType.value]: ids };
                 if (includeMode.value) obj.includeMode = includeMode.value;
-                const m = parseInt(minQty.value, 10);
-                if (!Number.isNaN(m) && m > 0) obj.minQtyPerItem = m;
-                const ci = parseFloat(capItem.value);
-                if (!Number.isNaN(ci) && ci >= 0) obj.capPerItem = ci;
-                const co = parseFloat(capOrder.value);
-                if (!Number.isNaN(co) && co >= 0) obj.capPerOrder = co;
+                const m = parseInt(minQty.value,10); if(!Number.isNaN(m) && m>0) obj.minQtyPerItem = m;
+                const ci= parseFloat(capItem.value); if(!Number.isNaN(ci)&&ci>=0) obj.capPerItem = ci;
+                const co= parseFloat(capOrder.value); if(!Number.isNaN(co)&&co>=0) obj.capPerOrder = co;
                 ta.value = Object.keys(obj).length === 0 ? "" : JSON.stringify(obj);
             }
 
             const form = ta.closest('form');
-            if (form) {
-                form.addEventListener('submit', function(ev){
-                    buildJson();
-                    if (ta.value) {
-                        try { JSON.parse(ta.value); } catch (e) {
-                            ev.preventDefault();
-                            alert('Conditions JSON không hợp lệ: ' + e.message);
-                        }
+            form?.addEventListener('submit', function(ev){
+                buildJson();
+                if (ta.value) {
+                    try { JSON.parse(ta.value); } catch (e) {
+                        ev.preventDefault(); alert('Conditions JSON không hợp lệ: ' + e.message);
                     }
-                });
-            }
+                }
+            });
         })();
     </script>
 </section>

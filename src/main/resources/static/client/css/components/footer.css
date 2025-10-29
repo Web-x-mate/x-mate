@@ -1,0 +1,125 @@
+﻿/* ===== Footer (match mẫu #2) ===== */
+footer.site-footer{
+  margin-top: var(--space-6);
+  background:#0c0e12;   /* nền đen sâu hơn */
+  color:#fff;
+  padding:56px 0 28px;
+  font-size:14px;
+  line-height:1.65;
+}
+.site-footer a{color:inherit;opacity:.9;text-decoration:none;transition:.2s}
+.site-footer a:hover{opacity:1}
+
+/* container 1400 + 5% hai bên như mẫu */
+.site-footer section{margin:0 auto;padding:0 60px}
+
+/* ---------- FEEDBACK (trái) + CONTACTS (phải) ---------- */
+.footer-feedback{
+  display:grid;
+  grid-template-columns: 1fr auto; /* trái–phải */
+  align-items:center;
+  gap:32px;
+  padding-bottom:32px !important;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:36px !important;
+}
+.footer-feedback__content h2{
+  font-size:28px;           /* to & rõ như mẫu */
+  font-weight:800;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  margin:0 0 10px;
+}
+.footer-feedback__content p{
+  max-width:520px;
+  opacity:.85;
+  margin:0 0 16px;
+}
+
+/* nút pill có mũi tên */
+.footer-feedback__button{
+  display:inline-flex;align-items:center;gap:10px;
+  height:42px;padding:0 18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.05);
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px
+}
+.footer-feedback__button::after{content:"\2192";font-size:14px;line-height:1}
+.footer-feedback__button:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35)}
+
+/* khối hotline/email xếp hàng ngang, mỗi item là “thẻ” */
+.footer-feedback__contacts{
+  display:flex;flex-wrap:wrap;justify-content:flex-end;gap:14px;
+}
+.footer-contact{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:12px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  min-width:280px;
+}
+.footer-contact__icon{
+  width:44px;height:44px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);flex-shrink:0
+}
+.footer-contact__body{display:flex;flex-direction:column;gap:2px}
+.footer-contact__label{
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  opacity:.7;font-weight:700
+}
+.footer-contact a{font-weight:800;font-size:18px;letter-spacing:.01em}
+.footer-contact__note{font-size:13px;opacity:.8}
+
+/* icon vẽ thuần CSS giữ nguyên */
+.icon-phone,.icon-mail{position:relative;display:inline-block;width:20px;height:20px}
+.icon-phone::before{content:"";position:absolute;left:6px;top:2px;width:9px;height:16px;border-radius:6px;background:#fff}
+.icon-phone::after{content:"";position:absolute;left:8px;bottom:2px;width:6px;height:3px;border-radius:2px;background:#fff}
+.icon-mail::before{content:"";position:absolute;left:0;top:4px;width:20px;height:12px;border:2px solid #fff;border-radius:3px}
+.icon-mail::after{content:"";position:absolute;left:4px;top:9px;width:12px;height:2px;background:#fff;transform:rotate(45deg)}
+
+/* ---------- CỘT LIÊN KẾT (6 cột + cột địa chỉ span 2) ---------- */
+.footer-columns{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:30px;
+  margin-bottom:36px;
+  margin-top: 36px !important;
+}
+.footer-column h3{
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  margin:0 0 14px;font-weight:800;opacity:.95
+}
+.footer-column__group + .footer-column__group{margin-top:22px}
+.footer-column ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.footer-column li{opacity:.85}
+.footer-column li:hover{opacity:1}
+
+.footer-column--wide,
+.footer-column:last-child{grid-column:span 2}
+.footer-column--wide ul{display:grid;gap:12px}
+.footer-column strong{display:block;font-weight:800;margin-bottom:4px;opacity:.95;font-size:13px}
+
+/* ---------- BOTTOM ---------- */
+.footer-bottom{
+  padding-top:22px !important;border-top:1px solid rgba(255,255,255,.08);
+  font-size:12px;opacity:.75;text-align:center
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1200px){
+  .footer-columns{grid-template-columns:repeat(3,1fr);gap:26px}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 3}
+}
+@media (max-width:768px){
+  .footer-feedback{grid-template-columns:1fr;align-items:flex-start}
+  .footer-feedback__contacts{justify-content:flex-start}
+  .footer-contact{min-width:unset;width:100%}
+  .footer-columns{grid-template-columns:repeat(2,1fr);gap:20px}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 2}
+  .site-footer section{padding:0 20px}
+}
+@media (max-width:480px){
+  .footer-columns{grid-template-columns:1fr}
+  .footer-column--wide,.footer-column:last-child{grid-column:span 1}
+}

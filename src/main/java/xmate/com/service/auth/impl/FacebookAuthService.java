@@ -10,6 +10,8 @@ import xmate.com.entity.customer.Customer;
 import xmate.com.repo.auth.RefreshTokenRepository;
 import xmate.com.repo.customer.CustomerRepository;
 import xmate.com.security.JwtUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.time.Instant;
 import java.util.Map;
@@ -39,7 +41,9 @@ public class FacebookAuthService {
                                PasswordEncoder encoder,
                                JwtUtils jwt,
                                RefreshTokenRepository rtRepo) {
-        this.http = builder.build();
+        this.http = builder
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
         this.userRepo = userRepo;
         this.encoder = encoder;
         this.jwt = jwt;
@@ -79,29 +83,39 @@ public class FacebookAuthService {
     }
 
     private TokenRes issueTokens(Customer u) {
-        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer"));
+        String userToken = ensureUserToken(u);
+        String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer", "authm", "facebook"));
         RefreshToken rt = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
+                .token("f." + UUID.randomUUID())
                 .customer(u)
                 .expiresAt(Instant.now().plusMillis(refreshExp))
                 .revoked(false)
                 .build();
         rtRepo.save(rt);
-        return new TokenRes(access, rt.getToken());
+        return new TokenRes(access, rt.getToken(), userToken);
+    }
+
+    private String ensureUserToken(Customer u) {
+        if (u.getTokenUser() == null || u.getTokenUser().isBlank()) {
+            u.setTokenUser("usr_" + UUID.randomUUID().toString().replace("-", ""));
+            userRepo.save(u);
+        }
+        return u.getTokenUser();
     }
 
     private DebugToken debugToken(String userToken) {
         String appToken = appId + "|" + appSecret;
         return http.get()
-                .uri("https://graph.facebook.com/debug_token?input_token={ut}&access_token={at}",
-                        userToken, appToken)
+                .uri("https://graph.facebook.com/debug_token?input_token={ut}&access_token={at}&format=json", userToken, appToken)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(DebugToken.class);
     }
 
     private Me fetchMe(String userToken) {
         return http.get()
-                .uri("https://graph.facebook.com/me?fields=id,name,email&access_token={ut}", userToken)
+                .uri("https://graph.facebook.com/v19.0/me?fields=id,name,email&access_token={ut}&format=json", userToken)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(Me.class);
     }
@@ -111,3 +125,5 @@ public class FacebookAuthService {
     public record DebugToken(Data data) { public record Data(boolean is_valid, String app_id, String user_id, Long expires_at) {} }
     public record Me(String id, String name, String email) {}
 }
+
+

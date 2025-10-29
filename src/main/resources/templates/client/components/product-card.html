@@ -1,0 +1,140 @@
+<th:block th:fragment="productCard(product)">
+  <div class="product-card"
+       th:data-product-id="${product.id != null ? product.id : product.slug}"
+       th:data-product-slug="${product.slug}"
+       th:data-product-title="${product.title}"
+       th:data-product-price="${product.priceForCart}"
+       th:data-product-image="${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}">
+
+    <div class="thumb-wrap">
+      <div class="thumb-ratio">
+        <a class="product-link"
+           th:href="@{/product/detail/{slug}(slug=${product.slug})}"
+           th:aria-label="${product.title}">
+          <img class="product-thumb"
+               th:src="${product.thumbnail != null ? product.thumbnail : '/images/product-placeholder.svg'}"
+               th:alt="${product.title}" loading="lazy"/>
+        </a>
+      </div>
+
+      <div class="quick-add" th:if="${product.sizes != null and !product.sizes.isEmpty()}" tabindex="0">
+        <div class="quick-add__title">
+          <span>Thêm vào giỏ hàng</span>
+          <span class="quick-add__plus">+</span>
+        </div>
+        <div class="quick-add__sizes">
+          <button class="quick-add__btn"
+                  type="button"
+                  th:each="size : ${product.sizes}"
+                  th:text="${size}"
+                  th:data-size="${size}"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="swatches" th:if="${product.colors != null and !product.colors.isEmpty()}">
+      <button class="swatch"
+              type="button"
+              th:each="color, iter : ${product.colors}"
+              th:classappend="${iter.first} ? ' is-active' : ''"
+              th:data-color-name="${color.name}"
+              th:data-color="${color.name}"
+              th:data-color-hex="${color.hex}"
+              th:data-color-image="${color.image != null ? color.image : ''}"
+              th:data-variant-id="${color.variantId}"
+              th:data-variant-price="${color.price}"
+              th:data-variant-compare="${color.compareAt}"
+              th:attr="data-sizes=${color.sizes != null ? #strings.listJoin(color.sizes, '|') : ''}"
+              th:style="${color.style}">
+        <span class="visually-hidden" th:text="${color.name}">Mau</span>
+      </button>
+    </div>
+
+    <div class="info">
+      <a class="title"
+         th:href="@{/product/detail/{slug}(slug=${product.slug})}"
+         th:text="${product.title}">Sản phẩm</a>
+
+      <div class="price-row">
+        <span class="final" th:if="${product.finalPriceText != null}" th:text="${product.finalPriceText}">0&nbsp;₫</span>
+        <span class="discount-pill" th:if="${product.hasDiscount and product.discountPercent > 0}"
+              th:text="'-' + ${product.discountPercent} + '%'">-0%</span>
+        <span class="old" th:if="${product.hasDiscount and product.originalPriceText != null}"
+              th:text="${product.originalPriceText}">0&nbsp;₫</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS: bật/tắt size theo màu + log -->
+  <script>
+    (function () {
+      function parseSizes(attr) {
+        if (!attr) return [];
+        return attr.split('|').map(function (s) { return s.trim(); }).filter(Boolean);
+      }
+
+      function applySizesForColor(card, allowed) {
+        var btns = card.querySelectorAll('.quick-add__btn');
+        if (!btns.length) return;
+        var set = new Set(allowed);
+        btns.forEach(function (b) {
+          var s = (b.getAttribute('data-size') || '').trim();
+          var ok = set.has(s);
+          b.disabled = !ok;
+          b.classList.toggle('is-disabled', !ok);
+        });
+      }
+
+      function swapImageSmooth(img, url) {
+        if (!img || !url) return;
+        var next = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_v=' + Date.now();
+        var pre = new Image();
+        pre.onload = function(){ img.src = next; };
+        pre.src = next;
+      }
+
+      // Khởi tạo theo swatch đang active
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.product-card').forEach(function (card) {
+          var active = card.querySelector('.swatch.is-active') || card.querySelector('.swatch');
+          if (!active) return;
+          var sizes = parseSizes(active.getAttribute('data-sizes'));
+          console.log('[CARD INIT]', {
+            slug: card.getAttribute('data-product-slug'),
+            color: active.getAttribute('data-color'),
+            sizesForColor: sizes
+          });
+          applySizesForColor(card, sizes);
+        });
+      });
+
+      // Đổi màu → áp size
+      document.addEventListener('click', function (e) {
+        var sw = e.target.closest('.product-card .swatch');
+        if (!sw) return;
+        var card = sw.closest('.product-card');
+        card.querySelectorAll('.swatch.is-active').forEach(function (el) { el.classList.remove('is-active'); });
+        sw.classList.add('is-active');
+
+        // log + áp size
+        var sizes = parseSizes(sw.getAttribute('data-sizes'));
+        console.log('[SWATCH CLICK]', {
+          slug: card.getAttribute('data-product-slug'),
+          color: sw.getAttribute('data-color'),
+          sizesForColor: sizes
+        });
+        applySizesForColor(card, sizes);
+
+        // đổi ảnh
+        var img = card.querySelector('.product-thumb');
+        var url = (sw.getAttribute('data-color-image') || '').trim();
+        if (img && url) swapImageSmooth(img, url);
+      });
+    })();
+  </script>
+
+  <!-- style nhỏ cho nút size bị disable (tuỳ theme của bạn) -->
+  <style>
+    .quick-add__btn.is-disabled { opacity: .45; cursor: not-allowed; }
+  </style>
+</th:block>

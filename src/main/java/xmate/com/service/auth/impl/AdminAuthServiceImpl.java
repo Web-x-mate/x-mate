@@ -26,7 +26,7 @@ public class AdminAuthServiceImpl implements IAdminAuthService {
     @Override
     public TokenRes login(LoginReq req) {
         String username = norm(req.email()); // tái dùng field email làm username input
-        var u = userRepo.findByUsernameIgnoreCase(username)
+        var u = userRepo.findByLoginWithRoles(username)
                 .orElseThrow(() -> new RuntimeException("Sai tài khoản/mật khẩu"));
         if (!Boolean.TRUE.equals(u.getActive()) || !encoder.matches(req.password(), u.getPassword())) {
             throw new RuntimeException("Sai tài khoản/mật khẩu");
@@ -45,9 +45,10 @@ public class AdminAuthServiceImpl implements IAdminAuthService {
                 "roles", roles
         ));
         // đơn giản: không cấp refresh cho admin (an toàn hơn); nếu muốn có, tạo bảng admin_refresh_tokens riêng
-        return new TokenRes(access, null);
+        return new TokenRes(access, null, null);
     }
 
     private static String norm(String s){ return s==null?null:s.trim().toLowerCase(); }
 }
+
 

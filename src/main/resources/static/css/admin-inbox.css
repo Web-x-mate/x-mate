@@ -1,0 +1,220 @@
+/*:root{*/
+/*    --bg: #d9dfdf; --panel:#37363e; --panel-2:#43444d; --soft:#eef1f2;*/
+/*    --radius:14px; --shadow:0 10px 26px rgba(0,0,0,.12);*/
+/*    --font: 15px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;*/
+/*}*/
+/**{box-sizing:border-box}*/
+/*body{ margin:0; background:var(--bg); font:var(--font); color:#1e2328; }*/
+
+/*.wrap{*/
+/*    max-width: 780px; margin: 28px auto; background:#fff; border-radius:var(--radius);*/
+/*    box-shadow: var(--shadow); padding:18px;*/
+/*}*/
+/*.wrap h3{ margin:0 0 10px; font-size:18px; font-weight:800; color:#2a2f36; }*/
+
+/*#search{*/
+/*    width:100%; height:40px; padding:10px 12px; border-radius:10px;*/
+/*    border:1px solid var(--soft); outline:none;*/
+/*}*/
+/*#search:focus{ border-color: var(--panel-2); box-shadow:0 0 0 3px rgba(67,68,77,.15); }*/
+
+/*#total{ margin:10px 2px 8px; color:#68707a; font-size:13px; }*/
+/*#list{ display:flex; flex-direction:column; gap:10px; max-height:70vh; overflow:auto; }*/
+
+/*.inbox-item{*/
+/*    display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center;*/
+/*    border:1px solid var(--soft); border-radius:12px; padding:10px 12px; background:#fff;*/
+/*    cursor:pointer;*/
+/*}*/
+/*.inbox-item:hover{ background:#fafbfc; }*/
+/*.inbox-item.active{ outline:2px solid var(--panel-2); }*/
+
+/*.inbox-item .email{ font-weight:700; }*/
+/*.inbox-item .preview{ grid-column:1 / -1; color:#6b737d; font-size:13px; }*/
+/*.inbox-item .badge{*/
+/*    background:#e54b4b; color:#fff; border-radius:999px; padding:2px 8px; font-size:12px; font-weight:700;*/
+/*}*/
+/*.inbox-item .del{*/
+/*    border:0; background:#f1f3f5; color:#444; width:24px; height:24px; border-radius:8px; cursor:pointer;*/
+/*}*/
+/*.inbox-item .del:hover{ background:#e7eaee; }*/
+:root{
+    /* Light Mode Base Colors */
+    --bg: #f4f6f8;               /* Nền tổng thể (Gần trắng) */
+    --surface: #ffffff;          /* Nền Panel/Chat (Trắng tinh) */
+    --text: #1e293b;             /* Chữ chính (Slate-900) */
+    --muted: #64748b;            /* Chữ phụ/mờ (Slate-500) */
+    --bd: #e2e8f0;               /* Đường viền/Ngăn cách (Slate-200) */
+    --focus-ring: rgba(14, 165, 233, 0.2);
+
+    /* Action & Bubble Colors */
+    --primary: #0ea5e9;          /* Màu chủ đạo (Xanh Sky-500) */
+
+    /* MÀU SẮC ĐÃ ĐƯỢC QUAN SÁT TỪ ẢNH CŨ (Dark Bubble/Header) */
+    --dark-bubble: #43444d;      /* Nền Bubble User/Sidebar Header (Dark Mode) */
+    --dark-text: #f8fafc;        /* Chữ sáng trong Bubble Dark */
+    --dark-header: #37363e;      /* Nền Header phòng chat */
+
+    --radius:12px;
+    --shadow:0 0 20px rgba(0,0,0,.08);
+    --font: 15px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+body{ margin:0; background:var(--bg); font:var(--font); color:var(--text); }
+html, body { height: 100%; }
+
+/* CONTAINER CHÍNH */
+.main-layout {
+    display: flex;
+    max-width: 1200px;
+    height: 90vh;
+    margin: 30px auto;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--bd);
+}
+
+/* 1. LEFT SIDEBAR (INBOX LIST) */
+.sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    padding: 18px;
+    background: var(--surface);
+    border-right: 1px solid var(--bd);
+}
+#inboxSearch{
+    width:100%; height:42px; padding:10px 12px; border-radius:10px;
+    border:1px solid var(--bd); outline:none;
+    color: var(--text); background: var(--surface);
+}
+#inboxSearch:focus{ border-color: var(--primary); box-shadow:0 0 0 3px var(--focus-ring); }
+
+#inboxTotal{ margin:12px 2px 8px; color:var(--muted); font-size:13px; }
+#inboxList{ display:flex; flex-direction:column; gap:8px; max-height:calc(90vh - 120px - 36px); overflow-y:auto; }
+
+.inbox-item{
+    display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:center;
+    border:1px solid var(--bd); border-radius:var(--radius); padding:10px 12px; background:var(--surface);
+    cursor:pointer;
+}
+.inbox-item:hover{ background:var(--bg); }
+.inbox-item.active{ outline:2px solid var(--primary); }
+
+.inbox-item .email{ font-weight:700; color:var(--text); grid-column:1 / 2; }
+.inbox-item .preview{ grid-column:1 / 2; color:var(--muted); font-size:13px; }
+.inbox-item .del{
+    grid-column:2 / 3;
+    border:0; background:transparent; color:var(--muted);
+    width:24px; height:24px; border-radius:8px; cursor:pointer;
+    font-size: 16px; line-height: 1; padding: 0;
+}
+.inbox-item .del:hover{ color:var(--primary); background:var(--bg); }
+
+
+/* 2. CHAT PANEL (RIGHT) */
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* HEADER - Màu Dark */
+.chat-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 25px;
+    background: var(--dark-header);
+    color: var(--dark-text);
+    border-bottom: 1px solid var(--bd);
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.chat-header .room-info { font-size: 1.15rem; color: var(--dark-text); }
+.chat-header .user-info { color: var(--dark-text); }
+
+/* MESSAGE HISTORY */
+.chat-messages {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+    background: var(--surface);
+}
+
+/* MESSAGE BUBBLES */
+.message-bubble {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    font-size: 14px;
+}
+
+/* User's Message (Trái) - Màu Dark Bubble */
+.user-message-wrap {
+    display: flex;
+    justify-content: flex-start;
+}
+.user-message-wrap .message-bubble {
+    background: var(--dark-bubble);
+    color: var(--dark-text);
+    border-bottom-left-radius: 4px;
+}
+.user-message-wrap .message-bubble .email {
+    font-size: 12px; font-weight: 600; margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* Admin's Message (Phải) - Màu Primary Blue */
+.admin-message-wrap {
+    display: flex;
+    justify-content: flex-end;
+}
+.admin-message-wrap .message-bubble {
+    background: var(--primary); /* MÀU XANH CHỦ ĐẠO */
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+.admin-message-wrap .message-bubble .email {
+    font-size: 12px; font-weight: 600; margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* 3. INPUT AREA */
+.chat-input {
+    display: flex;
+    padding: 15px 25px;
+    border-top: 1px solid var(--bd);
+    background: var(--bg);
+    flex-shrink: 0;
+}
+#chatInput {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--bd);
+    outline: none;
+    resize: none;
+    max-height: 100px;
+    color: var(--text); background: var(--surface);
+}
+#chatInput:focus { border-color: var(--primary); box-shadow:0 0 0 3px var(--focus-ring); }
+
+#sendBtn {
+    margin-left: 15px;
+    padding: 0 25px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#sendBtn:hover {
+    background: #0796d1;
+}

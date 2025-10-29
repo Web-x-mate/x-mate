@@ -56,25 +56,31 @@ public class GoogleAuthService {
                         c.setEmail(email);
                         c.setFullname(name);
                         c.setEnabled(true);
-                        // ✅ đặt mật khẩu ngẫu nhiên đã băm để không bị NULL
                         c.setPasswordHash(encoder.encode("gsi_" + UUID.randomUUID()));
                         return customers.save(c);
                     });
 
-            // --- phát token như cũ ---
-            String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer"));
+            if (u.getTokenUser() == null || u.getTokenUser().isBlank()) {
+                u.setTokenUser("usr_" + UUID.randomUUID().toString().replace("-", ""));
+                customers.save(u);
+            }
+            String userToken = u.getTokenUser();
+
+            // --- ph'át token như cũ ---
+            String access = jwt.generateAccess(u.getEmail(), Map.of("actor", "customer", "authm", "google"));
             RefreshToken rt = RefreshToken.builder()
-                    .token(UUID.randomUUID().toString())
+                    .token("g." + UUID.randomUUID())
                     .customer(u)
                     .expiresAt(Instant.now().plusMillis(refreshExp))
                     .revoked(false)
                     .build();
             rtRepo.save(rt);
 
-            return new TokenRes(access, rt.getToken());
+            return new TokenRes(access, rt.getToken(), userToken);
         } catch (Exception e){
             throw new RuntimeException("Google login failed: " + e.getMessage());
         }
     }
 
 }
+

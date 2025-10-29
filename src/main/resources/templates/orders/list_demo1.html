@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <style>
+        :root{
+            --bg:#f5f7fb; --surface:#fff; --text:#0f172a; --muted:#475569; --bd:#e2e8f0;
+            --ok:#10b981; --warn:#f59e0b; --err:#ef4444; --info:#3b82f6; --vio:#8b5cf6;
+            --primary:#0ea5e9; --primary-hover:#0284c7; --primary-ring:#bae6fd;
+        }
+        .wrap{max-width:1200px;margin:0 auto}
+        .card{background:var(--surface);border:1px solid var(--bd);border-radius:14px;box-shadow:0 1px 2px rgba(2,6,23,.05)}
+
+        /* Inputs */
+        .field{padding:.6rem .8rem;border:1px solid var(--bd);border-radius:12px;min-width:180px;background:#fff}
+
+        /* Buttons (đồng bộ cho cả 2 nút) */
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.40rem;
+            font-weight:800;line-height:1.1;border:1px solid transparent;white-space:nowrap;
+            cursor:pointer;transition:.18s ease}
+        .btn-lg{font-size:1rem;padding:.75rem 1.1rem;border-radius:12px;min-width:130px;box-shadow:0 1px 2px rgba(2,6,23,.05)}
+        .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff !important}
+        .btn-primary:hover{background:var(--primary-hover)}
+        .btn-primary:focus{outline:3px solid var(--primary-ring);outline-offset:2px}
+        .btn-primary:active{transform:translateY(1px)}
+
+        .btn-danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+        .btn-warn{background:#fef3c7;color:#92400e;border-color:#fde68a}
+
+        /* Bảng */
+        .table{width:100%;border-collapse:separate;border-spacing:0}
+        .table thead th{font-size:.83rem;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);
+            padding:.6rem .75rem;border-bottom:1px solid var(--bd);background:#fafafa}
+        .table tbody td{padding:.7rem .75rem;border-bottom:1px solid var(--bd)}
+        .table tbody tr:hover{background:#f8fafc}
+
+        /* Chips */
+        .chips{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid transparent}
+        .chip-slate{background:#f1f5f9;color:#334155;border-color:#e2e8f0}
+        .chip-ok{background:#ecfdf5;color:#065f46;border-color:#d1fae5}
+        .chip-warn{background:#fffbeb;color:#92400e;border-color:#fde68a}
+        .chip-err{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+        .chip-info{background:#eff6ff;color:#1e40af;border-color:#dbeafe}
+        .chip-vio{background:#f5f3ff;color:#4c1d95;border-color:#ede9fe}
+
+        /* Bộ lọc: nút Tạo đơn đứng trước Tìm kiếm */
+        .filters{
+            display:grid;
+            grid-template-columns:2fr repeat(3,1fr) auto auto;
+            gap:12px;
+            align-items:center;
+        }
+        .filters .btn-create{order:-1} /* luôn trước nút tìm kiếm */
+
+        @media (max-width: 992px){
+            .filters{grid-template-columns:1fr 1fr}
+        }
+    </style>
+</head>
+<body>
+<section layout:fragment="content">
+
+    <!-- Không có quyền VIEW -->
+    <div class="wrap" sec:authorize="!hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">
+        <div class="card" style="padding:16px;margin:20px">
+            <div class="chips chip-warn">Bạn không có quyền xem danh sách đơn hàng.</div>
+        </div>
+    </div>
+
+    <!-- Có quyền VIEW -->
+    <div class="wrap" sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">
+
+        <!-- Tiêu đề -->
+        <div style="display:flex;align-items:center;justify-content:center;margin:24px 12px 10px">
+            <h1 style="font-size:32px;font-weight:900">Danh sách đơn hàng</h1>
+        </div>
+
+        <!-- Bộ lọc + Tạo đơn -->
+        <div class="card" style="margin:12px;padding:14px">
+            <form method="get" class="filters">
+                <a th:href="@{/admin/sales/orders/new}"
+                   class="btn btn-primary btn-lg btn-create"
+                   sec:authorize="hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')">Tạo đơn</a>
+
+                <input class="field" name="q" th:value="${q}" placeholder="Tìm mã / tên khách hàng...">
+
+                <select class="field" name="status">
+                    <option value="">Trạng thái đơn</option>
+                    <option th:each="s: ${orderStatuses}" th:value="${s}" th:text="${s}" th:selected="${s.name()==status}"></option>
+                </select>
+
+                <select class="field" name="payment">
+                    <option value="">Thanh toán</option>
+                    <option th:each="s: ${paymentStatuses}" th:value="${s}" th:text="${s}" th:selected="${s.name()==payment}"></option>
+                </select>
+
+                <select class="field" name="shipping">
+                    <option value="">Vận chuyển</option>
+                    <option th:each="s: ${shippingStatuses}" th:value="${s}" th:text="${s}" th:selected="${s.name()==shipping}"></option>
+                </select>
+
+                <button class="btn btn-primary btn-lg" type="submit">Tìm kiếm</button>
+            </form>
+        </div>
+
+        <!-- Bảng -->
+        <div class="card" style="margin:12px;overflow:auto">
+            <div style="padding:12px 14px;border-bottom:1px solid var(--bd);color:var(--muted)">Danh sách đơn hàng</div>
+            <div style="padding:6px 8px">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Customer</th>
+                        <th style="text-align:right">Total</th>
+                        <th>Payment</th>
+                        <th>Shipping</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th style="width:220px">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="o : ${page != null ? page.content : {}}">
+                        <td th:text="${o.id}">1</td>
+                        <td style="font-family:ui-monospace,Menlo,monospace" th:text="${o.code}">ORD-0001</td>
+                        <td th:text="${o.customer != null ? o.customer.fullname : '—'}">—</td>
+                        <td style="text-align:right;font-family:ui-monospace,Menlo,monospace" th:text="${#numbers.formatInteger(o.total)}">0</td>
+
+                        <!-- Payment -->
+                        <td>
+              <span class="chips"
+                    th:text="${o.paymentStatus}"
+                    th:classappend="${
+                      o.paymentStatus.name()=='PAID'     ? ' chip-ok'   :
+                      (o.paymentStatus.name()=='PENDING' ? ' chip-warn' :
+                      (o.paymentStatus.name()=='FAILED'  ? ' chip-err'  :
+                      (o.paymentStatus.name()=='REFUNDED'? ' chip-vio'  : ' chip-slate')))}">
+                PENDING
+              </span>
+                        </td>
+
+                        <!-- Shipping -->
+                        <td>
+              <span class="chips"
+                    th:text="${o.shippingStatus}"
+                    th:classappend="${
+                      o.shippingStatus.name()=='DELIVERED' ? ' chip-ok'   :
+                      (o.shippingStatus.name()=='SHIPPED'  ? ' chip-info' :
+                      (o.shippingStatus.name()=='RETURNED' ? ' chip-vio'  :
+                      (o.shippingStatus.name()=='PENDING'  ? ' chip-warn' : ' chip-slate')))}">
+                NOT_SHIPPED
+              </span>
+                        </td>
+
+                        <!-- Order status -->
+                        <td>
+              <span class="chips"
+                    th:text="${o.status}"
+                    th:classappend="${
+                      o.status.name()=='COMPLETED'        ? ' chip-ok'   :
+                      (o.status.name()=='CONFIRMED'       ? ' chip-info' :
+                      (o.status.name()=='PENDING'         ? ' chip-warn' :
+                      (o.status.name()=='PENDING_PAYMENT' ? ' chip-warn' :
+                      (o.status.name()=='CANCELLED'       ? ' chip-err'  : ' chip-slate')))}">
+                PENDING
+              </span>
+                        </td>
+
+                        <td style="font-family:ui-monospace,Menlo,monospace"
+                            th:text="${o.createdAt != null ? #temporals.format(o.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+
+                        <td>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                                <a th:href="@{|/admin/sales/orders/${o.id}/edit|}"
+                                   class="btn btn-warn"
+                                   sec:authorize="hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')">Edit</a>
+                                <a th:href="@{|/admin/sales/orders/${o.id}/delete|}"
+                                   class="btn btn-danger"
+                                   onclick="return confirm('Xóa đơn hàng này?')"
+                                   sec:authorize="hasAnyAuthority('ORDER_DELETE','ROLE_ADMIN')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                        <td colspan="9" style="text-align:center;color:var(--muted);padding:18px 0">No data</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Phân trang (giữ filter khi chuyển trang) -->
+        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/sales/orders', q=${q}, status=${status}, payment=${payment}, shipping=${shipping})}"></div>
+    </div>
+</section>
+</body>
+</html>

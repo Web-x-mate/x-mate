@@ -1,75 +1,177 @@
+
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Variants</title>
+    <style>
+        :root{
+            --bg:#f8fafc;
+            --surface:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --bd:#e2e8f0;
+            --ring:#93c5fd;
+            --primary:#2563eb;
+            --primary-hover:#1d4ed8;
+            --success:#16a34a;
+            --success-hover:#15803d;
+            --warning:#fbbf24;
+            --danger:#ef4444;
+            --danger-hover:#dc2626;
+            --slate:#334155;
+        }
+
+        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
+        .wrap{max-width:1000px;margin:0 auto;padding:32px 0;}
+        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 18px;}
+
+        /* Toolbar */
+        .toolbar{gap:10px;}
+        .btn{
+            height:40px;padding:0 14px;border-radius:12px;border:1px solid transparent;
+            font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.45rem;line-height:1;transition:.18s;
+        }
+        .btn-success{background:var(--success);color:#fff;border-color:var(--success);}
+        .btn-success:hover{background:var(--success-hover);border-color:var(--success-hover);}
+        .btn-outline-secondary{background:#fff;color:var(--slate);border:1px solid var(--bd);}
+        .btn-outline-secondary:hover{background:#f1f5f9;}
+        .btn-outline-primary{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+        .btn-outline-primary:hover{background:#eff6ff;}
+
+        /* Card + Table */
+        .table-card{background:var(--surface);border:1px solid var(--bd);border-radius:16px;box-shadow:0 2px 4px rgba(15,23,42,.06);}
+        .table-responsive{max-height:70vh;overflow:auto;border-radius:16px;}
+        table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;}
+        thead th{
+            position:sticky;top:0;z-index:2;background:#eef2f7;color:#0f172a;border-bottom:1px solid var(--bd);
+            text-transform:uppercase;font-weight:800;font-size:.78rem;letter-spacing:.02em;
+            padding:.75rem .95rem;white-space:nowrap;text-align:center;
+        }
+        tbody td{
+            padding:.75rem .95rem;border-bottom:1px solid var(--bd);background:#fff;
+            vertical-align:middle;text-align:center;
+        }
+        tbody tr:hover td{background:#f8fafc;}
+
+        /* Bo góc bảng */
+        thead th:first-child{border-top-left-radius:16px;}
+        thead th:last-child{border-top-right-radius:16px;}
+        tbody tr:last-child td:first-child{border-bottom-left-radius:16px;}
+        tbody tr:last-child td:last-child{border-bottom-right-radius:16px;}
+
+        /* Căn cột */
+        .col-left{text-align:left;}
+        .col-right{text-align:right;font-variant-numeric:tabular-nums;}
+
+        /* Badge Active/Inactive */
+        .badge{display:inline-flex;align-items:center;gap:.35rem;font-weight:800;border-radius:.55rem;padding:.3rem .55rem;font-size:.78rem;line-height:1;}
+        .bg-success{background:var(--success);color:#fff;}
+        .bg-secondary{background:#e2e8f0;color:#0f172a;}
+
+        /* Action buttons (giữ nguyên class, chỉ tinh chỉnh) */
+        .btn-sm{
+            height:34px;padding:0 12px;border-radius:10px;font-size:.82rem;font-weight:700;
+            display:inline-flex;align-items:center;gap:.35rem;
+        }
+        .btn-warning{background:var(--warning);color:#0f172a;border:none;}
+        .btn-warning:hover{background:#f59e0b;}
+        .btn-danger{background:var(--danger);color:#fff;border:none;}
+        .btn-danger:hover{background:var(--danger-hover);}
+
+        .actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+    </style>
+</head>
 <body>
 <section layout:fragment="content">
-    <h1 class="page-title" th:text="'Variants - ' + ${product.name}">Variants</h1>
 
-    <!-- Toolbar -->
-    <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">
-        <div class="d-flex align-items-center gap-2">
-            <a th:href="@{/admin/catalog/products}" class="btn btn-outline-secondary">← Quay lại Products</a>
-            <a th:href="@{|/admin/catalog/products/${product.id}/edit|}" class="btn btn-outline-primary">Sửa Product</a>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <a th:href="@{|/admin/catalog/products/${product.id}/variants/new|}" class="btn btn-success">+ Thêm Variant</a>
-        </div>
+    <!-- Không có quyền VIEW -->
+    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PRODUCT_VARIANT_VIEW','ROLE_ADMIN')">
+        Bạn không có quyền xem Variant của sản phẩm này.
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle w-100">
-            <colgroup>
-                <col style="width: 18%;">
-                <col style="width: 14%;">
-                <col style="width: 12%;">
-                <col style="width: 14%;">
-                <col style="width: 10%;">
-                <col style="width: 260px;">
-            </colgroup>
-            <thead class="table-light">
-            <tr>
-                <th>SKU</th>
-                <th>Color</th>
-                <th>Size</th>
-                <th>Price</th>
-                <th>Active</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="v : ${variants?.content}">
-                <td th:text="${v.sku}">SKU</td>
-                <td th:text="${v.color}">Color</td>
-                <td th:text="${v.size}">Size</td>
-                <td th:text="${#numbers.formatDecimal(v.price, 0, 'DEFAULT', 2, 'DEFAULT')}">0.00</td>
-                <td>
-                    <span th:class="${v.active} ? 'badge bg-success' : 'badge bg-secondary'"
-                          th:text="${v.active} ? 'Active' : 'Inactive'">Active</span>
-                </td>
-                <td class="d-flex flex-wrap gap-2">
-                    <a th:href="@{|/admin/catalog/products/${product.id}/variants/edit/${v.id}|}"
-                       class="btn btn-sm btn-warning">Edit</a>
+    <!-- Có quyền VIEW -->
+    <div sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_VIEW','ROLE_ADMIN')" class="wrap">
 
-                    <a th:href="@{|/admin/catalog/products/${product.id}/variants/delete/${v.id}|}"
-                       onclick="return confirm('Xóa variant này?');"
-                       class="btn btn-sm btn-danger">Delete</a>
+        <h1 class="page-title" th:text="'Variants - ' + ${product.name}">Variants</h1>
 
-                </td>
-            </tr>
+        <!-- Toolbar -->
+        <div class="toolbar d-flex align-items-center justify-content-between gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <a th:href="@{/admin/catalog/products}" class="btn btn-outline-secondary">← Quay lại Products</a>
+                <a th:href="@{|/admin/catalog/products/${product.id}/edit|}"
+                   class="btn btn-outline-primary"
+                   sec:authorize="hasAnyAuthority('PRODUCT_EDIT','ROLE_ADMIN')">Sửa Product</a>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a th:href="@{|/admin/catalog/products/${product.id}/variants/new|}"
+                   class="btn btn-success"
+                   sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_CREATE','ROLE_ADMIN')">+ Thêm Variant</a>
+            </div>
+        </div>
 
-            <tr th:if="${variants == null || #lists.isEmpty(variants.content)}">
-                <td colspan="6" class="text-center">No data</td>
-            </tr>
-            </tbody>
-        </table>
+        <!-- Table -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle w-100">
+                    <colgroup>
+                        <col style="width:18%;">
+                        <col style="width:14%;">
+                        <col style="width:12%;">
+                        <col style="width:14%;">
+                        <col style="width:10%;">
+                        <col style="width:260px;">
+                    </colgroup>
+                    <thead class="table-light">
+                    <tr>
+                        <th>SKU</th>
+                        <th>Color</th>
+                        <th>Size</th>
+                        <th>Price</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="v : ${variants != null ? variants.content : {}}">
+                        <td class="col-left" th:text="${v.sku}">SKU</td>
+                        <td class="col-left" th:text="${v.color}">Color</td>
+                        <td class="col-left" th:text="${v.size}">Size</td>
+                        <td class="col-right" th:text="${#numbers.formatDecimal(v.price, 1, 'DEFAULT', 2, 'DEFAULT')}">0.00</td>
+                        <td class="col-center">
+              <span th:class="${v.active} ? 'badge bg-success' : 'badge bg-secondary'"
+                    th:text="${v.active} ? 'Active' : 'Inactive'">Active</span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a th:href="@{|/admin/catalog/products/${product.id}/variants/edit/${v.id}|}"
+                                   class="btn btn-sm btn-warning"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_EDIT','ROLE_ADMIN')">Edit</a>
+
+                                <a th:href="@{|/admin/catalog/products/${product.id}/variants/delete/${v.id}|}"
+                                   onclick="return confirm('Xóa variant này?');"
+                                   class="btn btn-sm btn-danger"
+                                   sec:authorize="hasAnyAuthority('PRODUCT_VARIANT_DELETE','ROLE_ADMIN')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${variants == null || #lists.isEmpty(variants.content)}">
+                        <td colspan="6" class="text-center" style="padding:18px;color:var(--muted);">No data</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:with="baseUrl=@{|/admin/catalog/products/${product.id}/variants|}"
+             th:replace="~{layout/components/_pagination :: body(page=${variants}, baseUrl=${baseUrl})}"></div>
     </div>
-
-    <!-- Pagination -->
-    <div th:with="baseUrl=@{|/admin/catalog/products/${product.id}/variants|}"
-         th:replace="~{layout/components/_pagination :: body(page=${variants}, baseUrl=${baseUrl})}"></div>
 </section>
 </body>
 </html>

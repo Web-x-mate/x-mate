@@ -3,6 +3,7 @@ package xmate.com.security;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -32,15 +33,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String p = request.getServletPath();
         // Static, trang public
         if (p.startsWith("/css/") || p.startsWith("/js/") || p.startsWith("/images/")
+                || p.startsWith("/client/")
                 || p.startsWith("/webjars/") || p.startsWith("/favicon")
-                || p.equals("/") || p.equals("/auth/login") || p.startsWith("/auth/register")
+                || p.equals("/auth/login") || p.startsWith("/auth/register")
                 || p.startsWith("/oauth2/")) {
             return true;
         }
         // ⬇⬇⬇ BỎ LỌC CHO TOÀN BỘ API AUTH
-        if (p.startsWith("/api/auth/")) {
+        if (p.equals("/api/auth/register")
+                || p.equals("/api/auth/login")
+                || p.equals("/api/auth/refresh")
+                || p.equals("/api/auth/google")
+                || p.equals("/api/auth/facebook")) {
             return true;
         }
+        if (p.startsWith("/api/admin/auth/")) return true;
         // Bỏ lọc cho preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
@@ -89,16 +96,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String username = jwtService.extractUsername(token);
                 if (username != null) {
                     UserDetails user = userDetailsService.loadUserByUsername(username);
+                    var claims = jwtService.extractClaims(token);
                     var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    authentication.setDetails(claims);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-                chain.doFilter(request, response);
             } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                clearAccessTokenCookie(response);
             }
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+        } catch (JwtException | IllegalArgumentException ex) {
+            clearAccessTokenCookie(response);
         }
+
+        chain.doFilter(request, response);
+    }
+
+    private void clearAccessTokenCookie(HttpServletResponse response) {
+        Cookie expired = new Cookie("ACCESS_TOKEN", "");
+        expired.setHttpOnly(true);
+        expired.setPath("/");
+        expired.setMaxAge(0);
+        response.addCookie(expired);
     }
 
 }

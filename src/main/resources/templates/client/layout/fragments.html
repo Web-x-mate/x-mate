@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block layout:fragment="headExtras"></th:block>
+
+<th:block layout:fragment="alerts">
+    <div class="alert-stack" id="alert-stack"></div>
+</th:block>
+
+<th:block layout:fragment="header(primaryCategories, searchQuery, cartQuantity)">
+    <header class="site-header">
+        <div class="top-strip">
+            <div class="container">
+                <ul class="top-links">
+                    <li><a th:href="@{/ve-chung-toi}">Về X-MATE</a></li>
+                    <li><a th:href="@{/cxp}">CXP</a></li>
+                </ul>
+                <ul class="top-links top-links--right">
+                    <li><a th:href="@{/coolclub}">X-Club</a></li>
+                    <li><a th:href="@{/blog}">Blog</a></li>
+                    <li><a th:href="@{/cskh}">CSKH</a></li>
+                    <!-- Chưa đăng nhập: hiển thị Đăng nhập -->
+                    <li sec:authorize="isAnonymous()">
+                        <a th:href="@{/auth/login}">Đăng nhập</a>
+                    </li>
+                    <!-- Đã đăng nhập: hiển thị Đăng xuất (POST /auth/logout) -->
+                    <li sec:authorize="isAuthenticated()">
+                        <a href="#" onclick="document.getElementById('logoutForm').submit(); return false;">Đăng xuất</a>
+                        <form id="logoutForm" th:action="@{/auth/logout}" method="post" style="display:none"></form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="main-bar">
+            <div class="container">
+                <a class="brand" th:href="@{/}" aria-label="Trang chủ X-Mate">
+                    <img th:src="@{/client/images/logo1.png}" alt="X-Mate" height="60"/>
+                </a>
+
+                <nav class="primary-nav">
+                    <a class="primary-nav__item is-new" th:href="@{/hang-moi}">NEW</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nam')}">NAM</a>
+                    <a class="primary-nav__item" th:href="@{/category/{slug}(slug='nu')}">NỮ</a>
+
+                    <th:block th:each="group : ${primaryCategories}">
+                        <div class="primary-nav__group"
+                             th:if="${group.slug() != 'nam' and group.slug() != 'nu'}"
+                             th:classappend="${group.children() != null and !group.children().isEmpty()} ? ' has-dropdown'">
+                            <a class="primary-nav__item"
+                               th:href="@{/category/{slug}(slug=${group.slug()})}"
+                               th:text="${group.title()}">Danh mục</a>
+
+                            <ul class="primary-nav__dropdown"
+                                th:if="${group.children() != null and !group.children().isEmpty()}"
+                                th:classappend="${group.children().size() <= 6} ? ' is-row'">
+                                <li class="primary-nav__column"
+                                    th:each="column : ${group.children()}">
+                                    <a class="primary-nav__column-title"
+                                       th:href="@{/category/{slug}(slug=${column.slug()})}"
+                                       role="menuitem">
+                                        <span th:text="${column.title()}">Danh mục</span>
+                                        <span class="primary-nav__column-arrow">+</span>
+                                    </a>
+                                    <ul class="primary-nav__column-list"
+                                        th:if="${column.items() != null and !column.items().isEmpty()}">
+                                        <li th:each="item : ${column.items()}">
+                                            <a th:href="@{/category/{slug}(slug=${item.slug()})}"
+                                               th:text="${item.title()}"></a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </th:block>
+
+                    <a class="primary-nav__item" th:href="@{/the-thao}">THỂ THAO</a>
+                    <a class="primary-nav__item is-sale" th:href="@{/sale}">
+                        <span class="primary-nav__sale">SALE</span>
+                        <span class="primary-nav__sale-tag">-50%</span>
+                    </a>
+                    <!-- <a class="primary-nav__item" th:href="@{/cs}">C&amp;S</a> -->
+                </nav>
+
+                <div class="header-actions">
+                    <form class="search-form" th:action="@{/}" method="get" role="search">
+                        <label class="sr-only" for="header-search">Tìm kiếm sản phẩm</label>
+                        <input id="header-search"
+                               type="search"
+                               name="q"
+                               placeholder="Tìm kiếm..."
+                               th:value="${searchQuery} ?: ''"
+                               autocomplete="off"/>
+                        <button type="submit" aria-label="Tìm kiếm">
+                            <span class="icon icon--search"></span>
+                        </button>
+                    </form>
+                    <!-- Icon tài khoản: nếu ẩn danh -> đi login, nếu đã login -> đi profile -->
+                    <a class="action-link" sec:authorize="isAnonymous()" th:href="@{/auth/login}" aria-label="Tài khoản">
+                        <span class="fa-solid fa-user"></span>
+                    </a>
+                    <a class="action-link" sec:authorize="isAuthenticated()" th:href="@{/account/profile}" aria-label="Tài khoản">
+                        <span class="fa-solid fa-user"></span>
+                    </a>
+                    <a class="action-link cart" th:href="@{/cart}" aria-label="Giỏ hàng">
+                        <span class="fa-solid fa-cart-shopping"></span>
+                        <span class="cart__badge"
+                              th:style="${cartQuantity != null and cartQuantity > 0} ? '' : 'display:none'"
+                              th:text="${cartQuantity != null and cartQuantity > 0} ? ${cartQuantity} : ''"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+</th:block>
+
+<th:block layout:fragment="footer">
+    <footer class="site-footer">
+        <section class="footer-feedback">
+            <div class="footer-feedback__content">
+                <h2>COOLMATE lắng nghe bạn!</h2>
+                <p>Chúng tôi luôn trân trọng và mong đợi mọi ý kiến đóng góp từ khách hàng để có thể nâng cấp trải nghiệm dịch vụ và sản phẩm tốt hơn nữa.</p>
+                <a class="footer-feedback__button" th:href="@{/feedback}">ĐÓNG GÓP Ý KIẾN</a>
+            </div>
+            <div class="footer-feedback__contacts">
+                <div class="footer-contact">
+                    <span class="footer-contact__icon">
+                        <span class="icon-phone"></span>
+                    </span>
+                    <div class="footer-contact__body">
+                        <span class="footer-contact__label">Hotline</span>
+                        <a href="tel:1900272737">1900.272737</a>
+                        <span class="footer-contact__note">028.7777.2737</span>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <span class="footer-contact__icon">
+                        <span class="icon-mail"></span>
+                    </span>
+                    <div class="footer-contact__body">
+                        <span class="footer-contact__label">Email</span>
+                        <a href="mailto:cool@coolmate.me">Cool@coolmate.me</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="footer-columns">
+            <div class="footer-column">
+                <div class="footer-column__group">
+                    <h3>COOLCLUB</h3>
+                    <ul>
+                        <li><a th:href="@{/coolclub/account}">Tài khoản CoolClub</a></li>
+                        <li><a th:href="@{/coolclub/membership}">Đăng ký thành viên</a></li>
+                        <li><a th:href="@{/coolclub/perks}">Ưu đãi &amp; Đặc quyền</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column__group">
+                    <h3>TÀI LIỆU - TUYỂN DỤNG</h3>
+                    <ul>
+                        <li><a th:href="@{/careers}">Tuyển dụng</a></li>
+                        <li><a th:href="@{/press}">Đăng ký bản quyền</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-column">
+                <div class="footer-column__group">
+                    <h3>CHÍNH SÁCH</h3>
+                    <ul>
+                        <li><a th:href="@{/policy/returns}">Chính sách đổi trả 60 ngày</a></li>
+                        <li><a th:href="@{/policy/promotions}">Chính sách khuyến mại</a></li>
+                        <li><a th:href="@{/policy/security}">Chính sách bảo mật</a></li>
+                        <li><a th:href="@{/policy/shipping}">Chính sách giao hàng</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column__group">
+                    <h3>COOLMATE.ME</h3>
+                    <ul>
+                        <li><a th:href="@{/schedule}">Lịch sử thay đổi website</a></li>
+                        <li><a th:href="@{/app}">Ứng dụng di động</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-column">
+                <div class="footer-column__group">
+                    <h3>CHĂM SÓC KHÁCH HÀNG</h3>
+                    <ul>
+                        <li><a th:href="@{/experience}">Trải nghiệm mua sắm 100% hài lòng</a></li>
+                        <li><a th:href="@{/faq}">Hỏi đáp - FAQs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column__group">
+                    <h3>KIẾN THỨC MẶC ĐẸP</h3>
+                    <ul>
+                        <li><a th:href="@{/guides/size}">Hướng dẫn chọn size</a></li>
+                        <li><a th:href="@{/blog}">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>VỀ COOLMATE</h3>
+                <ul>
+                    <li><a th:href="@{/about/code-of-conduct}">Quy tắc ứng xử của Coolmate</a></li>
+                    <li><a th:href="@{/about/coolmate-101}">Coolmate 101</a></li>
+                    <li><a th:href="@{/about/service-excellence}">DVKH xuất sắc</a></li>
+                    <li><a th:href="@{/about/story}">Câu chuyện về Coolmate</a></li>
+                    <li><a th:href="@{/about/factory}">Nhà máy</a></li>
+                    <li><a th:href="@{/about/care-share}">Care &amp; Share</a></li>
+                    <li><a th:href="@{/about/sustainability}">Cam kết bền vững</a></li>
+                    <li><a th:href="@{/about/vision-2030}">Tầm nhìn 2030</a></li>
+                </ul>
+            </div>
+            <div class="footer-column footer-column--wide">
+                <h3>ĐỊA CHỈ LIÊN HỆ</h3>
+                <ul>
+                    <li><strong>Văn phòng Hà Nội:</strong> Tầng 3-4, Tòa nhà BMM, Km2, Đường Phùng Hưng, Phường Hà Đông, Thành phố Hà Nội, Việt Nam</li>
+                    <li><strong>Trung tâm vận hành Hà Nội:</strong> Lô C8, KCN Lai Yên, Xã Lai Yên, Huyện Hoài Đức, Thành phố Hà Nội</li>
+                    <li><strong>Văn phòng &amp; Trung tâm vận hành TP.HCM:</strong> Lô C3, đường D2, KCN Cát Lái, Thành phố Thủ Đức, TP. Hồ Chí Minh</li>
+                    <li><strong>Trung tâm R&amp;D:</strong> T6-01, The Manhattan Vinhomes Grand Park, Long Bình, TP. Thủ Đức</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="footer-bottom">
+            <p>&copy;
+                <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span>
+                CÔNG TY TNHH FASTECHASIA. Mã số doanh nghiệp: 0108670038. Giấy chứng nhận đăng ký doanh nghiệp do Sở Kế hoạch &amp; Đầu tư TP Hà Nội cấp lần đầu ngày 20/02/2019.
+            </p>
+        </section>
+    </footer>
+</th:block>
+
+<th:block layout:fragment="bodyExtras"></th:block>
+</body>
+</html>

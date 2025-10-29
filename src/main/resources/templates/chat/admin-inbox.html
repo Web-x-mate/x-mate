@@ -1,0 +1,98 @@
+<!--<!doctype html>-->
+<!--<html lang="vi" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Inbox</title>-->
+<!--    <link rel="stylesheet" th:href="@{/css/admin-inbox.css}">-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div class="sidebar">-->
+<!--    <input id="inboxSearch" type="text" placeholder="Tìm theo email...">-->
+<!--    <div id="inboxTotal" class="total"></div>-->
+<!--    <div id="inboxList" class="inbox"></div>-->
+<!--</div>-->
+
+<!--<script th:src="@{/js/admin-inbox-embed.js}"></script>-->
+<!--<script>-->
+<!--    window.IS_ADMIN = true;-->
+<!--    window.WS_URL = '/ws';-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin-inbox.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+
+<body>
+<div class="main-layout">
+    <div class="sidebar">
+        <input id="inboxSearch" type="text" placeholder="Tìm theo email...">
+        <div id="inboxTotal" class="total">1 cuộc hội thoại</div>
+        <div id="inboxList" class="inbox">
+            <div class="inbox-item active">
+                <div class="email">user1@example.com</div>
+                <button class="del" aria-label="Xóa">×</button>
+                <div class="preview">hello</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-panel">
+        <div class="chat-header">
+            <span class="room-info" id="roomInfo">Phòng: u-1</span>
+            <span class="user-info" id="userInfo">Đang chat với: vo.anthai142@gmail.com</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="user-message-wrap">
+                <div class="message-bubble">
+                    <div class="email">user1@example.com</div>
+                    hello
+                </div>
+            </div>
+            <div class="user-message-wrap">
+                <div class="message-bubble">
+                    <div class="email">user1@example.com</div>
+                    hello
+                </div>
+            </div>
+
+            <div class="admin-message-wrap">
+                <div class="message-bubble">
+                    <div class="email">Bạn (Admin)</div>
+                    hi
+                </div>
+            </div>
+            <div class="admin-message-wrap">
+                <div class="message-bubble">
+                    <div class="email">Bạn (Admin)</div>
+                    Tôi đã kiểm tra yêu cầu của bạn.
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <textarea id="chatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+            <button id="sendBtn">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/admin-inbox-embed.js}"></script>
+<script>
+    window.IS_ADMIN = true;
+    window.WS_URL = '/ws';
+    window.CHAT_ROOM = 'u-1';
+    window.CURRENT_USER_EMAIL = 'vo.anthai142@gmail.com';
+</script>
+</body>
+</html>
