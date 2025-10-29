@@ -13,37 +13,80 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
           referrerpolicy="no-referrer"/>
-    <link rel="stylesheet" th:href="@{/css/checkout-ui.css}"/>
+    <link rel="stylesheet" th:href="@{/css/checkout.css}"/>
 </th:block>
 
 <div layout:fragment="content">
-    <div class="container page checkout-page">
-        <h1>Thông tin vận chuyển</h1>
-
-        <div class="grid">
-            <section class="card">
-                <form id="shippingForm" class="form">
-                    <div class="two">
-                        <label>Họ tên<input id="fullname" placeholder="Nhập họ và tên"/></label>
-                        <label>Giới tính<select>
-                            <option>Nam</option>
-                            <option>Nữ</option>
-                        </select></label>
-                    </div>
-                    <div class="two">
-                        <label>Email <input id="email" type="email" placeholder="Nhập email của bạn"
-                                            th:value="${meEmail}"/></label>
-                        <label>Số điện thoại<input id="phone" placeholder="Nhập số điện thoại"/></label>
-                    </div>
-                    <label>Số địa chỉ
-                        <div style="display:flex;gap:8px;align-items:center">
-                            <input id="address1" placeholder="Nhập địa chỉ" style="flex:1"/>
-                            <button type="button" id="btnPickAddr" class="btn outline">Chọn</button>
+    <div class="checkout-page">
+        <div class="checkout-shell">
+            <div class="checkout-grid">
+                <section class="checkout-card">
+                    <div class="shipping-form">
+                        <div class="shipping-header">
+                            <h2>Thông tin vận chuyển</h2>
+                            <th:block th:if="${addresses != null and !addresses.isEmpty()}">
+                                <button type="button" class="shipping-picker" data-address-picker-open>
+                                    <i class="fa-solid fa-address-book"></i>
+                                    <span>Chọn từ sổ địa chỉ</span>
+                                </button>
+                            </th:block>
+                            <th:block th:if="${addresses == null or addresses.isEmpty()}">
+                                <span class="shipping-hint">
+                                    Bạn chưa có địa chỉ nào. Vui lòng điền thông tin bên dưới.
+                                </span>
+                            </th:block>
                         </div>
-                    </label>
-                    <div class="two">
-                        <label>Tỉnh/Thành phố<input id="city" placeholder="Nhập Tỉnh/Thành phố"/></label>
-                        <label>Ghi chú<input id="note" placeholder="Ghi chú (không bắt buộc)"/></label>
+
+                        <div class="shipping-grid">
+                            
+
+                            <div class="shipping-row">
+                                <div class="shipping-field">
+                                    <label for="shippingFullName">Họ tên</label>
+                                    <input id="shippingFullName" class="shipping-input" type="text" name="fullName"
+                                           placeholder="Nhập họ tên của bạn"
+                                           data-field="fullName"
+                                           th:value="${selectedAddress != null ? selectedAddress.fullName : ''}"/>
+                                </div>
+                                <div class="shipping-field">
+                                    <label for="shippingPhone">Số điện thoại</label>
+                                    <input id="shippingPhone" class="shipping-input" type="tel" name="phone"
+                                           placeholder="Nhập số điện thoại"
+                                           data-field="phone"
+                                           th:value="${selectedAddress != null ? selectedAddress.phone : ''}"/>
+                                </div>
+                            </div>
+
+                            <div class="shipping-field">
+                                <label for="shippingAddress1">Địa chỉ (trước số nhà)</label>
+                                <input id="shippingAddress1" class="shipping-input" type="text" name="line1"
+                                       placeholder="Nhập địa chỉ (số nhà, đường)"
+                                       data-field="line1"
+                                       th:value="${selectedAddress != null ? selectedAddress.line1 : ''}"/>
+                            </div>
+
+                            <div class="shipping-field shipping-field--triple">
+                                <label>Địa bàn hành chính</label>
+                                <div class="shipping-triple">
+                                    <input class="shipping-input" type="text" name="city" placeholder="Tỉnh/Thành phố"
+                                           data-field="city"
+                                           th:value="${selectedAddress != null ? selectedAddress.city : ''}"/>
+                                    <input class="shipping-input" type="text" name="district" placeholder="Quận/Huyện"
+                                           data-field="district"
+                                           th:value="${selectedAddress != null ? selectedAddress.district : ''}"/>
+                                    <input class="shipping-input" type="text" name="ward" placeholder="Xã/Phường"
+                                           data-field="ward"
+                                           th:value="${selectedAddress != null ? selectedAddress.ward : ''}"/>
+                                </div>
+                            </div>
+
+                            <div class="shipping-field">
+                                <label for="shippingNote">Ghi chú</label>
+                                <textarea id="shippingNote" class="shipping-input shipping-input--textarea"
+                                          name="note"
+                                          data-field="note"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="voucher-strip" id="voucherStrip" hidden>
@@ -53,108 +96,173 @@
                     </div>
 
                     <div class="coupon-row">
-                        <input id="coupon" placeholder="Nhập mã giảm giá" th:value="${appliedCouponCode}"/>
+                        <input class="shipping-input" id="coupon" placeholder="Nhập mã giảm giá"
+                               th:value="${appliedCouponCode}"/>
                         <button type="button" id="btnApply" class="btn outline">Áp dụng</button>
                     </div>
-                    <div id="couponMsg" class="muted" style="margin-top:6px">
+                    <div id="couponMsg" class="shipping-hint" style="margin-top:6px">
                         <span class="ok" th:if="${appliedCouponCode != null}">Đã áp dụng mã giảm giá</span>
                     </div>
-                </form>
-            </section>
+                </section>
 
-            <aside class="card summary" id="summary">
-                <h3>Chi tiết đơn hàng</h3>
-                <div id="items" class="muted" style="margin-bottom:8px">
-                    <div th:each="item : ${cartItems}" class="cart-line-summary">
-                        <span th:text="${item.productName} + ' x' + ${item.qty}">Sản phẩm x1</span>
-                        <b th:text="${#numbers.formatDecimal(item.lineTotal,0,'POINT',0,'COMMA')} + ' đ'">0 đ</b>
-                    </div>
-                </div>
-                <ul class="sum-list">
-                    <li><span>Tạm tính</span><b id="p-sub">0 đ</b></li>
-                    <li><span>Giảm giá</span><b id="p-discount">0 đ</b></li>
-                    <li><span>Phí vận chuyển</span><b id="p-ship">0 đ</b></li>
-                </ul>
-                <div class="grand"><span>Tổng cộng</span><b id="p-total">0 đ</b></div>
-            </aside>
-        </div>
-
-        <hr class="spacer"/>
-        <h2>Hình thức thanh toán</h2>
-        <section class="paylist">
-            <label class="payitem">
-                <input type="radio" name="pay" value="COD" checked>
-                <div class="content">
-                    <img th:src="@{/images/cod.png}" alt="COD" class="pay-logo">
-                    <div>
-                        <div class="title">Thanh toán khi nhận hàng</div>
-                        <div class="sub">Trả tiền mặt</div>
-                    </div>
-                </div>
-            </label>
-            <label class="payitem">
-                <input type="radio" name="pay" value="VIETQR">
-                <div class="content">
-                <img th:src="@{/images/sepay.webp}" alt="VIETQR" class="pay-logo">
-                <div><div class="title">Chuyển khoản Sepay</div><div class="sub">Tự động điền nội dung</div></div>
-                </div>
-            </label>
-        </section>
-
-        <section id="vietqrBox" class="card hidden" th:if="${order != null}">
-            <div class="hd">Chuyển khoản VietQR</div>
-            <div class="bd">
-                <div class="qr-row">
-                    <div class="qr"><img th:src="${qrUrl}" alt="VietQR"></div>
-                    <div class="qr-meta">
-                        <div class="muted">Số tiền: <b th:text="${#numbers.formatInteger(order.total,3,'POINT')} + ' đ'"></b></div>
-                        <div class="muted">Nội dung: <b th:text="${transferNote}">XMATE-ODRxxx</b></div>
-                        <small>Chuyển đúng số tiền và nội dung để được duyệt nhanh!</small>
-                    </div>
-                </div>
-                <hr class="sep"/>
-                <h4>Chuyển khoản? Gửi biên lai</h4>
-                <form id="proofForm" class="uploader" enctype="multipart/form-data">
-                    <input type="hidden" name="orderCode" th:value="${order.code}">
-                    <input type="file" name="file" id="pfFile" accept="image/*" required>
-                    <input type="text" name="note" id="pfNote" placeholder="Ghi chú">
-                    <div class="preview" id="pfPreview" hidden>
-                        <img id="pfPreviewImg" alt="preview">
-                        <div>
-                            <div id="pfPreviewName" class="muted"></div>
-                            <div id="pfPreviewSize" class="muted"></div>
+                <th:block th:if="${addresses != null and !addresses.isEmpty()}">
+                    <div class="address-picker-overlay hidden" data-address-picker-overlay></div>
+                    <div class="address-picker hidden" data-address-picker-modal>
+                        <div class="address-picker__panel">
+                            <div class="address-picker__header">
+                                <h3>Địa chỉ đã lưu</h3>
+                                <button type="button" data-address-picker-close>Đóng</button>
+                            </div>
+                            <div class="address-picker__list">
+                                <div class="address-picker__item" th:each="addr : ${addresses}">
+                                    <div class="address-picker__info">
+                                        <div class="address-picker__name" th:text="${addr.fullName}">Nguyễn Văn A</div>
+                                        <div class="address-picker__phone" th:text="${addr.phone}">0123456789</div>
+                                        <div class="address-picker__line" th:text="${addr.line1}">123 Nguyễn Huệ</div>
+                                        <div class="address-picker__line"
+                                             th:text="${addr.ward} + ', ' + ${addr.district} + ', ' + ${addr.city}">
+                                            Phường 1, Quận 1, TP.HCM
+                                        </div>
+                                    </div>
+                                    <button class="address-picker__use"
+                                            type="button"
+                                            data-address-pick
+                                            th:attr="data-id=${addr.id},
+                                                     data-full-name=${addr.fullName},
+                                                     data-phone=${addr.phone},
+                                                     data-line1=${addr.line1},
+                                                     data-city=${addr.city},
+                                                     data-district=${addr.district},
+                                                     data-ward=${addr.ward}">
+                                        Sử dụng địa chỉ này
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn" id="pfSend" type="submit">Gửi biên lai</button>
-                    <div class="status"><b>Trạng thái:</b> <span id="pfStatusText" class="warn">Chưa gửi</span></div>
-                </form>
-            </div>
-        </section>
+                </th:block>
 
-        <div class="dock">
-            <div class="container dock-in">
-                <div class="dock-left">
-                    <div class="dock-meta">
-                        <span class="dock-title">Phương thức:</span>
-                        <span id="dockPayChip" class="pay-chip"></span>
-                        <span class="dock-voucher muted">Voucher: <span id="dockCoupon">Chưa áp dụng</span></span>
+                <aside class="checkout-card summary-card" id="summary">
+                    <h3>Chi tiết đơn hàng</h3>
+                    <div id="items" class="summary-lines">
+                        <div th:each="item : ${cartItems}" class="cart-line-summary">
+                            <span th:text="${item.productName} + ' x' + ${item.qty}">Sản phẩm x1</span>
+                            <b th:text="${#numbers.formatDecimal(item.lineTotal,0,'POINT',0,'COMMA')} + ' đ'">0 đ</b>
+                        </div>
+                        <div th:if="${cartItems == null or #lists.isEmpty(cartItems)}" class="summary-empty">
+                            Giỏ hàng của bạn đang trống.
+                        </div>
                     </div>
+
+                    <ul class="sum-list">
+                        <li><span>Tạm tính</span><b id="p-sub">0 đ</b></li>
+                        <li><span>Giảm giá</span><b id="p-discount">0 đ</b></li>
+                        <li><span>Phí vận chuyển</span><b id="p-ship">0 đ</b></li>
+                    </ul>
+                    <div class="grand"><span>Tổng cộng</span><b id="p-total">0 đ</b></div>
+
+                    <h3>Hình thức thanh toán</h3>
+                    <section class="paylist">
+                        <label class="payitem">
+                            <input type="radio" name="pay" value="COD" checked>
+                            <div class="content">
+                                <img th:src="@{/images/cod.png}" alt="COD" class="pay-logo">
+                                <div>
+                                    <div class="title">Thanh toán khi nhận hàng</div>
+                                    <div class="sub">Trả tiền mặt</div>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="payitem">
+                            <input type="radio" name="pay" value="VIETQR">
+                            <div class="content">
+                                <img th:src="@{/images/vnpay.png}" alt="VIETQR" class="pay-logo">
+                                <div>
+                                    <div class="title">Chuyển khoản VietQR</div>
+                                    <div class="sub">Tự động đối soát nội dung</div>
+                                </div>
+                            </div>
+                        </label>
+                    </section>
+                </aside>
+            </div>
+        </div>
+
+        <div class="checkout-dock">
+            <div class="checkout-dock__inner">
+                <div class="dock-meta">
+                    <span class="dock-title">Phương thức:</span>
+                    <span id="dockPayChip" class="pay-chip"></span>
+                    <span class="dock-voucher">
+                        Voucher: <span id="dockCoupon">Chưa áp dụng</span>
+                    </span>
                 </div>
                 <div class="dock-right">
                     <div class="dock-total">
-                        <div class="muted">Tổng cộng</div>
-                        <div id="dockTotal" class="big">0 đ</div>
+                        <div class="dock-total__label">Tổng cộng</div>
+                        <div id="dockTotal" class="dock-total__value">0 đ</div>
                     </div>
                     <button id="btnPlace" class="btn primary">Đặt hàng</button>
                 </div>
             </div>
         </div>
-
-        <div style="height:80px"></div>
     </div>
 </div>
 
 <th:block layout:fragment="bodyExtras">
+    <script th:inline="javascript">
+        (function () {
+            const overlay = document.querySelector('[data-address-picker-overlay]');
+            const modal = document.querySelector('[data-address-picker-modal]');
+            const openBtn = document.querySelector('[data-address-picker-open]');
+            const closeBtn = document.querySelector('[data-address-picker-close]');
+            const useBtns = document.querySelectorAll('[data-address-pick]');
+
+            if (!openBtn || !modal) return;
+
+            const fields = {
+                fullName: document.querySelector('[data-field="fullName"]'),
+                phone: document.querySelector('[data-field="phone"]'),
+                line1: document.querySelector('[data-field="line1"]'),
+                city: document.querySelector('[data-field="city"]'),
+                district: document.querySelector('[data-field="district"]'),
+                ward: document.querySelector('[data-field="ward"]')
+            };
+
+            const fill = (el, value) => {
+                if (el) el.value = value || '';
+            };
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                overlay?.classList.remove('hidden');
+                document.body.classList.add('is-modal-open');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                overlay?.classList.add('hidden');
+                document.body.classList.remove('is-modal-open');
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+            overlay?.addEventListener('click', closeModal);
+
+            useBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const ds = btn.dataset;
+                    fill(fields.fullName, ds.fullName);
+                    fill(fields.phone, ds.phone);
+                    fill(fields.line1, ds.line1);
+                    fill(fields.city, ds.city);
+                    fill(fields.district, ds.district);
+                    fill(fields.ward, ds.ward);
+                    closeModal();
+                });
+            });
+        })();
+    </script>
     <script th:src="@{/js/checkout.js}"></script>
 </th:block>
 </body>

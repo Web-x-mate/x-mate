@@ -28,15 +28,17 @@
     pfSend: byId('pfSend'),
     pfStatusText: byId('pfStatusText'),
     // profile
-    fullname: byId('fullname'),
+    fullname: byId('shippingFullName') || byId('fullname'),
     email: byId('email'),
-    phone: byId('phone'),
+    phone: byId('shippingPhone') || byId('phone'),
     gender: document.querySelector('section.card form select') || document.querySelector('select'),
     // address
     btnPickAddr: byId('btnPickAddr'),
-    address1: byId('address1'),
-    city: byId('city'),
-    note: byId('note'),
+    address1: byId('shippingAddress1') || byId('address1'),
+    city: byId('shippingCity') || byId('city'),
+    district: byId('shippingDistrict') || byId('district'),
+    ward: byId('shippingWard') || byId('ward'),
+    note: byId('shippingNote') || byId('note'),
   };
 
   const CSRF_TOKEN = document.querySelector('meta[name="_csrf"]')?.content;
@@ -89,11 +91,14 @@
   ;['input','change'].forEach(ev=>{
     els.address1?.addEventListener(ev, ()=>{ const hid=byId('addressId'); if(hid) hid.value=''; state.usingTypedAddress=true; });
     els.city?.addEventListener(ev, ()=>{ const hid=byId('addressId'); if(hid) hid.value=''; state.usingTypedAddress=true; });
+    els.district?.addEventListener(ev, ()=>{ const hid=byId('addressId'); if(hid) hid.value=''; state.usingTypedAddress=true; });
+    els.ward?.addEventListener(ev, ()=>{ const hid=byId('addressId'); if(hid) hid.value=''; state.usingTypedAddress=true; });
   });
 
   // address picker (simple modal inline)
   let pickerEl=null;
   async function openAddrPicker(){
+    if (inlinePicker) return;
     if(!state.addresses.length){
       try{ const res=await fetch('/api/me/addresses',{credentials:'include'}); if(res.ok) state.addresses=await res.json(); }catch{}
     }
@@ -155,7 +160,10 @@
       }else alert('Không thể lưu địa chỉ (HTTP '+res.status+')');
     }catch{ alert('Không thể lưu địa chỉ lúc này.'); }
   }
-  els.btnPickAddr?.addEventListener('click', openAddrPicker);
+  const inlinePicker = document.querySelector('[data-address-picker-modal]');
+  if (!inlinePicker) {
+    els.btnPickAddr?.addEventListener('click', openAddrPicker);
+  }
 
   // payment
   function getPaymentMethod(){ const r=document.querySelector('input[name="pay"]:checked'); return r ? r.value.toUpperCase() : 'COD'; }
@@ -325,7 +333,8 @@
       payload={
         addressId:null, couponCode:(els.coupon?.value||'').trim()||null, paymentMethod:getPaymentMethod(), note:els.note?.value||null,
         newAddressFullName:els.fullname?.value, newAddressPhone:els.phone?.value, newAddressEmail:els.email?.value,
-        newAddressLine1:els.address1?.value, newAddressCity:els.city?.value
+        newAddressLine1:els.address1?.value, newAddressCity:els.city?.value,
+        newAddressDistrict:els.district?.value, newAddressWard:els.ward?.value
       };
       if(!payload.newAddressFullName || !payload.newAddressPhone || !payload.newAddressLine1){
         alert('Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ.'); return;
