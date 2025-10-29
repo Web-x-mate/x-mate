@@ -32,7 +32,10 @@
     <!-- Khu vực chat -->
     <section class="chat-board">
         <div class="chat-header">
-            <div><b>Phòng:</b> <span th:text="${room}">u-0</span></div>
+            <div class="left">
+                <a class="back-link" th:href="${isAdmin} ? @{/admin} : @{/}"><span class="arrow">←</span> Về trang chủ</a>
+                <div><b>Phòng:</b> <span th:text="${room}">u-0</span></div>
+            </div>
             <div>Đang chat với: <b class="peer" th:text="${peerEmail}">peer@example.com</b></div>
         </div>
 
