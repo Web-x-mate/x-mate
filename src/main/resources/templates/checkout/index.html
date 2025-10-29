@@ -19,8 +19,6 @@
 <div layout:fragment="content">
     <div class="checkout-page">
         <div class="checkout-shell">
-            <h1>Thông tin vận chuyển</h1>
-
             <div class="checkout-grid">
                 <section class="checkout-card">
                     <div class="shipping-form">
@@ -40,13 +38,7 @@
                         </div>
 
                         <div class="shipping-grid">
-                            <div class="shipping-selected" th:if="${selectedAddress != null}">
-                                <span class="shipping-selected__label">Địa chỉ đang sử dụng:</span>
-                                <span class="shipping-selected__value"
-                                      th:text="${selectedAddress.line1} + ', ' + ${selectedAddress.ward} + ', ' + ${selectedAddress.district} + ', ' + ${selectedAddress.city}">
-                                    123 Lê Lợi, Phường Bến Nghé, Quận 1, TP.HCM
-                                </span>
-                            </div>
+                            
 
                             <div class="shipping-row">
                                 <div class="shipping-field">
@@ -92,26 +84,10 @@
                                 <label for="shippingNote">Ghi chú</label>
                                 <textarea id="shippingNote" class="shipping-input shipping-input--textarea"
                                           name="note"
-                                          placeholder="Nhập ghi chú cho đơn hàng (không bắt buộc)"
                                           data-field="note"></textarea>
                             </div>
                         </div>
                     </div>
-
-                    <!-- <div class="coupon-summary">
-                        <div class="coupon-summary__title">Voucher</div>
-                        <th:block th:if="${appliedCouponCode != null}">
-                            <div class="coupon-summary__pill">
-                                <span class="coupon-summary__code" th:text="${appliedCouponCode}">XMATE50</span>
-                                <th:block th:if="${appliedCouponLabel != null}">
-                                    <span class="coupon-summary__label" th:text="${appliedCouponLabel}">Giảm 50K</span>
-                                </th:block>
-                            </div>
-                        </th:block>
-                        <th:block th:if="${appliedCouponCode == null}">
-                            <div class="coupon-summary__empty">Chưa áp dụng</div>
-                        </th:block>
-                    </div> -->
 
                     <div class="voucher-strip" id="voucherStrip" hidden>
                         <button class="nav prev" type="button" disabled>‹</button>
