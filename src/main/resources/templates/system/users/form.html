@@ -2,6 +2,9 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
 <body>
+<head>
+    <link rel="stylesheet" th:href="@{/css/system/users/form.css}">
+</head>
 <section layout:fragment="content">
     <h1 th:text="${user.id != null} ? 'Sửa User' : 'Tạo User'">User</h1>
 
@@ -59,5 +62,6 @@
         </div>
     </form>
 </section>
+
 </body>
 </html>

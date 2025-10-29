@@ -73,6 +73,13 @@ public class AuthController {
                 .sameSite("Lax").path("/").build();
         res.addHeader("Set-Cookie", refresh.toString());
 
+        if (t.userToken() != null && !t.userToken().isBlank()) {
+            ResponseCookie userToken = ResponseCookie.from("token_user", t.userToken())
+                    .httpOnly(false).secure(cookieSecure)
+                    .sameSite("Lax").path("/").build();
+            res.addHeader("Set-Cookie", userToken.toString());
+        }
+
         return t;
     }
 
@@ -122,10 +129,18 @@ public class AuthController {
                 .path("/").sameSite("Lax").build();
         res.addHeader("Set-Cookie", access.toString());
         res.addHeader("Set-Cookie", refresh.toString());
+        if (t.userToken() != null && !t.userToken().isBlank()) {
+            ResponseCookie userToken = ResponseCookie.from("token_user", t.userToken())
+                    .httpOnly(false).secure(cookieSecure)
+                    .path("/").sameSite("Lax").build();
+            res.addHeader("Set-Cookie", userToken.toString());
+        }
     }
 
     private void clearAuthCookies(HttpServletResponse res){
         res.addHeader("Set-Cookie", "ACCESS_TOKEN=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
         res.addHeader("Set-Cookie", "REFRESH_TOKEN=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
+        res.addHeader("Set-Cookie", "token_user=; Path=/; Max-Age=0; SameSite=Lax");
     }
 }
+

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <!-- <link rel="stylesheet" th:href="@{/css/profile.css}"/> -->
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+</th:block>
+
+<div layout:fragment="content"
+     th:with="customer=${user != null ? user : me},
+              fullnameText=${customer != null and customer.fullname != null and !customer.fullname.isBlank() ? customer.fullname : 'Chưa cập nhật'},
+              phoneText=${customer != null and customer.phone != null and !customer.phone.isBlank() ? customer.phone : 'Chưa cập nhật'},
+              genderKey=${customer != null and customer.gender != null ? customer.gender : ''},
+              genderLabel=${#strings.equalsIgnoreCase(genderKey,'M') ? 'Nam' : (#strings.equalsIgnoreCase(genderKey,'F') ? 'Nữ' : (#strings.equalsIgnoreCase(genderKey,'O') ? 'Không tiết lộ' : 'Không tiết lộ'))},
+              dobText=${customer != null and customer.dob != null ? #temporals.format(customer.dob,'dd/MM/yyyy') : 'Chưa cập nhật'},
+              heightText=${customer != null and customer.heightCm != null ? customer.heightCm + ' cm' : 'Chưa cập nhật'},
+              weightText=${customer != null and customer.weightKg != null ? customer.weightKg + ' kg' : 'Chưa cập nhật'},
+              addressDisplay=${'Chưa cập nhật'}">
+    <div class="account-page"
+         id="initProfile"
+         th:attr="data-dob=${customer != null and customer.dob != null ? customer.dob : ''},
+                  data-gender=${genderKey},
+                  data-height=${customer != null and customer.heightCm != null ? customer.heightCm : ''},
+                  data-weight=${customer != null and customer.weightKg != null ? customer.weightKg : ''},
+                  data-phone=${customer != null and customer.phone != null ? customer.phone : ''},
+                  data-authm=${authm},
+                  data-name=${customer != null and customer.fullname != null ? customer.fullname : ''}">
+
+        <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+        <main class="account-main">
+            <div class="white-surface">
+                <div class="surface-header">
+                    <h1 class="surface-title">Thông tin tài khoản</h1>
+                </div>
+
+                <div class="surface-grid">
+                    <div class="surface-panel">
+                        <h3 class="panel-title">Thông tin tài khoản</h3>
+                        <div class="info-card--flat">
+                            <dl class="info-list">
+                                <dt class="info-list__label">Họ và tên</dt>
+                                <dd class="info-list__value" th:text="${fullnameText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Số điện thoại</dt>
+                                <dd class="info-list__value" th:text="${phoneText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Giới tính</dt>
+                                <dd class="info-list__value" th:text="${genderLabel}">Không tiết lộ</dd>
+
+                                <dt class="info-list__label">Ngày sinh</dt>
+                                <dd class="info-list__value" th:text="${dobText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Chiều cao</dt>
+                                <dd class="info-list__value" th:text="${heightText}">Chưa cập nhật</dd>
+
+                                <dt class="info-list__label">Cân nặng</dt>
+                                <dd class="info-list__value" th:text="${weightText}">Chưa cập nhật</dd>
+
+                            </dl>
+                        </div>
+                        <button class="button mt-16"
+                                type="button"
+                                data-open="#modal-info"
+                                onclick="openEditModal(); return false;">
+                            Cập nhật
+                        </button>
+                    </div>
+
+                    <div class="surface-panel">
+                        <h3 class="panel-title">Thông tin đăng nhập</h3>
+                        <div class="info-card--flat">
+                            <dl class="info-list">
+                                <dt class="info-list__label">Email</dt>
+                                <dd class="info-list__value"
+                                    th:text="${customer != null and customer.email != null ? customer.email : 'Chưa cập nhật'}">
+                                    Chưa cập nhật
+                                </dd>
+
+                                <dt class="info-list__label">Mật khẩu</dt>
+                                <dd class="info-list__value">●●●●●●●●●</dd>
+                            </dl>
+                        </div>
+                        <button class="button mt-16"
+                                type="button"
+                                data-open="#modal-password"
+                                onclick="openPasswordModal(); return false;">
+                            Cập nhật
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="modal-info" aria-hidden="true">
+        <div class="modal__overlay" data-close></div>
+        <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-info-title">
+            <button class="modal__close" type="button" data-close aria-label="Đóng">×</button>
+            <div class="form-card">
+                <h2 id="modal-info-title">Chỉnh sửa thông tin tài khoản</h2>
+                <div class="form">
+                    <div class="form-group">
+                        <label for="m_fullname">Họ và tên</label>
+                        <input id="m_fullname"
+                               type="text"
+                               readonly
+                               th:value="${customer != null and customer.fullname != null ? customer.fullname : ''}">
+                        <span class="form-hint">Thông tin này không thể thay đổi trực tiếp.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="m_dob">Ngày sinh</label>
+                        <input id="m_dob"
+                               type="date"
+                               th:value="${customer != null and customer.dob != null ? customer.dob : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="m_gender">Giới tính</label>
+                        <select id="m_gender">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="M" th:selected="${#strings.equalsIgnoreCase(genderKey,'M')}">Nam</option>
+                            <option value="F" th:selected="${#strings.equalsIgnoreCase(genderKey,'F')}">Nữ</option>
+                            <option value="O" th:selected="${#strings.equalsIgnoreCase(genderKey,'O')}">Không tiết lộ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="m_phone">Số điện thoại</label>
+                        <input id="m_phone"
+                               type="tel"
+                               placeholder="Ví dụ: 0912345678"
+                               th:value="${customer != null and customer.phone != null ? customer.phone : ''}">
+                    </div>
+
+                    <div class="form-group form-group--inline">
+                        <label for="m_height">Chiều cao (cm)</label>
+                        <input id="m_height"
+                               type="number"
+                               inputmode="numeric"
+                               min="120"
+                               max="220"
+                               th:value="${customer != null and customer.heightCm != null ? customer.heightCm : ''}">
+                    </div>
+
+                    <div class="form-group form-group--inline">
+                        <label for="m_weight">Cân nặng (kg)</label>
+                        <input id="m_weight"
+                               type="number"
+                               inputmode="numeric"
+                               min="35"
+                               max="200"
+                               th:value="${customer != null and customer.weightKg != null ? customer.weightKg : ''}">
+                    </div>
+
+                    <div id="m_err" class="form-error" style="display:none;"></div>
+
+                    <button type="button"
+                            class="button button--primary w-full mt-16"
+                            onclick="submitEdit()">
+                        Cập nhật thông tin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-password" aria-hidden="true">
+        <div class="modal__overlay" data-close></div>
+        <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-password-title">
+            <button class="modal__close" type="button" data-close aria-label="Đóng">×</button>
+            <div class="form-card">
+                <h2 id="modal-password-title">Đổi mật khẩu</h2>
+                <div class="form">
+                    <div class="form-group" id="old-password-group">
+                        <label for="p_old">Mật khẩu cũ</label>
+                        <input id="p_old" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="p_new">Mật khẩu mới</label>
+                        <input id="p_new" type="password" autocomplete="new-password" placeholder="Nhập mật khẩu mới">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="p_new2">Nhập lại mật khẩu</label>
+                        <input id="p_new2" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <div id="p_err" class="form-error" style="display:none;"></div>
+
+                    <button type="button"
+                            class="button button--primary w-full mt-16"
+                            onclick="submitChangePassword()">
+                        Cập nhật mật khẩu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+</body>
+</html>

@@ -1,10 +1,10 @@
 :root{
-    --bg:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;
-    --brand:#111827;--danger:#ef4444;--chip:#f3f4f6;
-    --radius:12px;--radius-sm:10px;
-    --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
-    --font:"Inter",system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif;
-    --font-display:"Poppins","Inter",system-ui;
+  --bg:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;
+  --brand:#111827;--danger:#ef4444;--chip:#f3f4f6;
+  --radius:12px;--radius-sm:10px;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --font: "Nunito";
+  --font-display: "Nunito";
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:#fafafa;color:var(--text);font-family:var(--font)}
@@ -25,9 +25,6 @@ html,body{margin:0;background:#fafafa;color:var(--text);font-family:var(--font)}
 
 /* layout */
 .container{max-width:1280px;margin:26px auto;padding:0 20px}
-.breadcrumb{color:var(--muted);font-size:13px;margin-bottom:6px}
-.breadcrumb a{color:var(--muted);text-decoration:none}
-.breadcrumb a:hover{text-decoration:underline}
 .page-title{font-family:var(--font-display);font-weight:800;margin:8px 0 18px}
 
 .free-ship{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:18px;box-shadow:var(--shadow)}
@@ -68,7 +65,7 @@ tbody tr:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
 
 .inp-qty{width:56px;text-align:center;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#f3f4f6;font-weight:700}
 
-/* aside summary: sticky CHỈ cho aside */
+/* aside summary */
 .summary{position:sticky;top:84px}
 .summary .rowline{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
 .summary hr{border:none;border-top:1px solid var(--line);margin:8px 0 12px}
@@ -84,11 +81,24 @@ tbody tr:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
 .voucher-strip{position:relative;display:flex;align-items:center;gap:8px;margin:-4px -6px 12px}
 .voucher-strip .nav{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:18px;font-weight:800;line-height:1}
 .voucher-strip .nav:disabled{opacity:.4;cursor:not-allowed}
-.tickets{flex:1 1 auto;display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;padding:6px;scrollbar-width:thin}
-.ticket{min-width:200px;background:#f7f7f9;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);cursor:pointer}
+
+.tickets{flex:1;display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;padding:6px 2px;scrollbar-width:none}
+.tickets::-webkit-scrollbar{display:none}
+
+.ticket{
+  flex-shrink:0;width:220px;padding:12px 14px;
+  border:1px solid #e5e7eb;border-radius:14px;background:#fff;
+  box-shadow:0 6px 18px rgba(2,6,23,.05);
+  cursor:pointer;transition:.15s;text-align:left
+}
+.ticket:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,6,23,.08)}
 .ticket .code{font-weight:800}
-.ticket .desc{font-size:12px;margin-top:2px}
-.ticket .meta{font-size:12px;color:var(--muted);margin-top:8px}
-.ticket.selected{border-color:#111827;box-shadow:0 0 0 2px #11182720}
+.ticket .desc{margin-top:4px;font-size:14px;color:var(--muted)}
+.ticket .meta{margin-top:6px;font-size:12px;color:#9aa1ac}
+.ticket.selected{border-color:#111827;box-shadow:0 0 0 2px #11182720,0 8px 24px rgba(2,6,23,.10);background:#f7f8ff}
+.ticket.disabled{opacity:.55;cursor:not-allowed;filter:grayscale(20%)}
+
 .coupon{display:flex;gap:8px;margin:8px 0 10px}
 .coupon input{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.coupon .btn{background:#0f172a;color:#fff;border-color:#0f172a}
+.coupon .btn:hover{filter:brightness(1.05)}

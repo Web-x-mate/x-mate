@@ -25,7 +25,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**","/auth/logout"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/api/**",
+                        "/auth/logout",
+                        "/account/**",
+                        "/cart/**",
+                        "/widget/chatbot/**",
+                        "/ws/**"))
+                
+                        
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // static
@@ -41,7 +49,19 @@ public class SecurityConfig {
                                 "/api/auth/facebook",
                                 "/api/admin/auth/login"
                         ).permitAll()
+                        // Webhook từ Sepay (không yêu cầu JWT)
+                        .requestMatchers(HttpMethod.POST, "/api/sepay/webhook").permitAll()
                         .requestMatchers("/auth/login","/auth/register","/auth/forgot").permitAll()
+                        .requestMatchers("/api/cart/**").permitAll()
+
+                        // ADMIN pages: must be staff (exclude anonymous)
+                        .requestMatchers("/admin/**").access((authz, ctx) -> {
+                            boolean ok = authz.get().getAuthorities().stream()
+                                    .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                                    .filter(java.util.Objects::nonNull)
+                                    .anyMatch(a -> a.startsWith("ROLE_") && !a.equals("ROLE_ANONYMOUS"));
+                            return new org.springframework.security.authorization.AuthorizationDecision(ok);
+                        })
 
                         // Các trang web yêu cầu đã đăng nhập bằng JWT
                         .requestMatchers("/auth/complete/**").authenticated()

@@ -1,0 +1,156 @@
+/* === Membership Tiers — Unicos-like (clean) === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* Tokens */
+:root{
+    /* Neutrals */
+    --bg:#F5F7FB; --card:#FFFFFF; --border:#E9EEF5;
+    --title:#111827; --muted:#6B7280;
+
+    /* Brand & Accents */
+    --brand:#22C55E;        /* primary action (green) */
+    --accent:#F4BD50;
+    --purple:#6F5CC4; --indigo:#4F46E5; --green:#10B981;
+    --red:#EF4444; --amber:#F59E0B; --cyan:#06B6D4;
+
+    /* Radius & Shadow */
+    --r-sm:12px; --r-md:16px; --r-lg:20px; --r-pill:9999px;
+    --shadow-card:0 12px 32px -12px rgba(16,24,40,.16),0 2px 8px -2px rgba(16,24,40,.08);
+    --shadow-hover:0 6px 20px -8px rgba(16,24,40,.18);
+}
+
+/* Base */
+html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--title);
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+section[layout\:fragment="content"]{ display:block; padding:24px; }
+.alert, .table, .btn, .btn-light, .btn-ghost, .btn-primary{ font-family:inherit; }
+
+/* Alerts */
+.alert{
+    border-radius:var(--r-md); padding:12px 16px; border:1px solid var(--border);
+    background:#fff; box-shadow:var(--shadow-card); color:var(--title);
+}
+.alert-success{ background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.25); }
+.alert-danger { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.25); }
+.alert-warning{ background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.28); }
+
+/* Buttons (base) */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    line-height:1; font-weight:600; padding:10px 14px; border-radius:var(--r-pill);
+    border:1px solid transparent; background:#fff; color:var(--title);
+    box-shadow:var(--shadow-card); transition:.18s ease-in-out; text-decoration:none; cursor:pointer;
+}
+.btn:hover{ box-shadow:var(--shadow-hover); transform:translateY(-1px); text-decoration:none; }
+.btn:focus{ outline:3px solid rgba(34,197,94,.35); outline-offset:2px; }
+.btn-sm{ padding:8px 12px; font-size:12px; }
+
+/* Variants */
+.btn-primary{ background:var(--brand); color:#0B2B17; border-color:rgba(0,0,0,.03); }
+.btn-light{ background:#fff; color:var(--title); border-color:var(--border); }
+.btn-light:hover{ background:#FAFCFF; }
+.btn-ghost{ background:transparent; color:var(--muted); border-color:transparent; box-shadow:none; padding:8px 10px; border-radius:var(--r-sm); }
+.btn-ghost:hover{ background:#fff; box-shadow:var(--shadow-card); color:var(--title); }
+
+/* Table */
+.table{
+    width:100%; border-collapse:separate; border-spacing:0; background:var(--card);
+    border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-card); overflow:hidden;
+}
+.table thead th{
+    text-align:left; font-weight:600; color:var(--muted); background:#fff;
+    padding:14px 16px; font-size:13px; border-bottom:1px solid var(--border);
+}
+.table tbody td{
+    padding:14px 16px; font-size:14px; color:var(--title); border-bottom:1px solid var(--border);
+}
+.table tbody tr:hover{ background:#FAFBFF; }
+.table tbody tr:last-child td{ border-bottom:none; }
+.table .text-right{ text-align:right; }
+
+/* Utilities */
+.flex{ display:flex; } .items-center{ align-items:center; } .justify-between{ justify-content:space-between; }
+.gap-2{ gap:.5rem; } .mt-3{ margin-top:.75rem; } .mt-4{ margin-top:1rem; }
+.text-xl{ font-size:1.25rem; line-height:1.75rem; } .font-bold{ font-weight:700; }
+.text-center{ text-align:center; } .text-gray-500{ color:var(--muted); } .overflow-x-auto{ overflow-x:auto; }
+
+/* Pagination */
+.mt-4 .btn, .mt-4 a.btn{ box-shadow:none; }
+.mt-4 .btn-light{ background:#fff; border-color:var(--border); }
+.mt-4 span{ color:var(--muted); }
+
+/* Links */
+a{ color:var(--indigo); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+
+/* Forms inside actions */
+form[method="post"] .btn{ box-shadow:none; }
+
+/* === Overrides: Add / Edit / Delete (scoped to this page) === */
+
+/* Add (Tạo Tier) — brand green, white text, stronger hover */
+a.btn.btn-primary[href*="/admin/membership-tiers/new"]{
+    background: var(--brand);
+    color:#fff;
+    border-color: transparent;
+    text-decoration: none;
+}
+a.btn.btn-primary[href*="/admin/membership-tiers/new"]:hover{
+    filter: brightness(0.95) saturate(1.02);
+    text-decoration: none;
+}
+a.btn.btn-primary[href*="/admin/membership-tiers/new"]:focus{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34,197,94,.28);
+}
+
+/* Edit (Sửa) — transparent, black text, amber border; hover amber-light + white text */
+a.btn-ghost[href$="/edit"],
+a.btn.btn-ghost[href$="/edit"]{
+    background: transparent;
+    color: var(--title);
+    border: 1px solid rgba(245,158,11,.55); /* amber-500 */
+    box-shadow: none;
+    text-decoration: none;
+}
+a.btn-ghost[href$="/edit"]:hover,
+a.btn.btn-ghost[href$="/edit"]:hover{
+    background: #fde68a;      /* amber-300 */
+    color:#fff;
+    border-color: var(--amber);
+    text-decoration: none;
+}
+a.btn-ghost[href$="/edit"]:focus,
+a.btn.btn-ghost[href$="/edit"]:focus{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245,158,11,.25);
+}
+/* smoother amber on modern browsers */
+@supports (color: color-mix(in oklab, black, white)) {
+    a.btn-ghost[href$="/edit"]:hover,
+    a.btn.btn-ghost[href$="/edit"]:hover{
+        background: color-mix(in oklab, var(--amber) 55%, white);
+    }
+}
+
+/* Delete (Xóa) — transparent, black text, red border; hover solid red + white text */
+form[action$="/delete"] .btn-ghost{
+    background: transparent;
+    color: var(--title);
+    border: 1px solid rgba(239,68,68,.55); /* red-500 */
+    box-shadow: none;
+    text-decoration: none;
+}
+form[action$="/delete"] .btn-ghost:hover{
+    background: var(--red);
+    color:#fff;
+    border-color: transparent;
+    text-decoration: none;
+}
+form[action$="/delete"] .btn-ghost:focus{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.25);
+}

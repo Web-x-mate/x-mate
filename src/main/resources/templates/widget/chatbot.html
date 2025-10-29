@@ -7,40 +7,6 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
-    <style>
-        /* --- Chatbot widget styles --- */
-        .sb-launcher {
-            position: fixed; right: 20px; bottom: 20px;
-            width: 56px; height: 56px; border-radius: 50%;
-            border: none; cursor: pointer; font-size: 20px;
-            box-shadow: 0 6px 18px rgba(0,0,0,.15); background: #111827; color: #fff;
-            z-index: 9998;
-        }
-        .sb-panel {
-            position: fixed; right: 20px; bottom: 86px; width: 360px; max-height: 60vh;
-            background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
-            box-shadow: 0 12px 30px rgba(0,0,0,.18); display: none; flex-direction: column;
-            overflow: hidden; z-index: 9999;
-        }
-        .sb-panel.open { display: flex; }
-        .sb-header { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-        .sb-body { padding: 12px; overflow-y: auto; flex: 1; background: #fafafa; }
-        .sb-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #f1f5f9; background: #fff; }
-        .sb-input input {
-            flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; outline: none;
-        }
-        .sb-input button {
-            padding: 10px 14px; border: none; border-radius: 10px; background: #111827; color: #fff; cursor: pointer;
-        }
-        .msg { margin: 8px 0; display: flex; }
-        .msg.me { justify-content: flex-end; }
-        .bubble {
-            max-width: 80%; padding: 8px 10px; border-radius: 12px; line-height: 1.4; white-space: pre-wrap;
-            border: 1px solid #e5e7eb; background: #fff;
-        }
-        .msg.me .bubble { background: #111827; color: #fff; border-color: #111827; }
-        .meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
-    </style>
 </head>
 <body>
 <!-- Fragment có tên "widget" để nhúng -->

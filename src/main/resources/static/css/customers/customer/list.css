@@ -1,0 +1,309 @@
+/* === Minimal Admin – Customers List (list.css) === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+/* Tokens */
+:root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e6eaf0;
+    --link: #2563eb;
+    --brand: #16a34a;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .08);
+}
+
+/* Base */
+html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+a {
+    color: var(--link);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Utilities */
+.mt-3 {
+    margin-top: .75rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.overflow-x-auto {
+    overflow: auto;
+}
+
+/* Alerts */
+.alert {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+}
+
+.alert-success {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #065f46;
+}
+
+.alert-danger {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+/* Buttons */
+/* === Flat, modern buttons (no gradients) === */
+
+/* bo góc nhỏ gọn hơn */
+.btn { border-radius: 8px; }
+.btn-sm { border-radius: 6px; }
+
+/* nút là <a> nhưng không gạch chân khi hover/focus */
+.btn, .btn:hover, .btn:focus { text-decoration: none; }
+
+/* Primary & Success đã phẳng rồi – giữ nguyên */
+.btn-primary { background: var(--brand); color:#fff; border-color:transparent; }
+.btn-primary:hover { filter: brightness(1.02); }
+.btn-success  { background: var(--success); color:#fff; border-color:transparent; }
+.btn-success:hover  { filter: brightness(1.02); }
+
+/* Warning – phẳng, không gradient/transform */
+.btn-warning{
+    background: var(--warning);
+    color: #111;
+    border-color: transparent;
+    box-shadow: none;
+}
+.btn-warning:hover{ filter: brightness(0.98); transform:none; }
+
+/* Danger – phẳng, không gradient/transform */
+.btn-danger{
+    background: var(--danger);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: none;
+}
+.btn-danger:hover{ filter: brightness(0.98); transform:none; }
+.btn-danger:focus{ box-shadow: 0 0 0 3px rgba(239,68,68,.25); outline: none; }
+
+/* Inputs */
+.input {
+    height: 38px;
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: 0;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.input::placeholder {
+    color: #9ca3af;
+}
+
+.input:focus {
+    border-color: #86efac;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, .15);
+}
+
+/* Table card */
+.table-card {
+    margin-top: 12px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 12px 14px;
+    font-size: 12px;
+    letter-spacing: .02em;
+    background: #f3f6fb;
+    border-bottom: 1px solid var(--border);
+}
+
+.table tbody td {
+    padding: 12px 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Align name/email to left, keep others centered if cần */
+.table tbody td:nth-child(2),
+.table tbody td:nth-child(3) {
+    text-align: left;
+}
+
+/* Truncate text in cells */
+.truncate {
+    max-width: 240px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+}
+
+.badge-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #bbf7d0;
+}
+
+.badge-danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+/* Pager */
+.pager {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pager span {
+    color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .wrap {
+        padding: 16px;
+    }
+
+    .table thead th, .table tbody td {
+        padding: 10px 12px;
+    }
+
+    .truncate {
+        max-width: 180px;
+    }
+}
+/* === Edit/Delete buttons — transparent base + colored hover === */
+
+/* Không gạch chân khi hover/focus trên các nút là <a> */
+.btn, .btn:hover, .btn:focus { text-decoration: none; }
+
+/* ----- Base: trong suốt, chữ đen, có viền ----- */
+.btn.btn-warning,
+.btn.btn-danger{
+    background: transparent;
+    color: #111827;            /* chữ đen */
+    border: 1px solid;         /* đảm bảo có viền */
+}
+
+/* viền theo màu "ý nghĩa" */
+.btn.btn-warning{ border-color: rgba(245,158,11,.55); }  /* amber-500 */
+.btn.btn-danger { border-color: rgba(239,68,68,.55); }   /* red-500 */
+
+/* ----- Hover: đổi màu theo yêu cầu ----- */
+/* Sửa -> vàng nhạt + chữ trắng */
+.btn.btn-warning:hover,
+.btn.btn-warning:focus{
+    background: #fde68a;       /* amber-300, vàng nhạt */
+    color: #fff;
+    border-color: #f59e0b;     /* amber-500 */
+    box-shadow: none;
+}
+
+/* Trình duyệt hỗ trợ color-mix: vàng nhạt mượt hơn */
+@supports (color: color-mix(in oklab, black, white)) {
+    .btn.btn-warning:hover,
+    .btn.btn-warning:focus{
+        background: color-mix(in oklab, #f59e0b 55%, white);
+    }
+}
+
+/* Xóa -> đỏ như hiện tại + chữ trắng */
+.btn.btn-danger:hover,
+.btn.btn-danger:focus{
+    background: var(--danger);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* Focus ring rõ ràng cho Xóa (giữ accessibility) */
+.btn.btn-danger:focus{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.25);
+}

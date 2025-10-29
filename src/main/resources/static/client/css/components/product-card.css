@@ -125,7 +125,7 @@ a.title { font-size: 16px; font-weight: 700; color: #0f172a; }
 a.title:hover { color: #1d4ed8; }
 
 .price-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.price-row .final { font-weight: 800; font-size: 18px; color: #111827; }
+.price-row .final { font-weight: 800; font-size: 16px; color: #111827; }
 .discount-pill {
   font-size: 13px; font-weight: 800;
   padding: 3px 11px; border-radius: 999px;

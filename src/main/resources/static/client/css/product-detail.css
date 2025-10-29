@@ -875,6 +875,12 @@ input, button {
   font-weight: 700;
 }
 
+.product-detail__sizes button.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ==== FIX GALLERY THUMBS (vuông, ảnh phủ kín, không bị thừa khoảng) ==== */
 
 /* Cột thumbnail: cố định bề ngang, canh đều */

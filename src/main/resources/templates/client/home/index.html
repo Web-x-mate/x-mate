@@ -3,12 +3,21 @@
   layout:decorate="~{client/layout/base}">
 
 <body>
+  <!-- HEAD EXTRAS: CSS riêng cho trang Home -->
   <th:block layout:fragment="headExtras">
-    <link rel="stylesheet" th:href="@{/client/css/home.css}" />
+    <link rel="stylesheet" th:href="@{/client/css/home.css(v=${#dates.createNow().time})}" />
   </th:block>
 
+  <!-- NỘI DUNG TRANG -->
   <div layout:fragment="content">
-    <div class="home-banner"></div>
+    <!-- chỉ hiện ở trang đầu của trang chủ -->
+    <div class="home-banner full-bleed" th:if="${showHomeBanner}">
+      <img class="home-banner__img"
+          src="https://n7media.coolmate.me/uploads/October2025/Hero-Banner-rpp_63.jpg"
+          alt="Hero Banner">
+    </div>
+
+
 
     <div class="search-summary" th:if="${isSearch}">
       <div class="search-summary__container">
@@ -20,12 +29,45 @@
       </div>
     </div>
 
+    <div class="search-summary" th:if="${!isSearch and sectionTitle != null}">
+      <div class="search-summary__container">
+        <h1 class="search-summary__title" th:text="${sectionTitle}">Bộ sưu tập</h1>
+        <p class="search-summary__meta" th:text="${searchTotal} + ' sản phẩm'"></p>
+      </div>
+    </div>
+
     <!-- render bằng fragment -->
     <section class="products" th:if="${products != null and !products.isEmpty()}">
       <div th:each="p : ${products}">
         <div th:replace="~{client/components/product-card :: productCard(product=${p})}"></div>
       </div>
     </section>
+
+    <!-- PHÂN TRANG -->
+    <div class="home-pagination" th:if="${pagination != null and pagination.totalPages > 1}">
+      <nav class="home-pagination__nav" aria-label="Phân trang sản phẩm">
+        <a class="home-pagination__control"
+          th:href="@{/home(page=${pagination.previousPage}, size=${pagination.pageSize}, q=${searchQuery})}"
+          th:attr="aria-disabled=${!pagination.hasPrevious()}"
+          th:classappend="${!pagination.hasPrevious()} ? ' is-disabled' : ''">
+          <span>Trước</span>
+        </a>
+        <ul class="home-pagination__list">
+          <li th:each="num : ${pagination.pages}">
+            <a class="home-pagination__page" th:text="${num}"
+              th:href="@{/home(page=${num}, size=${pagination.pageSize}, q=${searchQuery})}"
+              th:classappend="${num == pagination.currentPage} ? ' is-active' : ''">
+            </a>
+          </li>
+        </ul>
+        <a class="home-pagination__control"
+          th:href="@{/home(page=${pagination.nextPage}, size=${pagination.pageSize}, q=${searchQuery})}"
+          th:attr="aria-disabled=${!pagination.hasNext()}"
+          th:classappend="${!pagination.hasNext()} ? ' is-disabled' : ''">
+          <span>Sau</span>
+        </a>
+      </nav>
+    </div>
 
     <div class="search-empty" th:if="${products == null or products.isEmpty()}">
       <span th:if="${isSearch}">Không tìm thấy sản phẩm phù hợp.</span>
@@ -376,14 +418,13 @@
         });
       })();
     </script>
-
   </div>
 
-  <!-- Bạn có thể tắt 2 file JS ngoài khi đang test inline -->
+  <!-- BODY EXTRAS: JS riêng cho trang Home -->
   <th:block layout:fragment="bodyExtras">
-    <!-- thêm version cho chắc chắn load bản mới (optional) -->
-    <script th:src="@{/client/js/product-card.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
-    <script th:src="@{/client/js/home.js(v=${T(java.lang.System).currentTimeMillis()})}"></script>
+    <!-- thêm version để chắc chắn load bản mới -->
+    <script th:src="@{/client/js/product-card.js(v=${#dates.createNow().time})}"></script>
+    <script th:src="@{/client/js/home.js(v=${#dates.createNow().time})}"></script>
   </th:block>
 </body>
 

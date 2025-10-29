@@ -60,6 +60,8 @@ public class Customer {
     /** Subject/ID của provider (vd: Google sub), có thể null nếu local account */
     @Column(name = "oauth_subject", length = 128)
     private String oauthSubject;
+    @Column(name = "token_user", length = 160, unique = true)
+    private String tokenUser;
 
     @Column(nullable = false)
     private Boolean enabled = true;
@@ -87,5 +89,6 @@ public class Customer {
         if (gender != null) gender = gender.trim().toUpperCase(); // "M","F","O"
         if (oauthProvider != null) oauthProvider = oauthProvider.trim().toLowerCase();
         if (oauthSubject != null) oauthSubject = oauthSubject.trim();
+        if (tokenUser != null) tokenUser = tokenUser.trim();
     }
 }

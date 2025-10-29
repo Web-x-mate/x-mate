@@ -32,6 +32,7 @@ public class OrderItem {
     @Column(nullable = false)
     private long price;
 
-    @Column(name = "line_total", nullable = false)
+    // Match existing DB column name 'total' (was 'line_total')
+    @Column(name = "total", nullable = false)
     private long lineTotal;
 }

@@ -59,10 +59,17 @@ public class CustomerServiceImpl implements IUserService {
     @Override
     public Address addAddress(String email, AddressReq req) {
         var u = userRepo.findByEmailIgnoreCase(email).orElseThrow();
+        boolean makeDefault = addrRepo.findByCustomerId(u.getId()).isEmpty();
         var a = Address.builder()
-                .line1(req.line1()).line2(req.line2())
-                .ward(req.ward()).district(req.district()).city(req.city())
-                .phone(req.phone()).customer(u)
+                .customer(u)
+                .fullName(u.getFullname())
+                .line1(req.line1())
+                .line2(req.line2())
+                .ward(req.ward())
+                .district(req.district())
+                .city(req.city())
+                .phone(req.phone())
+                .defaultAddress(makeDefault)
                 .build();
         return addrRepo.save(a);
     }

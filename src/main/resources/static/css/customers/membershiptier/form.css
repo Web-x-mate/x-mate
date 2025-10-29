@@ -1,0 +1,93 @@
+/* === Unicos-like Form Styles (Membership Tier form) === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root{
+    --bg:#F5F7FB; --card:#FFFFFF; --border:#E9EEF5;
+    --title:#111827; --muted:#6B7280;
+    --brand:#22C55E; --indigo:#4F46E5; --red:#EF4444; --amber:#F59E0B;
+    --r-sm:12px; --r-md:16px; --r-lg:20px; --r-pill:9999px;
+    --shadow-card:0 12px 32px -12px rgba(16,24,40,.16),0 2px 8px -2px rgba(16,24,40,.08);
+    --shadow-hover:0 6px 20px -8px rgba(16,24,40,.18);
+}
+
+html,body{
+    background:var(--bg); color:var(--title);
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+
+/* Page padding */
+section[layout\:fragment="content"]{ display:block; padding:24px; }
+
+/* Alerts (reuse from list page) */
+.alert{
+    border-radius:var(--r-md); padding:12px 16px; border:1px solid var(--border);
+    background:#fff; box-shadow:var(--shadow-card); color:var(--title);
+}
+.alert-danger{ background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.25); }
+
+/* Buttons (same feel as list page) */
+.btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-weight:600; line-height:1; padding:10px 14px; border-radius:var(--r-pill);
+    background:#fff; color:var(--title); border:1px solid var(--border);
+    box-shadow:var(--shadow-card); transition:.18s ease-in-out; text-decoration:none; cursor:pointer;
+}
+.btn:hover{ box-shadow:var(--shadow-hover); transform:translateY(-1px); }
+.btn:focus{ outline:3px solid rgba(34,197,94,.35); outline-offset:2px; }
+.btn-primary{ background:var(--brand); color:#0B2B17; border-color:transparent; }
+.btn-primary:hover{ filter:saturate(1.05) brightness(1.02); }
+.btn-light{ background:#fff; color:var(--title); }
+.btn-light:hover{ background:#FAFCFF; }
+
+/* --- Form --- */
+.form-control{ background:transparent; }
+.form-label{
+    display:block; margin:6px 0 6px; font-weight:600; font-size:14px; color:var(--muted);
+}
+.input{
+    width:100%; background:#fff; color:var(--title);
+    border:1px solid var(--border); border-radius:var(--r-md);
+    padding:12px 14px; font-size:14px;
+    box-shadow:var(--shadow-card); outline:0; transition:border .15s, box-shadow .15s, transform .05s;
+}
+.input:focus{
+    border-color:rgba(34,197,94,.55);
+    box-shadow:0 0 0 4px rgba(34,197,94,.15), var(--shadow-card);
+}
+.input[readonly]{
+    background:#F9FAFB; color:#475569; cursor:not-allowed;
+}
+.input::placeholder{ color:#9CA3AF; }
+
+/* number input – hide spin buttons (optional) */
+.input[type=number]::-webkit-outer-spin-button,
+.input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.input[type=number]{ -moz-appearance:textfield; }
+
+/* Hints & validation */
+.form-hint{ display:block; margin-top:6px; font-size:12px; color:var(--muted); }
+.input:invalid{ border-color:rgba(239,68,68,.6); }
+.input:invalid:focus{ box-shadow:0 0 0 4px rgba(239,68,68,.15), var(--shadow-card); }
+
+/* Utilities (light Tailwind-like) */
+.mt-3{ margin-top:.75rem; }
+.space-y-3 > * + *{ margin-top:.75rem; }
+.flex{ display:flex; }
+.items-center{ align-items:center; }
+.gap-2{ gap:.5rem; }
+.text-xl{ font-size:1.25rem; line-height:1.75rem; }
+.font-bold{ font-weight:700; }
+.text-red-500{ color:var(--red); }
+
+/* Card feel around the form (optional wrapper) */
+form.space-y-3{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--r-lg); padding:20px; box-shadow:var(--shadow-card);
+}
+
+/* Responsive */
+@media (max-width:640px){
+    section[layout\:fragment="content"]{ padding:16px; }
+    form.space-y-3{ padding:16px; }
+}

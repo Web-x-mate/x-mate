@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+    <style>
+      .review-list{display:flex;flex-direction:column;gap:14px;margin:12px 0 24px}
+      .review-row{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid #eef0f3;border-radius:14px}
+      .review-row img{width:64px;height:64px;object-fit:cover;border-radius:8px}
+      .review-info{flex:1}
+      .chip{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+      .chip.is-pending{background:#fff7ed;color:#c2410c}
+      .chip.is-done{background:#ecfdf5;color:#047857}
+      .chip.is-rejected{background:#fef2f2;color:#b91c1c}
+      .stars input{display:none}
+      .stars label{cursor:pointer;color:#e5e7eb;font-size:20px}
+      .stars input:checked ~ label, .stars label:hover, .stars label:hover ~ label{color:#facc15}
+      .review-form{display:flex;gap:10px;align-items:center;margin-top:6px}
+      .review-form textarea{flex:1;min-height:36px;padding:6px 8px;border-radius:8px;border:1px solid #e5e7eb}
+      .btn-sm{padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#111827;color:#fff}
+    \n      .stars.readonly span{color:#e5e7eb;font-size:16px}\n      .stars.readonly .on{color:#facc15}\n
+      .stars.readonly span{color:#e5e7eb;font-size:18px}
+      .stars.readonly span.on{color:#facc15}
+      .stars.readonly .rating-text{margin-left:6px;color:#111827;font-weight:600}
+      .review-content{margin-top:6px;color:#111827;opacity:1}
+</style>
+</th:block>
+
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Đánh giá & phản hồi</h1>
+            </div>
+
+            <div class="empty-state" th:if="${reviewItems == null or reviewItems.isEmpty()}">
+                <p>Chưa có sản phẩm nào cần đánh giá.</p>
+                <p class="muted">Khi đơn hàng ở trạng thái "ĐÃ GIAO", bạn có thể gửi đánh giá tại đây.</p>
+            </div>
+
+            <div class="review-list" th:if="${reviewItems != null and !reviewItems.isEmpty()}">
+                <div class="review-row" th:each="it : ${reviewItems}">
+                    <img th:src="${it.thumbnail}" alt="thumb">
+                    <div class="review-info">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                            <div>
+                                <a class="order-item__title" th:if="${it.slug != null}"
+                                   th:href="@{/product/detail/{slug}(slug=${it.slug})}"
+                                   th:text="${it.productName}">Sản phẩm</a>
+                                <span class="order-item__title" th:if="${it.slug == null}" th:text="${it.productName}">Sản phẩm</span>
+                                <div class="order-item__meta">
+                                    <span class="order-item__meta-chip" th:if="${it.color != null}" th:text="'Màu: ' + ${it.color}">Màu</span>
+                                    <span class="order-item__meta-chip" th:if="${it.size != null}" th:text="'Size: ' + ${it.size}">Size</span>
+                                </div>
+                                <small th:text="'Đơn hàng ' + ${it.orderCode} + ' • ' + ${it.orderDateText}">#ORDER • 01/01/2025</small>
+                            </div>
+                            <div th:if="${!it.canReview}" class="chip" th:classappend="' ' + ${it.reviewStatusClass}" th:text="${it.reviewStatusLabel}">CHỜ XÁC NHẬN</div>
+                        </div>
+
+                                                <form class="review-form" th:if="${it.canReview}" method="post" th:action="@{/account/reviews}">
+                            <input type="hidden" name="orderItemId" th:value="${it.orderItemId}">
+                            <div class="stars" style="display:flex;flex-direction:row-reverse;gap:4px">
+                                <input th:id="${'r5_' + it.orderItemId}" type="radio" name="rating" value="5"><label th:for="${'r5_' + it.orderItemId}">&#9733;</label>
+                                <input th:id="${'r4_' + it.orderItemId}" type="radio" name="rating" value="4"><label th:for="${'r4_' + it.orderItemId}">&#9733;</label>
+                                <input th:id="${'r3_' + it.orderItemId}" type="radio" name="rating" value="3" checked><label th:for="${'r3_' + it.orderItemId}">&#9733;</label>
+                                <input th:id="${'r2_' + it.orderItemId}" type="radio" name="rating" value="2"><label th:for="${'r2_' + it.orderItemId}">&#9733;</label>
+                                <input th:id="${'r1_' + it.orderItemId}" type="radio" name="rating" value="1"><label th:for="${'r1_' + it.orderItemId}">&#9733;</label>
+                            </div>
+                            <textarea name="content" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button class="btn-sm" type="submit">Gửi</button>
+                        </form>
+<div class="stars readonly" th:if="${!it.canReview}">
+  <span th:each="i : ${#numbers.sequence(1,5)}" th:class="${i <= (it.existingRating != null ? it.existingRating : 0)} ? 'on' : 'off'">&#9733;</span>
+  <span class="rating-text" th:if="${it.existingRating != null}" th:text="${it.existingRating} + ' / 5'"></span>
+</div>
+
+                        
+
+                        <div class="review-content" th:if="${!it.canReview and it.existingContent != null}" th:text="${it.existingContent}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${reviewMessage != null}" class="alert success" th:text="${reviewMessage}"></div>
+        </div>
+    </main>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

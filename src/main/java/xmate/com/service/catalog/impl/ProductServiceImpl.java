@@ -13,7 +13,10 @@ import xmate.com.service.catalog.ProductService;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +75,64 @@ public class ProductServiceImpl implements ProductService {
         return repo.findAllByCategory_Id(categoryId, pageable);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> byCategories(Collection<Long> categoryIds, Pageable pageable) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return repo.findAllByCategory_IdIn(categoryIds, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Product> findBySlug(String slug) {
+        if (slug == null || slug.isBlank()) return Optional.empty();
+        return repo.findBySlug(slug);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> searchInCategories(String q, Collection<Long> categoryIds, Pageable pageable) {
+        Specification<Product> spec = productSpec(q);
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and((root, query, cb) -> root.get("category").get("id").in(categoryIds));
+        }
+        return repo.findAll(spec, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public java.util.List<Product> listByCategories(Collection<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        return repo.findAllByCategory_IdIn(categoryIds);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> listNewArrivals(LocalDateTime since, Pageable pageable) {
+        LocalDateTime threshold = since != null ? since : LocalDateTime.now().minusDays(7);
+        return repo.findAllByCreatedAtGreaterThanEqual(threshold, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> findBySlugKeyword(String slugKeyword, Pageable pageable) {
+        if (slugKeyword == null || slugKeyword.isBlank()) {
+            return Page.empty(pageable);
+        }
+        return repo.findAllBySlugContainingIgnoreCase(slugKeyword.trim(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Product> listDiscounted(double minDiscountRatio, Pageable pageable) {
+        double ratio = Math.max(0.0, Math.min(minDiscountRatio, 1.0));
+        return repo.findAllWithMinDiscount(ratio, pageable);
+    }
+
     private Specification<Product> productSpec(String q) {
         return (root, query, cb) -> {
             if (q == null || q.isBlank()) return cb.conjunction();
@@ -85,7 +146,6 @@ public class ProductServiceImpl implements ProductService {
                     cb.like(cb.lower(root.get("slug")), like),
                     cb.like(cb.lower(root.get("material")), like),
                     cb.like(cb.lower(root.get("fit")), like),
-                    cb.like(cb.lower(root.get("description")), like),
                     cb.like(cb.lower(cat.get("name")), like)
             );
         };

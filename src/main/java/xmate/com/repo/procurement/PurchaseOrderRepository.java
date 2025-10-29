@@ -46,7 +46,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
         WHERE p.status IN ('SUBMITTED','PARTIALLY_RECEIVED')
         GROUP BY p.id, p.code, s.name, p.status
         ORDER BY p.created_at DESC, p.id DESC
-        LIMIT :top
+
         """, nativeQuery = true)
     List<PoReceivingRow> receiving(@Param("top") int top);
 

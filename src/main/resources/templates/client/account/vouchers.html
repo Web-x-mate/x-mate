@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout/base}">
+
+<body>
+<th:block layout:fragment="headExtras">
+    <link rel="stylesheet" th:href="@{/css/profile.css}"/>
+    <link rel="stylesheet" th:href="@{/client/css/components/user.css}"/>
+</th:block>
+
+<div layout:fragment="content" class="account-page">
+    <div th:replace="~{client/account/fragments/sidebar :: sidebar(active=${active})}"></div>
+
+    <main class="account-main">
+        <div class="white-surface">
+            <div class="surface-header">
+                <h1 class="surface-title">Ví Voucher</h1>
+            </div>
+
+            <div class="empty-state"
+                 th:if="${vouchers == null or vouchers.isEmpty()}">
+                Ví voucher của bạn đang trống. Săn ưu đãi để nhận thêm nhé!
+            </div>
+
+            <div class="voucher-list"
+                 th:if="${vouchers != null and !vouchers.isEmpty()}">
+                <article class="voucher-card"
+                         th:each="voucher : ${vouchers}">
+                    <div class="voucher-card__code">
+                        <span th:text="${voucher.code()}">XMATE50K</span>
+                        <button type="button"
+                                class="voucher-card__copy"
+                                th:attr="data-code=${voucher.code()}">
+                            Sao chép
+                        </button>
+                    </div>
+                    <p class="voucher-card__value"
+                       th:text="${voucher.valueText()}">
+                        Giảm 50.000₫
+                    </p>
+                    <p class="voucher-card__desc"
+                       th:text="${voucher.description()}">
+                        Áp dụng cho tất cả sản phẩm.
+                    </p>
+                    <ul class="voucher-card__meta">
+                        <li th:text="${voucher.minOrderText()}">Đơn tối thiểu</li>
+                        <li th:text="'HSD: ' + ${voucher.expiryText()}">31/12/2025</li>
+                    </ul>
+                    <button class="btn btn--ghost" type="button">Dùng ngay</button>
+                </article>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block layout:fragment="bodyExtras">
+    <script>
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.voucher-card__copy');
+            if (!button) return;
+            const code = button.getAttribute('data-code');
+            if (!code) return;
+
+            navigator.clipboard.writeText(code).then(function () {
+                const original = button.textContent;
+                button.textContent = 'Đã sao chép';
+                button.disabled = true;
+                setTimeout(function () {
+                    button.textContent = original || 'Sao chép';
+                    button.disabled = false;
+                }, 2000);
+            }).catch(function () {
+                button.textContent = 'Lỗi';
+                setTimeout(function () {
+                    button.textContent = 'Sao chép';
+                }, 2000);
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>
