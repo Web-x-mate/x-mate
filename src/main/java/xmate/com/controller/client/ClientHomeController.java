@@ -1,5 +1,6 @@
 package xmate.com.controller.client;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ public class ClientHomeController {
     public String home(@RequestParam(name = "q", required = false) String query,
                        @RequestParam(name = "page", defaultValue = "1") int pageParam,
                        @RequestParam(name = "size", defaultValue = "12") int sizeParam,
+                       HttpServletRequest request,
                        Model model) {
 
         String sanitizedQuery = query != null ? query.trim() : null;
@@ -60,7 +62,14 @@ public class ClientHomeController {
         if (cards.isEmpty()) log.warn("[HOME] No products available to render.");
         else log.info("[HOME] First card: {}", cards.get(0));
 
-        return renderListing(model, "X-Mate | Trang chủ", null, isSearch, sanitizedQuery, page, cards, pagination);
+        String uri = request.getRequestURI();
+        String ctx = request.getContextPath();
+        boolean isRoot = uri.equals(ctx + "/");
+        boolean isHomeAlias = uri.equals(ctx + "/home");
+        boolean hasQuery = request.getQueryString() != null && !request.getQueryString().isBlank();
+        boolean showHomeBanner = (isRoot || isHomeAlias) && !isSearch && !hasQuery;
+
+        return renderListing(model, "X-Mate | Trang chủ", null, isSearch, sanitizedQuery, page, cards, pagination, showHomeBanner);
     }
 
     @GetMapping("/hang-moi")
@@ -86,7 +95,8 @@ public class ClientHomeController {
                 null,
                 page,
                 cards,
-                pagination);
+                pagination,
+                false);
     }
 
     @GetMapping("/the-thao")
@@ -111,7 +121,8 @@ public class ClientHomeController {
                 null,
                 page,
                 cards,
-                pagination);
+                pagination,
+                false);
     }
 
     @GetMapping("/sale")
@@ -136,7 +147,8 @@ public class ClientHomeController {
                 null,
                 page,
                 cards,
-                pagination);
+                pagination,
+                false);
     }
 
     private Page<Product> loadProducts(boolean isSearch, String query, PageRequest pageRequest) {
@@ -162,7 +174,8 @@ public class ClientHomeController {
                                  String searchQuery,
                                  Page<Product> page,
                                  List<ProductCardView> cards,
-                                 PaginationView pagination) {
+                                 PaginationView pagination,
+                                 boolean showHomeBanner) {
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("sectionTitle", sectionTitle);
         model.addAttribute("isSearch", isSearch);
@@ -172,6 +185,7 @@ public class ClientHomeController {
         model.addAttribute("pagination", pagination);
         model.addAttribute("primaryCategories", catalogViewService.buildPrimaryNav());
         model.addAttribute("cartQuantity", 0);
+        model.addAttribute("showHomeBanner", showHomeBanner);
         return "client/home/index";
     }
 

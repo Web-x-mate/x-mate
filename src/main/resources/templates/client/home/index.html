@@ -11,12 +11,12 @@
   <!-- NỘI DUNG TRANG -->
   <div layout:fragment="content">
     <!-- chỉ hiện ở trang đầu của trang chủ -->
-    <!-- <div class="home-banner full-bleed"
-     th:if="${#request != null and #request.requestURI == (#request.contextPath + '/')}">
+    <div class="home-banner full-bleed" th:if="${showHomeBanner}">
       <img class="home-banner__img"
           src="https://n7media.coolmate.me/uploads/October2025/Hero-Banner-rpp_63.jpg"
           alt="Hero Banner">
-    </div> -->
+    </div>
+
 
 
     <div class="search-summary" th:if="${isSearch}">
