@@ -9,8 +9,12 @@
 
     <title th:text="${pageTitle} ?: 'X-Mate Shop'">X-Mate Shop</title>
 
-    <!-- CSS chung -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link rel="stylesheet" th:href="@{/client/css/app.css}"/>
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}"/>
+    <!-- CSS chung -->
+
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
           referrerpolicy="no-referrer"/>
