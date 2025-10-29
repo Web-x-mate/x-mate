@@ -187,7 +187,7 @@
 
                     <td>
                         <div class="d-flex gap-2">
-                            <a th:href="@{|/admin/sales/orders/${o.id}|}" class="btn btn-action btn-view">Xem</a>
+<!--                            <a th:href="@{|/admin/sales/orders/${o.id}|}" class="btn btn-action btn-view">Xem</a>-->
                             <a th:href="@{|/admin/sales/orders/${o.id}/edit|}" class="btn btn-action btn-edit"
                                sec:authorize="hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')">Sửa</a>
                             <a th:href="@{|/admin/sales/orders/${o.id}/delete|}" class="btn btn-action btn-delete"

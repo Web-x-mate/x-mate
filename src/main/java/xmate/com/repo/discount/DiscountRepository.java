@@ -53,4 +53,29 @@ public interface DiscountRepository extends JpaRepository<Discount, Long>, JpaSp
                           @Param("type") DiscountKind type,
                           @Param("valueType") DiscountValueType valueType,
                           Pageable pageable);
+
+    @Query(value = "SELECT id FROM discounts WHERE code = :code LIMIT 1", nativeQuery = true)
+    Optional<Long> findIdByCode(String code);
+
+    @Modifying
+    @Query("""
+        update Discount d
+           set d.usedCount = coalesce(d.usedCount, 0) + 1
+         where d.id = :id
+           and d.status = 'ACTIVE'
+           and (d.startAt is null or current_timestamp >= d.startAt)
+           and (d.endAt   is null or current_timestamp <= d.endAt)
+           and (d.usageLimit is null or d.usedCount < d.usageLimit)
+    """)
+    int incrementUsedCount(@Param("id") Long id);
+
+    // ✅ Giảm used_count (dùng nếu rollback, hủy đơn, hoặc lỗi)
+    @Modifying
+    @Query("""
+        update Discount d
+           set d.usedCount = greatest(coalesce(d.usedCount, 0) - 1, 0)
+         where d.id = :id
+    """)
+    int revertUsedCount(@Param("id") Long id);
+
 }

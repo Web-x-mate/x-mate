@@ -108,31 +108,42 @@ public class DiscountServiceImpl implements DiscountService {
         return subtotal.compareTo(min) >= 0;
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public DiscountUsage recordUsage(Long discountId, Long orderId, Long customerIdOrNull) {
         Discount discount = discountRepo.findById(discountId)
                 .orElseThrow(() -> new IllegalArgumentException("Discount not found"));
 
+        // Nếu đã ghi rồi thì trả về luôn
         DiscountUsageId id = new DiscountUsageId(discountId, orderId);
         if (usageRepo.existsById(id)) {
             return usageRepo.findById(id).get();
         }
 
-        DiscountUsage u = DiscountUsage.builder()
+        // Tạo usage record
+        DiscountUsage usage = DiscountUsage.builder()
                 .id(id)
                 .discount(discount)
                 .order(xmate.com.entity.sales.Order.builder().id(orderId).build())
-                .customer(customerIdOrNull != null ? xmate.com.entity.customer.Customer.builder().id(customerIdOrNull).build() : null)
+                .customer(customerIdOrNull != null
+                        ? xmate.com.entity.customer.Customer.builder().id(customerIdOrNull).build()
+                        : null)
                 .usedAt(LocalDateTime.now())
                 .build();
-        DiscountUsage saved = usageRepo.save(u);
 
-        // tăng used_count
-        discount.setUsedCount((discount.getUsedCount() == null ? 0 : discount.getUsedCount()) + 1);
-        discountRepo.save(discount);
+        DiscountUsage saved = usageRepo.save(usage);
+
+        // ✅ Tăng used_count bằng query atomic
+        int updated = discountRepo.incrementUsedCount(discountId);
+        if (updated != 1) {
+            // Nếu lỗi hoặc không thỏa điều kiện, revert lại
+            discountRepo.revertUsedCount(discountId);
+            throw new IllegalStateException("Không thể cập nhật lượt sử dụng cho mã giảm giá (có thể đã hết hạn).");
+        }
 
         return saved;
     }
+
 }
 
 

@@ -84,32 +84,41 @@
         <h1 class="page-title" th:text="${media != null and media.id != null} ? 'Sửa Media' : 'Thêm Media'">Thêm Media</h1>
 
         <form th:action="${media != null and media.id != null}
-                      ? @{'/admin/catalog/products/' + ${product.id} + '/media/edit/' + ${media.id}}
-                      : @{'/admin/catalog/products/' + ${product.id} + '/media/new'}"
+                  ? @{'/admin/catalog/products/' + ${product.id} + '/media/edit/' + ${media.id}}
+                  : @{'/admin/catalog/products/' + ${product.id} + '/media/new'}"
               method="post" enctype="multipart/form-data" class="vstack gap-3">
 
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <!-- Media type -->
             <div>
-                <label for="mediaType">Media type</label>
-                <select id="mediaType" name="mediaType" class="form-select" required>
+                <label for="mediaType">Loại media</label>
+                <select id="mediaType" name="mediaType" class="form-select" required onchange="toggleMediaInput()">
                     <option th:value="IMAGE"
-                            th:selected="${media == null or media.mediaType?.name() == 'IMAGE'}">IMAGE</option>
-                    <option th:value="VIDEO"
-                            th:selected="${media != null and media.mediaType?.name() == 'VIDEO'}">VIDEO</option>
+                            th:selected="${media == null or media.mediaType?.name() == 'IMAGE'}">Tải file (IMAGE)</option>
+                    <option th:value="URL"
+                            th:selected="${media != null and media.mediaType?.name() == 'URL'}">Ảnh từ đường dẫn (URL)</option>
                 </select>
             </div>
 
-            <!-- File -->
-            <div>
-                <label for="file">File</label>
+            <!-- Upload file -->
+            <div id="fileInputWrapper">
+                <label for="file">Chọn ảnh tải lên</label>
                 <input id="file" name="file" type="file" class="form-control" th:required="${media == null}">
                 <small th:if="${media != null}">
                     Ảnh hiện tại:
-                    <a class="link-inline" th:href="${media.url}" th:text="${media.url}" target="_blank" rel="noopener">link</a>
+                    <a class="link-inline" th:href="${media.url}" th:text="${media.url}" target="_blank" rel="noopener">xem ảnh</a>
                     (để trống nếu không muốn thay)
                 </small>
+            </div>
+
+            <!-- Nhập link ảnh -->
+            <div id="urlInputWrapper" style="display:none;">
+                <label for="imageUrl">Link ảnh (URL)</label>
+                <input id="imageUrl" name="imageUrl" type="url" class="form-control"
+                       th:value="${media != null and media.mediaType?.name() == 'URL'} ? ${media.url} : ''"
+                       placeholder="Dán link ảnh từ Google, Imgur, Drive, v.v.">
+                <small class="text-muted">Ví dụ: https://i.imgur.com/abc123.jpg hoặc https://drive.google.com/uc?id=xxxxx</small>
             </div>
 
             <!-- Variant ID -->
@@ -129,7 +138,7 @@
 
             <!-- Sort order -->
             <div>
-                <label for="sortOrder">Sort order</label>
+                <label for="sortOrder">Thứ tự sắp xếp</label>
                 <input id="sortOrder" name="sortOrder" type="number" class="form-control"
                        th:value="${media != null ? media.sortOrder : 0}">
             </div>
@@ -141,6 +150,26 @@
                 <a th:href="@{|/admin/catalog/products/${product.id}/media|}" class="btn btn-outline-secondary">Quay lại</a>
             </div>
         </form>
+
+        <script>
+            function toggleMediaInput() {
+                const type = document.getElementById("mediaType").value;
+                const fileDiv = document.getElementById("fileInputWrapper");
+                const urlDiv = document.getElementById("urlInputWrapper");
+
+                if (type === "URL") {
+                    fileDiv.style.display = "none";
+                    urlDiv.style.display = "block";
+                } else {
+                    fileDiv.style.display = "block";
+                    urlDiv.style.display = "none";
+                }
+            }
+
+            // Chạy ngay khi load trang để hiển thị đúng với dữ liệu hiện có
+            document.addEventListener("DOMContentLoaded", toggleMediaInput);
+        </script>
+
     </div>
 </section>
 </body>

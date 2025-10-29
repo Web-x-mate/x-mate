@@ -3,6 +3,7 @@ package xmate.com.repo.discount;
 
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import xmate.com.entity.discount.*;
 
 import java.time.LocalDate;
@@ -51,4 +52,15 @@ public interface DiscountUsageRepository extends JpaRepository<DiscountUsage, Di
         Integer getOrders();
         Double getRevenue();
     }
+
+    @Query(value = "select count(*) from discount_usages where order_id = :orderId", nativeQuery = true)
+    int countByOrderId(Long orderId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "insert into discount_usages (used_at, customer_id, discount_id, order_id) " +
+            "values (CURRENT_TIMESTAMP, :customerId, :discountId, :orderId)", nativeQuery = true)
+    void insertUsage(Long customerId, Long discountId, Long orderId);
+
+
 }
