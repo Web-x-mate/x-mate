@@ -45,7 +45,7 @@ public class CartServiceImpl implements CartService {
 
     private static final String PLACEHOLDER_IMAGE = "/client/images/product-placeholder.svg";
     private static final long FREE_SHIP_MIN = 500_000L;
-    private static final long DEFAULT_SHIPPING_FEE = 30_000L;
+    private static final long DEFAULT_SHIPPING_FEE = 2_000L;
     private static final String CART_COOKIE_NAME = "cart_id";
     private static final int CART_COOKIE_MAX_AGE_DAYS = 30;
     private static final String GUEST_KEY_REQUEST_ATTR = CartServiceImpl.class.getName() + ".GUEST_KEY";
