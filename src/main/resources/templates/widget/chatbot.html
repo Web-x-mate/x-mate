@@ -1,213 +1,288 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-    <meta charset="UTF-8"/>
-    <!-- Nếu trang này render trực tiếp, 2 meta dưới sẽ được Thymeleaf fill.
-         Nếu chỉ nhúng fragment vào layout khác, hãy đặt 2 meta này ở layout chính. -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="widget">
     <style>
-        /* --- Chatbot widget styles --- */
-        .sb-launcher {
-            position: fixed; right: 20px; bottom: 20px;
-            width: 56px; height: 56px; border-radius: 50%;
-            border: none; cursor: pointer; font-size: 20px;
-            box-shadow: 0 6px 18px rgba(0,0,0,.15); background: #111827; color: #fff;
-            z-index: 9998;
+        :root {
+            --chatbot-primary: #2563eb;
+            --chatbot-bg: #ffffff;
+            --chatbot-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
         }
-        .sb-panel {
-            position: fixed; right: 20px; bottom: 86px; width: 360px; max-height: 60vh;
-            background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
-            box-shadow: 0 12px 30px rgba(0,0,0,.18); display: none; flex-direction: column;
-            overflow: hidden; z-index: 9999;
-        }
-        .sb-panel.open { display: flex; }
-        .sb-header { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-        .sb-body { padding: 12px; overflow-y: auto; flex: 1; background: #fafafa; }
-        .sb-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #f1f5f9; background: #fff; }
-        .sb-input input {
-            flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; outline: none;
-        }
-        .sb-input button {
-            padding: 10px 14px; border: none; border-radius: 10px; background: #111827; color: #fff; cursor: pointer;
-        }
-        .msg { margin: 8px 0; display: flex; }
-        .msg.me { justify-content: flex-end; }
-        .bubble {
-            max-width: 80%; padding: 8px 10px; border-radius: 12px; line-height: 1.4; white-space: pre-wrap;
-            border: 1px solid #e5e7eb; background: #fff;
-        }
-        .msg.me .bubble { background: #111827; color: #fff; border-color: #111827; }
-        .meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
-    </style>
-</head>
-<body>
-<!-- Fragment có tên "widget" để nhúng -->
-<div th:fragment="widget">
-    <button type="button" class="sb-launcher" id="sbLauncher" aria-label="Open chat">💬</button>
 
-    <div class="sb-panel" id="sbPanel" aria-live="polite">
-        <div class="sb-header">
-            ShopBot
-            <span style="float:right; cursor:pointer" id="sbClose">✖</span>
+        .chatbot-toggle {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: var(--chatbot-primary);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            color: #fff;
+            font-size: 26px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.5);
+        }
+
+        .chatbot-panel {
+            position: fixed;
+            right: 24px;
+            bottom: 88px;
+            width: 340px;
+            max-width: calc(100vw - 32px);
+            height: 480px;
+            background: var(--chatbot-bg);
+            border-radius: 16px;
+            box-shadow: var(--chatbot-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 9999;
+        }
+
+        .chatbot-panel.is-open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .chatbot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chatbot-header small {
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chatbot-close {
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .chatbot-message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            align-items: flex-start;
+        }
+
+        .chatbot-message--user {
+            flex-direction: row-reverse;
+        }
+
+        .chatbot-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1d4ed8;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .chatbot-bubble {
+            max-width: 220px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.4;
+            background: #fff;
+            color: #1f2937;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .chatbot-message--user .chatbot-bubble {
+            background: #2563eb;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 14px;
+        }
+
+        .chatbot-form {
+            padding: 12px 14px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .chatbot-form input {
+            flex: 1;
+            border: 1px solid #cbd5f5;
+            border-radius: 24px;
+            padding: 10px 14px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chatbot-form button {
+            background: #2563eb;
+            border: none;
+            color: #fff;
+            padding: 0 18px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-panel {
+                right: 16px;
+                left: 16px;
+                width: auto;
+                height: 60vh;
+            }
+        }
+    </style>
+
+    <button id="chatbotToggle" class="chatbot-toggle" aria-label="Mở chat">
+        <i class="fa-solid fa-message"></i>
+    </button>
+
+    <div id="chatbotPanel" class="chatbot-panel" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="chatbot-header">
+            <div>
+                <h3>XMate Assistant</h3>
+                <small>Luôn sẵn sàng hỗ trợ bạn</small>
+            </div>
+            <button id="chatbotClose" class="chatbot-close" aria-label="Đóng">&times;</button>
         </div>
-        <div class="sb-body" id="sbMsgs"></div>
-        <form class="sb-input" id="sbForm">
-            <input type="text" id="sbQuestion" placeholder="Nhập câu hỏi..." required />
+        <div id="chatbotMessages" class="chatbot-messages">
+            <div class="chatbot-message chatbot-message--bot">
+                <div class="chatbot-avatar">XM</div>
+                <div class="chatbot-bubble">
+                    Xin chào! Tôi là trợ lý XMate. Bạn cần hỗ trợ gì hôm nay?
+                </div>
+            </div>
+        </div>
+        <form id="chatbotForm" class="chatbot-form">
+            <input id="chatbotInput" type="text" placeholder="Nhập tin nhắn..." autocomplete="off">
             <button type="submit">Gửi</button>
         </form>
     </div>
 
     <script>
-        (function () {
-            const launcher = document.getElementById('sbLauncher');
-            const panel = document.getElementById('sbPanel');
-            const closeBtn = document.getElementById('sbClose');
-            const form = document.getElementById('sbForm');
-            const input = document.getElementById('sbQuestion');
-            const msgs = document.getElementById('sbMsgs');
+        (() => {
+            const toggle = document.getElementById('chatbotToggle');
+            const panel = document.getElementById('chatbotPanel');
+            const closeBtn = document.getElementById('chatbotClose');
+            const form = document.getElementById('chatbotForm');
+            const input = document.getElementById('chatbotInput');
+            const messages = document.getElementById('chatbotMessages');
 
-            function toggle(open) {
-                if (open === true) panel.classList.add('open');
-                else if (open === false) panel.classList.remove('open');
-                else panel.classList.toggle('open');
-                if (panel.classList.contains('open')) setTimeout(() => input.focus(), 50);
+            function openPanel() {
+                panel.classList.add('is-open');
+                panel.setAttribute('aria-hidden', 'false');
+                setTimeout(() => input.focus(), 150);
             }
 
-            launcher.addEventListener('click', () => toggle());
-            closeBtn.addEventListener('click', () => toggle(false));
-
-            function escapeHtml(text) {
-                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-                return text.replace(/[&<>"']/g, m => map[m]);
+            function closePanel() {
+                panel.classList.remove('is-open');
+                panel.setAttribute('aria-hidden', 'true');
             }
 
-            // 👉 Biến URL trong text thành <a> … </a>
-            function linkify(text) {
-                // trước tiên escape để tránh XSS, rồi mới thay thế URL
-                const escaped = escapeHtml(text);
-                // regex đơn giản nhận http/https
-                const urlRegex = /\bhttps?:\/\/[^\s<>"')]+/gi;
-                return escaped.replace(urlRegex, (url) => {
-                    // Hiển thị gọn nếu quá dài
-                    const display = url.length > 80 ? url.slice(0, 77) + '…' : url;
-                    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${display}</a>`;
-                });
-            }
-
-            function addMsg(content, me = false, meta) {
-                const wrap = document.createElement('div');
-                wrap.className = 'msg' + (me ? ' me' : '');
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.textContent = content; // plain text
-                wrap.appendChild(bubble);
-                if (meta) {
-                    const m = document.createElement('div');
-                    m.className = 'meta';
-                    m.textContent = meta;
-                    wrap.appendChild(m);
+            toggle.addEventListener('click', () => {
+                if (panel.classList.contains('is-open')) {
+                    closePanel();
+                } else {
+                    openPanel();
                 }
-                msgs.appendChild(wrap);
-                msgs.scrollTop = msgs.scrollHeight;
-            }
+            });
+            closeBtn.addEventListener('click', closePanel);
 
-            // 👉 Cho phép chèn HTML đã “làm sạch” (từ linkify)
-            function addMsgHtml(html, me = false, meta) {
-                const wrap = document.createElement('div');
-                wrap.className = 'msg' + (me ? ' me' : '');
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.innerHTML = html; // chỉ dùng với output của linkify()
-                wrap.appendChild(bubble);
-                if (meta) {
-                    const m = document.createElement('div');
-                    m.className = 'meta';
-                    m.textContent = meta;
-                    wrap.appendChild(m);
-                }
-                msgs.appendChild(wrap);
-                msgs.scrollTop = msgs.scrollHeight;
-            }
-
-            // --- CSRF helper (Cách A) ---
-            function getCookie(name) {
-                return document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith(name + '='))
-                    ?.split('=')[1];
-            }
-            function buildCsrfHeaders() {
-                const headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' };
-                const token  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-                const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
-                if (token && header) { headers[header] = token; return headers; }
-                const xsrf = getCookie('XSRF-TOKEN');
-                if (xsrf) headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrf);
-                return headers;
-            }
-
-            async function ask(q) {
-                try {
-                    const headers = buildCsrfHeaders();
-
-                    // bubble "đang gõ…"
-                    const loading = document.createElement('div');
-                    loading.className = 'msg';
-                    const bubble = document.createElement('div');
-                    bubble.className = 'bubble';
-                    bubble.innerHTML = '<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
-                    loading.appendChild(bubble);
-                    msgs.appendChild(loading);
-                    msgs.scrollTop = msgs.scrollHeight;
-
-                    const res = await fetch('/widget/chatbot/chat', {
-                        method: 'POST',
-                        headers,
-                        body: new URLSearchParams({ question: q })
-                    });
-
-                    loading.remove();
-
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    const data = await res.json(); // ChatResponse
-
-                    const txt = (data?.answer ?? '').toString();
-                    // Nếu answer rỗng, show toàn bộ JSON
-                    const htmlAnswer = txt ? linkify(txt) : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
-                    addMsgHtml(htmlAnswer, false, data?.intent ? ('intent: ' + data.intent) : null);
-
-                    // Passages -> hiển thị link nếu có
-                    if (Array.isArray(data?.passages) && data.passages.length) {
-                        const top = data.passages.slice(0, 3).map(p => {
-                            const label = p?.slug || p?.url || p?.type || 'nguồn';
-                            if (p?.url) {
-                                const safeLabel = escapeHtml(label.toString());
-                                return `<a href="${p.url}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
-                            }
-                            return escapeHtml(label.toString());
-                        }).join(' | ');
-                        addMsgHtml('Nguồn: ' + top, false);
-                    }
-                } catch (e) {
-                    addMsg('Lỗi gọi chatbot: ' + e.message, false);
-                }
-            }
-
-            form.addEventListener('submit', function (ev) {
-                ev.preventDefault();
-                const q = input.value.trim();
-                if (!q) return;
-                addMsg(q, true);
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = input.value.trim();
+                if (!text) return;
+                appendMessage('user', text);
                 input.value = '';
-                ask(q);
+
+                const placeholderId = appendMessage('bot', 'Đang xử lý...');
+
+                try {
+                    const res = await fetch('/api/chatbot', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+                    if (!res.ok) throw new Error('Bad response');
+                    const data = await res.json();
+                    replaceMessage(placeholderId, data.reply || 'Xin lỗi, tôi chưa hiểu câu hỏi này.');
+                } catch (err) {
+                    replaceMessage(placeholderId, 'Có lỗi xảy ra, vui lòng thử lại sau.');
+                }
             });
 
-            // toggle(true); // mở sẵn nếu muốn
+            function appendMessage(sender, text) {
+                const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+                const wrapper = document.createElement('div');
+                wrapper.className = `chatbot-message chatbot-message--${sender}`;
+                wrapper.dataset.id = id;
+
+                if (sender === 'bot') {
+                    const avatar = document.createElement('div');
+                    avatar.className = 'chatbot-avatar';
+                    avatar.textContent = 'XM';
+                    wrapper.appendChild(avatar);
+                }
+
+                const bubble = document.createElement('div');
+                bubble.className = 'chatbot-bubble';
+                bubble.textContent = text;
+                wrapper.appendChild(bubble);
+                messages.appendChild(wrapper);
+                messages.scrollTop = messages.scrollHeight;
+                return id;
+            }
+
+            function replaceMessage(id, text) {
+                const target = messages.querySelector(`[data-id="${id}"] .chatbot-bubble`);
+                if (target) {
+                    target.textContent = text;
+                } else {
+                    appendMessage('bot', text);
+                }
+            }
         })();
     </script>
-
-</div>
-</body>
-</html>
+</th:block>
