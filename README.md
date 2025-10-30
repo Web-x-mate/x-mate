@@ -102,6 +102,7 @@ cd x-mate
 spring.datasource.url=
 spring.datasource.username=
 spring.datasource.password=
+
 **Bước 4: Khởi chạy ứng dụng**
 1. Mở Terminal hoặc Command Prompt tại thư mục gốc của dự án.
 2. Chạy lệnh Maven để build dự án:
