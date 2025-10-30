@@ -17,25 +17,25 @@
 
     <!-- Khi CÓ quyền VIEW -->
     <div sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_ADMIN')">
-        <h1 class="page-title">Users</h1>
+        <h1 class="page-title">Danh sách nhân viên</h1>
 
         <div class="d-flex justify-content-between mb-3">
             <form method="get" class="d-flex">
                 <input class="form-control me-2" type="text" name="q" th:value="${q}" placeholder="Search username/name/email/phone">
-                <button class="btn btn-primary">Search</button>
+                <button class="btn btn-primary">Tìm kiếm</button>
             </form>
 
             <!-- Nút tạo chỉ hiển thị khi có quyền CREATE -->
             <a th:href="@{/admin/system/users/new}"
                class="btn btn-success"
-               sec:authorize="hasAnyAuthority('USER_CREATE','ROLE_ADMIN')">+ Thêm user</a>
+               sec:authorize="hasAnyAuthority('USER_CREATE','ROLE_ADMIN')">Thêm user</a>
         </div>
 
         <div class="table-responsive">
             <table class="table table-striped align-middle">
                 <thead class="table-light">
                 <tr>
-                    <th>ID</th><th>Username</th><th>Full name</th><th>Email</th><th>Phone</th><th>Active</th><th style="width:220px;">Actions</th>
+                    <th>ID</th><th>Username</th><th>Họ và tên</th><th>Email</th><th>SĐT</th><th>Trạng thái</th><th style="width:220px;">Thao tác</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -53,13 +53,13 @@
                         <!-- Edit -->
                         <a th:href="@{|/admin/system/users/${u.id}/edit|}"
                            class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('USER_EDIT','ROLE_ADMIN')">Edit</a>
+                           sec:authorize="hasAnyAuthority('USER_EDIT','ROLE_ADMIN')">Sửa</a>
 
                         <!-- Delete -->
                         <a th:href="@{|/admin/system/users/${u.id}/delete|}"
                            onclick="return confirm('Xóa user này?');"
                            class="btn btn-sm btn-danger"
-                           sec:authorize="hasAnyAuthority('USER_DELETE','ROLE_ADMIN')">Delete</a>
+                           sec:authorize="hasAnyAuthority('USER_DELETE','ROLE_ADMIN')">Xóa</a>
 
                         <!-- Toggle Active -->
                         <form th:action="@{|/admin/system/users/${u.id}/toggle|}"

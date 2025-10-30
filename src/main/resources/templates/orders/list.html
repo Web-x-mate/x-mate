@@ -478,33 +478,33 @@
 <section layout:fragment="content" class="orders-page">
     <div sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">
 
-        <h1 class="page-title">Danh sach don hang</h1>
+        <h1 class="page-title">Danh sách đơn hàng</h1>
 
         <!-- Bo loc -->
         <form method="get" class="filter-grid">
             <div class="cell">
-                <input class="form-control" name="q" th:value="${q}" placeholder="Ma don hoac ten khach hang...">
+                <input class="form-control" name="q" th:value="${q}" placeholder="Mã đơn hoặc tên khách hàng...">
             </div>
             <div class="cell cell-status">
                 <select class="form-select" name="status">
-                    <option value="">Trang thai</option>
+                    <option value="">Trạng thái</option>
                     <option th:each="s: ${orderStatuses}" th:value="${s}" th:text="${s}"
                             th:selected="${s.name() == status}"></option>
                 </select>
             </div>
             <div class="cell cell-payment">
                 <select class="form-select" name="payment">
-                    <option value="">Thanh toan</option>
+                    <option value="">Thanh toán</option>
                     <option th:each="s: ${paymentStatuses}" th:value="${s}" th:text="${s}"
                             th:selected="${s.name() == payment}"></option>
                 </select>
             </div>
             <div class="cell actions">
                 <div class="action-buttons">
-                    <button class="btn btn-primary" type="submit">Tim kiem</button>
-                    <a class="btn btn-secondary" th:href="@{/admin/sales/orders}">Dat lai</a>
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                    <a class="btn btn-secondary" th:href="@{/admin/sales/orders}">Đặt lại</a>
                     <a th:href="@{/admin/sales/orders/new}" class="btn btn-create"
-                       sec:authorize="hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')">Tao don</a>
+                       sec:authorize="hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')">Tạo đơn</a>
                 </div>
             </div>
         </form>
@@ -515,14 +515,14 @@
                 <thead class="table-light">
                 <tr>
                     <th>ID</th>
-                    <th>Ma don</th>
-                    <th>Khach hang</th>
-                    <th>Trang thai</th>
-                    <th>Thanh toan</th>
-                    <th>Van chuyen</th>
-                    <th class="text-end">Tong tien</th>
-                    <th>Ngay tao</th>
-                    <th>Hanh dong</th>
+                    <th>Mã đơn </th>
+                    <th>Khách hàng</th>
+                    <th>Trạng thái</th>
+                    <th>Thanh toán</th>
+                    <th>Vận chuyển</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -579,7 +579,7 @@
                                         </g>
                                     </svg>
                                 </span>
-                                <span class="btn-text">Sua</span>
+                                <span class="btn-text">Sửa</span>
                             </a>
                             <a th:href="@{|/admin/sales/orders/${o.id}/delete|}" class="btn btn-action btn-delete"
                                sec:authorize="hasAnyAuthority('ORDER_DELETE','ROLE_ADMIN')"
@@ -593,7 +593,7 @@
                                         </g>
                                     </svg>
                                 </span>
-                                <span class="btn-text">Xoa</span>
+                                <span class="btn-text">Xóa</span>
                             </a>
                         </div>
                     </td>

@@ -6,29 +6,29 @@
       layout:decorate="~{layout/main}">
 <head>
     <meta charset="UTF-8">
-    <title>Danh sach danh muc</title>
+    <title>Danh sách danh mục</title>
     <link rel="stylesheet" th:href="@{/css/catalog/categories/list.css}">
 </head>
 <body>
 <section layout:fragment="content" class="catalog-categories">
 
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">
-        Ban khong co quyen xem danh muc.
+        Bạn không có quyền xem danh mục.
     </div>
 
     <div sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')"
          class="wrap"
          th:with="currentDir=${param.direction != null ? param.direction[0] : 'desc'},
                   currentSort=${param.sort != null ? param.sort[0] : 'id'}">
-        <h1 class="page-title">Danh sach danh muc</h1>
+        <h1 class="page-title">Danh sách danh mục</h1>
 
         <div class="toolbar">
             <form method="get" th:action="@{/admin/catalog/categories}" class="search-form">
                 <input type="hidden" name="sort" th:value="${currentSort}">
                 <input type="hidden" name="direction" th:value="${currentDir}">
                 <input type="hidden" name="size" th:value="${page != null ? page.size : size}">
-                <input type="text" name="q" th:value="${q}" placeholder="Tim danh muc..." class="form-control" aria-label="Search categories">
-                <button type="submit" class="btn btn-primary">Tim kiem</button>
+                <input type="text" name="q" th:value="${q}" placeholder="Tìm danh mục..." class="form-control" aria-label="Search categories">
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
             </form>
 
             <div class="toolbar-actions">
@@ -48,7 +48,7 @@
                 <a th:href="@{/admin/catalog/categories/new}"
                    class="btn btn-success"
                    sec:authorize="hasAnyAuthority('CATEGORY_CREATE','ROLE_ADMIN')">
-                    Them danh muc
+                    Thêm danh mục
                 </a>
             </div>
         </div>
@@ -67,18 +67,18 @@
                     <thead>
                     <tr>
                         <th class="col-center">ID</th>
-                        <th class="col-left">Ten danh muc</th>
-                        <th class="col-left">URL chuan hoa</th>
+                        <th class="col-left">Tên danh mục</th>
+                        <th class="col-left">URL chuẩn hóa</th>
                         <th class="col-left">Danh muc cha</th>
-                        <th class="col-center">Trang thai</th>
-                        <th class="col-right">Thao tac</th>
+                        <th class="col-center">Trạng thái</th>
+                        <th class="col-right">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="c, iter : ${page != null ? page.content : categories}">
                         <td class="col-center" th:text="${c.id}">1</td>
                         <td class="col-left">
-                            <span class="truncate" th:title="${c.name}" th:text="${c.name}">Danh muc A</span>
+                            <span class="truncate" th:title="${c.name}" th:text="${c.name}">Danh mục A</span>
                         </td>
                         <td class="col-left">
                             <span class="truncate truncate-200" th:title="${c.slug}" th:text="${c.slug}">danh-muc-a</span>
@@ -96,18 +96,18 @@
                             <div class="actions">
                                 <a th:href="@{|/admin/catalog/categories/${c.id}/edit|}"
                                    class="btn btn-sm btn-warning"
-                                   sec:authorize="hasAnyAuthority('CATEGORY_EDIT','ROLE_ADMIN')">Sua</a>
+                                   sec:authorize="hasAnyAuthority('CATEGORY_EDIT','ROLE_ADMIN')">Sửa</a>
 
                                 <a th:href="@{|/admin/catalog/categories/${c.id}/delete|}"
-                                   onclick="return confirm('Xoa danh muc nay?');"
+                                   onclick="return confirm('Xóa danh mục này?');"
                                    class="btn btn-sm btn-danger"
-                                   sec:authorize="hasAnyAuthority('CATEGORY_DELETE','ROLE_ADMIN')">Xoa</a>
+                                   sec:authorize="hasAnyAuthority('CATEGORY_DELETE','ROLE_ADMIN')">Xóa</a>
                             </div>
                         </td>
                     </tr>
 
                     <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                        <td colspan="6" class="col-center empty-row">Khong co du lieu</td>
+                        <td colspan="6" class="col-center empty-row">Không có dữ liệu</td>
                     </tr>
                     </tbody>
                 </table>

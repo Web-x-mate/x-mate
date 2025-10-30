@@ -17,7 +17,7 @@
 
     <!-- Khi CÓ quyền VIEW -->
     <div sec:authorize="hasAnyAuthority('ROLE_MGMT_VIEW','ROLE_ADMIN')">
-        <h1>Roles</h1>
+        <h1>Vai trò</h1>
 
         <div class="d-flex justify-content-between mb-3">
             <form method="get" class="d-flex">
@@ -34,7 +34,7 @@
         <div class="table-responsive">
             <table class="table table-striped align-middle">
                 <thead class="table-light">
-                <tr><th>ID</th><th>Name</th><th>Description</th><th style="width:200px;">Actions</th></tr>
+                <tr><th>ID</th><th>Tên</th><th>Mô tả</th><th style="width:200px;">Thao tác</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="r : ${page?.content}">
@@ -45,13 +45,13 @@
                         <!-- Edit -->
                         <a th:href="@{|/admin/system/roles/${r.id}/edit|}"
                            class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('ROLE_MGMT_EDIT','ROLE_ADMIN')">Edit</a>
+                           sec:authorize="hasAnyAuthority('ROLE_MGMT_EDIT','ROLE_ADMIN')">Sửa</a>
 
                         <!-- Delete -->
                         <a th:href="@{|/admin/system/roles/${r.id}/delete|}"
                            onclick="return confirm('Xóa role này?');"
                            class="btn btn-sm btn-danger"
-                           sec:authorize="hasAnyAuthority('ROLE_MGMT_DELETE','ROLE_ADMIN')">Delete</a>
+                           sec:authorize="hasAnyAuthority('ROLE_MGMT_DELETE','ROLE_ADMIN')">Xóa</a>
                     </td>
                 </tr>
                 <tr th:if="${page == null || #lists.isEmpty(page.content)}">
