@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -7,74 +7,14 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${category != null and category.id != null} ? 'Sửa danh mục' : 'Tạo mới danh mục'"></title>
-    <style>
-        /*
-        ====================================================
-        1. BIẾN CSS VÀ MÀU SẮC SEMANTIC (Dùng từ create_orders)
-        ====================================================
-        */
-        :root {
-            /* Màu nền và chữ cơ bản */
-            --bg:#F8F9FA;      /* Nền Dashboard */
-            --surface:#FFFFFF; /* Nền Cards/Widgets (Nền form) */
-            --text:#212529;    /* Văn bản Chính */
-            --muted:#6C757D;   /* Văn bản Phụ, đường lưới */
-            --bd:#DEE2E6;      /* Viền/Đường chia */
-            --ring:rgba(0, 123, 255, 0.4); /* Vòng focus */
+        <link rel="stylesheet" th:href="@{/css/catalog/categories/form.css}">
 
-            /* Màu Primary */
-            --primary:#007BFF;
-            --primary-hover:#0056B3;
-
-            /* Màu Semantic */
-            --success:#28A745;
-        }
-
-        /* Layout helpers */
-        .wrap { max-width:800px; margin:0 auto; padding: 24px 0; }
-        .card { background:var(--surface); border:1px solid var(--bd); border-radius:1rem;
-            box-shadow:0 1px 3px rgba(33,37,41,.1); padding:36px; }
-        .stack { display:grid; gap:16px; }
-
-        /* Tiêu đề */
-        .section-title { font-size:28px; font-weight:800; margin:0 0 20px 0; color:var(--text); text-align:center; }
-
-        /* Inputs (Class field) */
-        .field {
-            width:100%; padding:.75rem .9rem;
-            border:1px solid var(--bd); border-radius:.75rem;
-            background:var(--surface); font-size:.95rem; color:var(--text); transition:.18s ease;
-        }
-        .field:focus { outline:none; box-shadow:0 0 0 3px var(--ring); border-color:var(--primary); }
-
-        .label { display:block; font-size:.875rem; color:var(--muted); margin-bottom:.35rem; font-weight:500; }
-        .required-star { color:var(--danger, #DC3545); }
-
-        /* Buttons (Đồng bộ) */
-        .btn { font-weight:600; line-height:1.1; border:1px solid transparent; white-space:nowrap; cursor:pointer; transition:.18s ease; }
-        .btn-lg { font-size:1rem; padding:.75rem 1.2rem; border-radius:.75rem; min-width:140px; box-shadow:0 1px 2px rgba(33,37,41,.05); }
-        .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff !important; font-weight:700; }
-        .btn-primary:hover { background:var(--primary-hover); border-color:var(--primary-hover); }
-        .btn-outline { background:var(--surface); color:var(--text); border:1px solid var(--bd); font-weight:600; }
-        .btn-outline:hover { background:var(--bg); }
-
-        .form-actions { display:flex; justify-content:flex-end; gap:12px; flex-wrap:wrap; margin-top:30px; }
-
-        /* Checkbox Tùy chỉnh */
-        .form-check { display:flex; align-items:center; gap:8px; margin-top: 10px; }
-        .form-check input[type="checkbox"] {
-            width: 1.15rem; height: 1.15rem;
-            border: 1px solid var(--bd); border-radius: 4px;
-            accent-color: var(--primary); /* Đặt màu chính cho checkbox */
-            cursor: pointer;
-        }
-        .form-check label { margin:0; font-weight:600; color:var(--text); }
-    </style>
+        
 </head>
 <body>
 <section layout:fragment="content">
     <div class="wrap">
-        <h1 class="section-title" th:text="${category != null and category.id != null} ? '📝 Sửa danh mục' : '✨ Tạo mới danh mục'">Tạo mới danh mục</h1>
+        <h1 class="section-title" th:text="${category != null and category.id != null} ? 'Sửa danh mục' : '✨ Tạo mới danh mục'">Tạo mới danh mục</h1>
 
         <div class="card">
             <form th:action="${category != null and category.id != null}
@@ -113,7 +53,7 @@
                 <div class="form-actions">
                     <a th:href="@{/admin/catalog/categories}" class="btn btn-outline btn-lg">← Quay lại</a>
                     <button type="submit" class="btn btn-primary btn-lg"
-                            th:text="${category != null and category.id != null} ? '💾 Cập nhật' : '✅ Tạo mới'">Tạo mới</button>
+                            th:text="${category != null and category.id != null} ? 'Cập nhật' : ' Tạo mới'">Tạo mới</button>
                 </div>
             </form>
         </div>
