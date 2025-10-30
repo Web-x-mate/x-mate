@@ -7,33 +7,129 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:text="${title} ?: 'Dashboard'">Dashboard</title>
-    `<script src="https://cdn.tailwindcss.com">`</script>
+    `
+    <script src="https://cdn.tailwindcss.com">`</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        :root{
-            --bg:#F5F7FB; --surface:#FFFFFF; --text:#0F172A; --muted:#64748B; --bd:#E2E8F0; --ring:#94A3B8;
-            --chart-primary:#6366F1; --chart-success:#22C55E; --chart-warning:#F59E0B; --chart-danger:#EF4444; --chart-info:#06B6D4;
+        :root {
+            --bg: #F5F7FB;
+            --surface: #FFFFFF;
+            --text: #0F172A;
+            --muted: #64748B;
+            --bd: #E2E8F0;
+            --ring: #94A3B8;
+            --chart-primary: #6366F1;
+            --chart-success: #22C55E;
+            --chart-warning: #F59E0B;
+            --chart-danger: #EF4444;
+            --chart-info: #06B6D4;
             --sys-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        body{background:var(--bg); color:var(--text)}
-        .wrap{max-width:1500px; margin:0 auto}
+
+        body {
+            background: var(--bg);
+            color: var(--text)
+        }
+
+        .wrap {
+            max-width: 1500px;
+            margin: 0 auto
+        }
+
         /* Force system font on this page to avoid theme overrides */
-        .wrap, .wrap *{ font-family: var(--sys-font) !important; }
-        .card{background:var(--surface); border:1px solid var(--bd); border-radius:1rem; box-shadow:0 1px 3px rgba(15,23,42,.06)}
-        .muted{color:var(--muted)}
-        .btn{padding:.5rem .9rem; border:1px solid var(--bd); border-radius:.65rem; background:var(--surface); height:38px; display:inline-flex; align-items:center}
-        .btn-primary{background:#5280E1; color:#fff; border-color:#5280E1}
-        .btn-primary:hover{background:#15803D}
-        .ctl{padding:.5rem .75rem; border:1px solid var(--bd); border-radius:.65rem; height:38px}
-        .kpi{display:flex; gap:.75rem; align-items:center; padding:1rem; background:var(--surface); border:1px solid var(--bd); border-radius:1rem}
-        .kval{font-size:1.5rem; font-weight:700;color:#3157A8}
-        .kcap{font-size:.75rem; color:var(--muted)}
-        .ico{width:40px; height:40px; display:grid; place-items:center; border-radius:.75rem; background:#EEF2FF; color:#3730A3}
-        canvas.small{max-height:220px}
-        .table-head{color:var(--muted)}
-        .delta{font-size:.75rem; margin-top:.15rem}
-        .delta.up{color:#16A34A}
-        .delta.down{color:#DC2626}
+        .wrap, .wrap * {
+            font-family: var(--sys-font) !important;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--bd);
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, .06)
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .btn {
+            padding: .5rem .9rem;
+            border: 1px solid var(--bd);
+            border-radius: .65rem;
+            background: var(--surface);
+            height: 38px;
+            display: inline-flex;
+            align-items: center
+        }
+
+        .btn-primary {
+            background: #5280E1;
+            color: #fff;
+            border-color: #5280E1
+        }
+
+        .btn-primary:hover {
+            background: #15803D
+        }
+
+        .ctl {
+            padding: .5rem .75rem;
+            border: 1px solid var(--bd);
+            border-radius: .65rem;
+            height: 38px
+        }
+
+        .kpi {
+            display: flex;
+            gap: .75rem;
+            align-items: center;
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--bd);
+            border-radius: 1rem
+        }
+
+        .kval {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3157A8
+        }
+
+        .kcap {
+            font-size: .75rem;
+            color: var(--muted)
+        }
+
+        .ico {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: .75rem;
+            background: #EEF2FF;
+            color: #3730A3
+        }
+
+        canvas.small {
+            max-height: 220px
+        }
+
+        .table-head {
+            color: var(--muted)
+        }
+
+        .delta {
+            font-size: .75rem;
+            margin-top: .15rem
+        }
+
+        .delta.up {
+            color: #16A34A
+        }
+
+        .delta.down {
+            color: #DC2626
+        }
     </style>
 </head>
 
@@ -43,78 +139,181 @@
 
         <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold">Analytics dashboard</h1>
-                <p class="muted">Monitor metrics, check reports and review performance</p>
+                <h1 class="text-2xl md:text-3xl font-bold">Báo cáo thống kê</h1>
+                <!--                <p class="muted">Monitor metrics, check reports and review performance</p>-->
             </div>
             <form class="flex items-center gap-2" th:action="@{/admin}" method="get">
                 <input name="from" type="date" class="ctl" th:value="${from} ?: ''"/>
                 <span class="muted">-</span>
                 <input name="to" type="date" class="ctl" th:value="${to} ?: ''"/>
                 <select name="gran" class="ctl" th:value="${gran} ?: 'D'">
-                    <option value="D" th:selected="${gran} == 'D'">Day</option>
-                    <option value="W" th:selected="${gran} == 'W'">Week</option>
-                    <option value="M" th:selected="${gran} == 'M'">Month</option>
+                    <option value="D" th:selected="${gran} == 'D'">Ngày</option>
+                    <option value="W" th:selected="${gran} == 'W'">Tuần</option>
+                    <option value="M" th:selected="${gran} == 'M'">Tháng</option>
                 </select>
                 <button type="submit" class="btn btn-primary">Apply</button>
-                
+
             </form>
         </header>
 
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M3 13h4l3 6 4-12 3 6h4"/></svg></div><div class="min-w-0"><div id="k_rev" class="kval">0</div><div class="kcap">Revenue (paid)</div><div id="d_rev" class="delta muted">vs last period</div></div></div>
-                    <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M4 4h16v2H4zM4 11h16v2H4zM4 18h16v2H4z"/></svg></div><div class="min-w-0"><div id="k_ord" class="kval">0</div><div class="kcap">Orders</div><div id="d_ord" class="delta muted">vs last period</div></div></div>
-                    <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9H12z"/></svg></div><div class="min-w-0"><div id="k_aov" class="kval">0</div><div class="kcap">AOV</div><div id="d_aov" class="delta muted">vs last period</div></div></div>
-                    <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M7 7h10v2H7zm0 4h7v2H7zm0 4h4v2H7z"/></svg></div><div class="min-w-0"><div id="k_low" class="kval">0</div><div class="kcap">Low SKUs</div><div id="d_low" class="delta muted">vs last period</div></div></div>
+                    <div class="kpi">
+                        <div class="ico">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                                <path d="M3 13h4l3 6 4-12 3 6h4"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div id="k_rev" class="kval">0</div>
+                            <div class="kcap">Doanh số (đã giao)</div>
+                            <div id="d_rev" class="delta muted">so với đợt trước</div>
+                        </div>
+                    </div>
+                    <div class="kpi">
+                        <div class="ico">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                                <path d="M4 4h16v2H4zM4 11h16v2H4zM4 18h16v2H4z"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div id="k_ord" class="kval">0</div>
+                            <div class="kcap">Đơn hàng</div>
+                            <div id="d_ord" class="delta muted">so với đợt trước</div>
+                        </div>
+                    </div>
+                    <div class="kpi">
+                        <div class="ico">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                                <path d="M12 3a9 9 0 1 0 9 9H12z"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div id="k_aov" class="kval">0</div>
+                            <div class="kcap">AOV</div>
+                            <div id="d_aov" class="delta muted">so với đợt trước</div>
+                        </div>
+                    </div>
+                    <div class="kpi">
+                        <div class="ico">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                                <path d="M7 7h10v2H7zm0 4h7v2H7zm0 4h4v2H7z"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div id="k_low" class="kval">0</div>
+                            <div class="kcap">Low SKUs</div>
+                            <div id="d_low" class="delta muted">so với đợt trước</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="card p-4 xl:col-span-2">
-                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Best Sellers</h3><span class="muted text-xs">top 3 products</span></div>
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Best Sellers</h3><span
+                        class="muted text-xs">top 3 sản phẩm</span></div>
                 <ul id="list_best" class="divide-y" style="border-color:var(--bd)"></ul>
             </div>
         </section>
 
         <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div class="card p-4">
-                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Revenue Overview</h3><span class="muted text-xs" th:text="${gran}">D</span></div>
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Báo cáo doanh thu</h3>
+                    <span class="muted text-xs" th:text="${gran}">D</span></div>
                 <canvas id="c_perf" class="small"></canvas>
             </div>
             <div class="card p-4">
-                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Payment Status</h3><span class="muted text-xs">paid vs unpaid</span></div>
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Trạng thái thanh toán</h3>
+                    <span class="muted text-xs">Đã thanh toán/ Chưa thanh toán</span></div>
                 <canvas id="c_funnel" class="small"></canvas>
             </div>
         </section>
 
         <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div class="card p-4"><div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Catalog Snapshot</h3><span class="muted text-xs">catalog</span></div><canvas id="c_catalog" class="small"></canvas></div>
-            <div class="card p-4"><div class="flex items-center justify-between mb-3"><h3 class="font-semibold">RBAC Snapshot</h3><span class="muted text-xs">roles & perms</span></div><canvas id="c_rbac" class="small"></canvas></div>
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Số lượng hàng hóa</h3>
+                    <span class="muted text-xs">catalog</span></div>
+                <canvas id="c_catalog" class="small"></canvas>
+            </div>
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">RBAC</h3><span
+                        class="muted text-xs">vai trò & quyền</span></div>
+                <canvas id="c_rbac" class="small"></canvas>
+            </div>
         </section>
 
         <section class="grid grid-cols-1 gap-6">
-            <div class="card p-4"><div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Stock: On-hand vs Reserved</h3><span class="muted text-xs">SKU</span></div><canvas id="c_stock" class="small" style="max-height:340px"></canvas></div>
+            <div class="card p-4">
+                <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">Kho hàng: Còn hàng & Đã
+                    giao</h3><span class="muted text-xs">SKU</span></div>
+                <canvas id="c_stock" class="small" style="max-height:340px"></canvas>
+            </div>
         </section>
 
         <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div class="card overflow-hidden">
-                <div class="p-4 border-b border-slate-200 flex items-center justify-between"><h3 class="font-semibold">Recent Orders</h3><a th:href="@{/admin/sales/orders}" class="muted hover:underline text-sm">View all</a></div>
-                <div class="p-4 overflow-x-auto"><table class="w-full text-sm"><thead class="text-left table-head"><tr><th class="py-2">Code</th><th class="py-2">Customer</th><th class="py-2">Total</th><th class="py-2">Pay</th><th class="py-2">Ship</th><th class="py-2">Date</th></tr></thead><tbody id="t_orders"></tbody></table></div>
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between"><h3 class="font-semibold">
+                    Đơn hàng gần đây</h3><a th:href="@{/admin/sales/orders}" class="muted hover:underline text-sm">View
+                    all</a></div>
+                <div class="p-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left table-head">
+                        <tr>
+                            <th class="py-2">Code</th>
+                            <th class="py-2">Khách hàng</th>
+                            <th class="py-2">Tổng</th>
+                            <th class="py-2">Pay</th>
+                            <th class="py-2">Ship</th>
+                            <th class="py-2">Ngày</th>
+                        </tr>
+                        </thead>
+                        <tbody id="t_orders"></tbody>
+                    </table>
+                </div>
             </div>
             <div class="card overflow-hidden">
-                <div class="p-4 border-b border-slate-200 flex items-center justify-between"><h3 class="font-semibold">Low SKUs</h3><a th:href="@{/admin/inventory}" class="muted hover:underline text-sm">Inventory</a></div>
-                <div class="p-4 overflow-x-auto"><table class="w-full text-sm"><thead class="text-left table-head"><tr><th class="py-2">SKU</th><th class="py-2">Name</th><th class="py-2">On-hand</th><th class="py-2">Reserved</th></tr></thead><tbody id="t_low"></tbody></table></div>
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between"><h3 class="font-semibold">
+                    Low SKUs</h3><a th:href="@{/admin/inventory}" class="muted hover:underline text-sm">Kho hàng</a>
+                </div>
+                <div class="p-4 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-left table-head">
+                        <tr>
+                            <th class="py-2">SKU</th>
+                            <th class="py-2">Tên</th>
+                            <th class="py-2">Còn hàng</th>
+                            <th class="py-2">Đã đặt</th>
+                        </tr>
+                        </thead>
+                        <tbody id="t_low"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </div>
 
     <!-- Inject JSON from server -->
     <script th:inline="javascript">const DASHBOARD = /*[[${json}]]*/ '{}';</script>
-                <script>
-        const data = (()=>{ try { return typeof DASHBOARD==='string'? JSON.parse(DASHBOARD||'{}') : (DASHBOARD||{}); } catch(e){ return {}; } })();
-        const $ = (id)=>document.getElementById(id);
-        const money = v => new Intl.NumberFormat('vi-VN',{style:'currency', currency:'VND'}).format(+v||0);
+    <script>
+        const data = (() => {
+            try {
+                return typeof DASHBOARD === 'string' ? JSON.parse(DASHBOARD || '{}') : (DASHBOARD || {});
+            } catch (e) {
+                return {};
+            }
+        })();
+        const $ = (id) => document.getElementById(id);
+        const money = v => new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(+v || 0);
         const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
-        const shortDate = (v)=>{ if(!v) return ""; const s=String(v); const m=s.match(/^\d{4}-\d{2}-\d{2}/); if(m) return m[0]; if(s.includes('T')) return s.split('T')[0]; const p=s.split(' '); return p[0]||s; };
+        const shortDate = (v) => {
+            if (!v) return "";
+            const s = String(v);
+            const m = s.match(/^\d{4}-\d{2}-\d{2}/);
+            if (m) return m[0];
+            if (s.includes('T')) return s.split('T')[0];
+            const p = s.split(' ');
+            return p[0] || s;
+        };
 
         Chart.defaults.color = '#475569';
         Chart.defaults.borderColor = '#CBD5E1';
@@ -122,162 +321,236 @@
         Chart.defaults.font = Chart.defaults.font || {};
         Chart.defaults.font.family = sysFont;
 
-        function make(el,type,labels,datasets,opts){ return new Chart(el,{type,data:{labels,datasets},options:opts||{}}); }
-        const shortenLabels = (arr)=> (arr||[]).map(s=>{ let x=String(s||""); x=x.replace(/\bSKU[-_ ]?/ig, ""); x=x.replace(/[-_ ]?PV\b/ig, ""); x=x.replace(/\s+/g, " ").trim(); if (x.length>16) x=x.slice(0,14)+"..."; return x; });
+        function make(el, type, labels, datasets, opts) {
+            return new Chart(el, {type, data: {labels, datasets}, options: opts || {}});
+        }
 
-        function initCharts(){
-            const primary = cssVar('--chart-primary')||'#6366F1';
-            const success = cssVar('--chart-success')||'#22C55E';
-            const warning = cssVar('--chart-warning')||'#F59E0B';
-            const danger  = cssVar('--chart-danger') ||'#EF4444';
-            const info    = cssVar('--chart-info')   ||'#06B6D4';
+        const shortenLabels = (arr) => (arr || []).map(s => {
+            let x = String(s || "");
+            x = x.replace(/\bSKU[-_ ]?/ig, "");
+            x = x.replace(/[-_ ]?PV\b/ig, "");
+            x = x.replace(/\s+/g, " ").trim();
+            if (x.length > 16) x = x.slice(0, 14) + "...";
+            return x;
+        });
+
+        function initCharts() {
+            const primary = cssVar('--chart-primary') || '#6366F1';
+            const success = cssVar('--chart-success') || '#22C55E';
+            const warning = cssVar('--chart-warning') || '#F59E0B';
+            const danger = cssVar('--chart-danger') || '#EF4444';
+            const info = cssVar('--chart-info') || '#06B6D4';
 
             // Revenue Overview (blue with soft area and thicker line)
-            if(data.revenueSeries && Array.isArray(data.revenueSeries.labels)){
-                const el=$('c_perf'); if(el){
+            if (data.revenueSeries && Array.isArray(data.revenueSeries.labels)) {
+                const el = $('c_perf');
+                if (el) {
                     const ctx = el.getContext('2d');
-                    const grad = ctx.createLinearGradient(0,0,0,el.height);
-                    grad.addColorStop(0,'rgba(63,114,222,.28)');
-                    grad.addColorStop(1,'rgba(63,114,222,.05)');
-                    make(el,'line', data.revenueSeries.labels,[{
-                        label:'Revenue',
-                        data:(data.revenueSeries.values||[]),
-                        tension:.35,
-                        fill:true,
-                        backgroundColor:grad,
-                        borderColor:'#3F72DE',
-                        pointRadius:0,
-                        borderWidth:3
-                    }], {plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(15,23,42,.06)'}}}, interaction:{mode:'index', intersect:false}});
+                    const grad = ctx.createLinearGradient(0, 0, 0, el.height);
+                    grad.addColorStop(0, 'rgba(63,114,222,.28)');
+                    grad.addColorStop(1, 'rgba(63,114,222,.05)');
+                    make(el, 'line', data.revenueSeries.labels, [{
+                        label: 'Revenue',
+                        data: (data.revenueSeries.values || []),
+                        tension: .35,
+                        fill: true,
+                        backgroundColor: grad,
+                        borderColor: '#3F72DE',
+                        pointRadius: 0,
+                        borderWidth: 3
+                    }], {
+                        plugins: {legend: {display: false}},
+                        scales: {x: {grid: {display: false}}, y: {grid: {color: 'rgba(15,23,42,.06)'}}},
+                        interaction: {mode: 'index', intersect: false}
+                    });
                 }
             }
 
             // Payment Status donut (DB counts preferred) with gradient slices and center paid/unpaid totals
-            if($('c_funnel')){
+            if ($('c_funnel')) {
                 let labels = (data && data.payment && data.payment.labels) ? data.payment.labels : null;
                 let values = (data && data.payment && data.payment.values) ? data.payment.values : null;
-                if(!Array.isArray(labels) || !Array.isArray(values) || labels.length===0){
-                    const paid = Array.isArray(data.recentOrders) ? data.recentOrders.filter(r => String(r.paymentStatus||'').toUpperCase()==='PAID').length : 0;
-                    const total = Array.isArray(data.recentOrders)? data.recentOrders.length : 0;
-                    labels = ['Paid','Unpaid']; values = [paid, Math.max(0,total-paid)];
+                if (!Array.isArray(labels) || !Array.isArray(values) || labels.length === 0) {
+                    const paid = Array.isArray(data.recentOrders) ? data.recentOrders.filter(r => String(r.paymentStatus || '').toUpperCase() === 'PAID').length : 0;
+                    const total = Array.isArray(data.recentOrders) ? data.recentOrders.length : 0;
+                    labels = ['Paid', 'Unpaid'];
+                    values = [paid, Math.max(0, total - paid)];
                 }
-                const surface = cssVar('--surface')||'#fff';
+                const surface = cssVar('--surface') || '#fff';
                 const paidColor = '#a3b4dbff', unpaidColor = '#063394ff';
                 const bgGrad = (ctx) => (ctx.dataIndex === 0 ? paidColor : unpaidColor);
                 const centerText = {
                     id: 'centerTotal',
-                    afterDraw(chart){
-                        const {width,height,ctx,data} = chart;
+                    afterDraw(chart) {
+                        const {width, height, ctx, data} = chart;
                         const vals = (data && data.datasets && data.datasets[0] && data.datasets[0].data) || [];
-                        const total = vals.reduce((s,x)=>s+(+x||0),0);
+                        const total = vals.reduce((s, x) => s + (+x || 0), 0);
                         ctx.save();
                         ctx.fillStyle = '#0F172A';
                         ctx.font = '600 16px ' + sysFont;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText(String(total), width/2, height/2);
+                        ctx.fillText(String(total), width / 2, height / 2);
                         ctx.restore();
                     }
                 };
-                new Chart($('c_funnel'),{ type:'doughnut', data:{ labels, datasets:[{ data:values, backgroundColor:bgGrad, borderColor:surface, borderWidth:6, hoverOffset:8 }]}, options:{ plugins:{ legend:{position:'bottom'} }, cutout:'65%' }, plugins:[centerText] });
+                new Chart($('c_funnel'), {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: bgGrad,
+                            borderColor: surface,
+                            borderWidth: 6,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {plugins: {legend: {position: 'bottom'}}, cutout: '65%'},
+                    plugins: [centerText]
+                });
             }
 
             // Catalog
-            if(data.catalog && $('c_catalog')){
+            if (data.catalog && $('c_catalog')) {
                 const color = '#8497c0ff';
-                make($('c_catalog'),'bar', data.catalog.labels,[{
-                    label:'Count',
-                    data:data.catalog.values,
-                    backgroundColor:color,
-                    borderRadius:5,
-                    borderWidth:0,
-                    borderSkipped:false,
-                    categoryPercentage:0.5,
-                    barPercentage:0.5,
-                    barThickness:30,
-                    maxBarThickness:32
-                }],{
-                    plugins:{legend:{display:false}},
-                    scales:{
-                        x:{grid:{display:false}},
-                        y:{beginAtZero:true, grid:{color:'rgba(226,232,240,.6)'}}
+                make($('c_catalog'), 'bar', data.catalog.labels, [{
+                    label: 'Count',
+                    data: data.catalog.values,
+                    backgroundColor: color,
+                    borderRadius: 5,
+                    borderWidth: 0,
+                    borderSkipped: false,
+                    categoryPercentage: 0.5,
+                    barPercentage: 0.5,
+                    barThickness: 30,
+                    maxBarThickness: 32
+                }], {
+                    plugins: {legend: {display: false}},
+                    scales: {
+                        x: {grid: {display: false}},
+                        y: {beginAtZero: true, grid: {color: 'rgba(226,232,240,.6)'}}
                     }
                 });
             }
 
             // RBAC
-            if(data.rbac && $('c_rbac')){
+            if (data.rbac && $('c_rbac')) {
                 const color = '#0f3188ff';
-                make($('c_rbac'),'bar', data.rbac.labels,[{
-                    label:'Count',
-                    data:data.rbac.values,
-                    backgroundColor:color,
-                    borderRadius:5,
-                    borderWidth:0,
-                    borderSkipped:false,
-                    categoryPercentage:0.5,
-                    barPercentage:0.5,
-                    barThickness:40,
-                    maxBarThickness:43
-                }],{
-                    plugins:{legend:{display:false}},
-                    scales:{
-                        x:{grid:{display:false}},
-                        y:{beginAtZero:true, grid:{color:'rgba(226,232,240,.6)'}}
+                make($('c_rbac'), 'bar', data.rbac.labels, [{
+                    label: 'Count',
+                    data: data.rbac.values,
+                    backgroundColor: color,
+                    borderRadius: 5,
+                    borderWidth: 0,
+                    borderSkipped: false,
+                    categoryPercentage: 0.5,
+                    barPercentage: 0.5,
+                    barThickness: 40,
+                    maxBarThickness: 43
+                }], {
+                    plugins: {legend: {display: false}},
+                    scales: {
+                        x: {grid: {display: false}},
+                        y: {beginAtZero: true, grid: {color: 'rgba(226,232,240,.6)'}}
                     }
                 });
             }
 
             // Stock (full row, no gradient) + shorten labels (sku or short name)
-            if(data.stock && $('c_stock')){
-                const el=$('c_stock');
+            if (data.stock && $('c_stock')) {
+                const el = $('c_stock');
                 const labels = shortenLabels(data.stock.labels);
-                make(el,'line', labels,[
-                    {label:'On-hand', data:data.stock.onHand, tension:.35, fill:false, borderColor:success, pointRadius:0, borderWidth:2},
-                    {label:'Reserved', data:data.stock.reserved, tension:.35, fill:false, borderColor:danger, pointRadius:0, borderWidth:2}
-                ], {plugins:{legend:{position:'top'}}, scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:'rgba(15,23,42,.08)'}}}, interaction:{mode:'index', intersect:false}});
+                make(el, 'line', labels, [
+                    {
+                        label: 'Còn hàng',
+                        data: data.stock.onHand,
+                        tension: .35,
+                        fill: false,
+                        borderColor: success,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Đã đặt',
+                        data: data.stock.reserved,
+                        tension: .35,
+                        fill: false,
+                        borderColor: danger,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
+                ], {
+                    plugins: {legend: {position: 'top'}},
+                    scales: {x: {grid: {display: false}}, y: {beginAtZero: true, grid: {color: 'rgba(15,23,42,.08)'}}},
+                    interaction: {mode: 'index', intersect: false}
+                });
             }
         }
 
-        function renderKpisAndTables(){
+        function renderKpisAndTables() {
             // KPIs
             const rev = (data && data.kpis && data.kpis.revenuePaid) ?? 0;
             const ord = (data && data.kpis && data.kpis.orders) ?? 0;
             const low = (data && data.kpis && data.kpis.lowStock) ?? 0;
-            const revSpark = Array.isArray(data && data.sparklines && data.sparklines.revenue) ? data.sparklines.revenue.reduce((s,x)=>s+(+x||0),0) : 0;
-            const ordSpark = Array.isArray(data && data.sparklines && data.sparklines.orders) ? data.sparklines.orders.reduce((s,x)=>s+(+x||0),0) : 0;
-            const aov = ordSpark>0 ? revSpark/ordSpark : 0;
-            const set = (id, val, fmt)=>{ const el=$(id); if(el) el.textContent = fmt? fmt(val): val; };
-            set('k_rev', rev, money); set('k_ord', ord, v=>v.toLocaleString('vi-VN')); set('k_aov', aov, money); set('k_low', low, v=>String(v));
+            const revSpark = Array.isArray(data && data.sparklines && data.sparklines.revenue) ? data.sparklines.revenue.reduce((s, x) => s + (+x || 0), 0) : 0;
+            const ordSpark = Array.isArray(data && data.sparklines && data.sparklines.orders) ? data.sparklines.orders.reduce((s, x) => s + (+x || 0), 0) : 0;
+            const aov = ordSpark > 0 ? revSpark / ordSpark : 0;
+            const set = (id, val, fmt) => {
+                const el = $(id);
+                if (el) el.textContent = fmt ? fmt(val) : val;
+            };
+            set('k_rev', rev, money);
+            set('k_ord', ord, v => v.toLocaleString('vi-VN'));
+            set('k_aov', aov, money);
+            set('k_low', low, v => String(v));
             // KPI deltas
-            const uiGran=(document.querySelector('select[name=gran]')?document.querySelector('select[name=gran]').value:'D').toUpperCase();
-            const periodLabel=uiGran==='M'?'last month':uiGran==='W'?'last week':'last day';
-            const pct=(c,p)=> (!isFinite(c)||!isFinite(p)||p===0)?0:((c-p)/Math.abs(p))*100;
-            const last2=(arr)=> Array.isArray(arr)&&arr.length>=2? [arr[arr.length-1], arr[arr.length-2]]: [NaN,NaN];
-            const rr=(data.revenueSeries&&data.revenueSeries.values)||[]; const [r1,r0]=last2(rr);
-            const oo=(data.sparklines&&data.sparklines.orders)||[]; const [o1,o0]=last2(oo);
-            const aa=(data.sparklines&&data.sparklines.aov)||[]; const [a1,a0]=last2(aa);
-            const setDelta=(id,v)=>{ const el=$(id); if(!el) return; const s=isFinite(v)?((v>=0?'+':'')+v.toFixed(1)+'%'):'--'; el.textContent='vs '+periodLabel+' '+s; el.className='delta '+(v>0?'up':v<0?'down':''); };
-            setDelta('d_rev', pct(r1,r0)); setDelta('d_ord', pct(o1,o0)); setDelta('d_aov', pct(a1,a0)); document.getElementById('d_low') && (document.getElementById('d_low').textContent='vs '+periodLabel);
-            
+            const uiGran = (document.querySelector('select[name=gran]') ? document.querySelector('select[name=gran]').value : 'D').toUpperCase();
+            const periodLabel = uiGran === 'M' ? 'last month' : uiGran === 'W' ? 'last week' : 'last day';
+            const pct = (c, p) => (!isFinite(c) || !isFinite(p) || p === 0) ? 0 : ((c - p) / Math.abs(p)) * 100;
+            const last2 = (arr) => Array.isArray(arr) && arr.length >= 2 ? [arr[arr.length - 1], arr[arr.length - 2]] : [NaN, NaN];
+            const rr = (data.revenueSeries && data.revenueSeries.values) || [];
+            const [r1, r0] = last2(rr);
+            const oo = (data.sparklines && data.sparklines.orders) || [];
+            const [o1, o0] = last2(oo);
+            const aa = (data.sparklines && data.sparklines.aov) || [];
+            const [a1, a0] = last2(aa);
+            const setDelta = (id, v) => {
+                const el = $(id);
+                if (!el) return;
+                const s = isFinite(v) ? ((v >= 0 ? '+' : '') + v.toFixed(1) + '%') : '--';
+                el.textContent = 'vs ' + periodLabel + ' ' + s;
+                el.className = 'delta ' + (v > 0 ? 'up' : v < 0 ? 'down' : '');
+            };
+            setDelta('d_rev', pct(r1, r0));
+            setDelta('d_ord', pct(o1, o0));
+            setDelta('d_aov', pct(a1, a0));
+            document.getElementById('d_low') && (document.getElementById('d_low').textContent = 'vs ' + periodLabel);
+
 
             // Recent orders
-            if(Array.isArray(data.recentOrders) && $('t_orders')){
-                const badge = (txt)=>{ const t=String(txt||'').toUpperCase(); const paid=t==='PAID'; const bg = paid ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)'; const fg = paid ? '#16A34A' : '#DC2626'; return `<span class="px-2 py-0.5 rounded-full text-xs" style="background:${bg}; color:${fg}">${txt||''}</span>`; };
-                $('t_orders').innerHTML = data.recentOrders.map(r=>`<tr class="border-t" style="border-color:var(--bd)"><td class="py-2 font-medium">${r.code||''}</td><td class="py-2">${r.customer||''}</td><td class="py-2">${money(r.total)}</td><td class="py-2">${badge(r.paymentStatus)}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bd); color:var(--text)">${r.shippingStatus||''}</span></td><td class="py-2 muted">${shortDate(r.createdAt)}</td></tr>`).join('');
+            if (Array.isArray(data.recentOrders) && $('t_orders')) {
+                const badge = (txt) => {
+                    const t = String(txt || '').toUpperCase();
+                    const paid = t === 'PAID';
+                    const bg = paid ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)';
+                    const fg = paid ? '#16A34A' : '#DC2626';
+                    return `<span class="px-2 py-0.5 rounded-full text-xs" style="background:${bg}; color:${fg}">${txt || ''}</span>`;
+                };
+                $('t_orders').innerHTML = data.recentOrders.map(r => `<tr class="border-t" style="border-color:var(--bd)"><td class="py-2 font-medium">${r.code || ''}</td><td class="py-2">${r.customer || ''}</td><td class="py-2">${money(r.total)}</td><td class="py-2">${badge(r.paymentStatus)}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--bd); color:var(--text)">${r.shippingStatus || ''}</span></td><td class="py-2 muted">${shortDate(r.createdAt)}</td></tr>`).join('');
             }
 
             // Low stock table
-            if(Array.isArray(data.lowSkus) && $('t_low')){
-                $('t_low').innerHTML = data.lowSkus.map(r=>`<tr class="border-t" style="border-color:var(--bd)"><td class="py-2 font-mono">${r.sku||''}</td><td class="py-2">${r.name||''}</td><td class="py-2">${r.onHand??0}</td><td class="py-2">${r.reserved??0}</td></tr>`).join('');
+            if (Array.isArray(data.lowSkus) && $('t_low')) {
+                $('t_low').innerHTML = data.lowSkus.map(r => `<tr class="border-t" style="border-color:var(--bd)"><td class="py-2 font-mono">${r.sku || ''}</td><td class="py-2">${r.name || ''}</td><td class="py-2">${r.onHand ?? 0}</td><td class="py-2">${r.reserved ?? 0}</td></tr>`).join('');
             }
 
             // Best sellers list (top 3 products)
-            if(Array.isArray(data.bestSellers) && $('list_best')){
-                const items = data.bestSellers.map(it=>{
+            if (Array.isArray(data.bestSellers) && $('list_best')) {
+                const items = data.bestSellers.map(it => {
                     const img = it.thumbnail ? `<img src="${it.thumbnail}" alt="" class="w-10 h-10 rounded-md object-cover"/>` : `<div class="w-10 h-10 rounded-md bg-slate-200"></div>`;
-                    const name = (it.name||'');
-                    const nameShort = name.length>48 ? name.slice(0,46)+'…' : name;
+                    const name = (it.name || '');
+                    const nameShort = name.length > 48 ? name.slice(0, 46) + '…' : name;
                     const qty = it.qty ?? 0;
                     return `<li class="py-2 flex items-center justify-between">
                         <div class="flex items-center gap-3">${img}<span class="truncate max-w-[540px]">${nameShort}</span></div>

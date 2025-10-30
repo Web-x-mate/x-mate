@@ -83,7 +83,7 @@ public class Discount {
     /** Giới hạn giảm tối đa cho một lần áp (có thể tuỳ chỉnh theo nhu cầu) */
     public BigDecimal getMaxDiscount() {
         // Nếu không cần cap, trả về null; còn giữ cố định 500k như bạn đang dùng:
-        return BigDecimal.valueOf(500_000);
+        return BigDecimal.valueOf(1_500_000);
     }
 
     /** Coupon còn hiệu lực tại thời điểm now? */

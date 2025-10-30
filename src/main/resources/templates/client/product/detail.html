@@ -12,7 +12,7 @@
 <div layout:fragment="content">
     <section class="product-detail-page" th:if="${product == null}">
         <div class="product-detail-empty">
-            <p>Khong tim thay san pham.</p>
+            <p>Không tìm thấy sản phẩm.</p>
         </div>
     </section>
 
@@ -82,7 +82,7 @@
                 <div class="product-detail__section"
                      th:if="${product.colors != null and !product.colors.isEmpty()}">
                     <div class="product-detail__section-head">
-                        <span class="product-detail__section-label">Mau sac:</span>
+                        <span class="product-detail__section-label">Màu sắc:</span>
                         <span class="product-detail__section-value"
                               data-selected-color
                               th:text="${product.defaultColor != null ? product.defaultColor.name : product.colors.get(0).name}">Mau</span>
@@ -108,7 +108,7 @@
                 <div class="product-detail__section"
                      th:if="${product.sizes != null and !product.sizes.isEmpty()}">
                     <div class="product-detail__section-head">
-                        <span class="product-detail__section-label">Kich thuoc:</span>
+                        <span class="product-detail__section-label">Kích thước:</span>
                         <span class="product-detail__section-value"
                               data-selected-size
                               th:text="${product.defaultSize != null ? product.defaultSize : product.sizes.get(0)}">Size</span>
@@ -137,12 +137,12 @@
                                      data-product-image=${product.images != null and !product.images.isEmpty() ? product.images.get(0) : product.thumbnail},
                                      data-product-price=${product.priceForCart}">
                         <span class="icon">+</span>
-                        <span>Them vao gio</span>
+                        <span>Thêm vào giỏ hàng</span>
                     </button>
                 </div>
 
                 <details class="product-detail__description" th:if="${product.description != null}">
-                    <summary>Mo ta san pham</summary>
+                    <summary>Mô tả sản phẩm</summary>
                     <div th:utext="${product.description}"></div>
                 </details>
             </div>
