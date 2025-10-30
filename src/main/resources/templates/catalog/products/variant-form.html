@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -9,68 +8,34 @@
     <title>Thêm / Sửa Variant</title>
     <style>
         :root{
-            --bg:#f8fafc;
-            --surface:#ffffff;
-            --text:#0f172a;
-            --muted:#64748b;
-            --bd:#e2e8f0;
-            --ring:#93c5fd;
-            --primary:#2563eb;
-            --primary-hover:#1d4ed8;
-            --secondary:#334155;
-            --secondary-hover:#1f2937;
+            --bg:#f8fafc; --surface:#ffffff; --text:#0f172a; --muted:#64748b; --bd:#e2e8f0; --ring:#93c5fd;
+            --primary:#2563eb; --primary-hover:#1d4ed8; --secondary:#334155; --secondary-hover:#1f2937;
         }
-
         body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
         .wrap{max-width:850px;margin:0 auto;padding:36px 0;}
         .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 22px;}
-
-        /* Card form */
-        form{
-            background:var(--surface);
-            border:1px solid var(--bd);
-            border-radius:16px;
-            box-shadow:0 2px 4px rgba(15,23,42,.06);
-            padding:28px 32px;
-        }
-
-        /* Labels & fields */
+        form{background:var(--surface);border:1px solid var(--bd);border-radius:16px;box-shadow:0 2px 4px rgba(15,23,42,.06);padding:28px 32px;}
         label{font-weight:700;color:var(--text);display:block;margin-bottom:.4rem;}
-        .form-control,.form-select{
-            width:100%;padding:.65rem .9rem;
-            border:1px solid var(--bd);border-radius:10px;
-            background:#fff;font-size:.95rem;color:var(--text);transition:.18s;
-        }
+        .form-control,.form-select{width:100%;padding:.65rem .9rem;border:1px solid var(--bd);border-radius:10px;background:#fff;font-size:.95rem;color:var(--text);transition:.18s;}
         .form-control:focus,.form-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
-
-        /* Utility (phòng khi không có Bootstrap) */
         .vstack{display:flex;flex-direction:column;}
         .gap-3{gap:20px;}
         .gap-2{gap:12px;}
         .d-flex{display:flex;align-items:flex-start;}
+        .align-center{align-items:center;}
         .flex-1{flex:1 1 0;}
-
-        /* Hàng lưới cho các cụm field theo hàng */
         .row-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;}
         .row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}
         @media (max-width:720px){.row-2,.row-3{grid-template-columns:1fr;}}
-
-        /* Checkbox */
         .form-check{display:flex;align-items:center;gap:.55rem;}
         .form-check-input{width:18px;height:18px;cursor:pointer;}
         .form-check-label{font-weight:600;}
-
-        /* Actions (giữ nguyên thứ tự nút, chỉ căn phải & đồng bộ kích thước) */
-        .btn{
-            height:42px;padding:0 18px;border-radius:12px;border:1px solid transparent;
-            font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem;line-height:1;transition:.18s;
-        }
+        .btn{height:42px;padding:0 18px;border-radius:12px;border:1px solid transparent;font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem;line-height:1;transition:.18s;cursor:pointer;}
         .btn-primary{background:var(--primary);color:#fff;}
         .btn-primary:hover{background:var(--primary-hover);}
         .btn-outline-secondary{background:#fff;color:var(--secondary);border:1px solid var(--bd);}
         .btn-outline-secondary:hover{background:#f1f5f9;}
-
-        /* Căn phải nhóm nút cuối form, không ảnh hưởng nơi khác */
+        .btn-sm{height:36px;padding:0 12px;border-radius:10px;font-size:.85rem;}
         form > .d-flex.gap-2:last-child{justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:8px;}
     </style>
 </head>
@@ -86,24 +51,42 @@
 
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <!-- SKU -->
+            <!-- SKU (auto-generate + nút tạo lại) -->
             <div>
                 <label for="sku">SKU *</label>
-                <input id="sku" name="sku" type="text" class="form-control"
-                       th:value="${variant != null ? variant.sku : ''}" required>
+                <div class="d-flex gap-2 align-center">
+                    <input id="sku" name="sku" type="text" class="form-control flex-1"
+                           th:value="${variant != null ? variant.sku : ''}" required>
+                    <button type="button" id="btnGenSku" class="btn btn-outline-secondary btn-sm">Tạo SKU</button>
+                </div>
+                <small class="muted">SKU sẽ tự tạo theo màu/size; bạn có thể bấm “Tạo SKU” để cập nhật lại.</small>
             </div>
 
-            <!-- Color & Size -->
+            <!-- COLOR (hiển thị HEX) & SIZE -->
             <div class="row-2">
+                <!-- COLOR HEX -->
                 <div>
-                    <label for="color">Color</label>
-                    <input id="color" name="color" type="text" class="form-control"
-                           th:value="${variant != null ? variant.color : ''}">
+                    <label for="color">Màu (HEX)</label>
+                    <div class="d-flex gap-2 align-center">
+                        <input id="color" name="color" type="text" class="form-control flex-1"
+                               placeholder="#000000"
+                               th:value="${variant != null ? variant.color : ''}">
+                        <input id="colorPicker" type="color" class="form-control"
+                               style="width:70px;height:40px;padding:0;cursor:pointer;"
+                               title="Chọn màu" value="#000000">
+                    </div>
                 </div>
+
+                <!-- SIZE -->
                 <div>
                     <label for="size">Size</label>
-                    <input id="size" name="size" type="text" class="form-control"
-                           th:value="${variant != null ? variant.size : ''}">
+                    <select id="size" name="size" class="form-select">
+                        <option value="">-- Chọn size --</option>
+                        <option value="S" th:selected="${variant?.size == 'S'}">S</option>
+                        <option value="M" th:selected="${variant?.size == 'M'}">M</option>
+                        <option value="L" th:selected="${variant?.size == 'L'}">L</option>
+                        <option value="XL" th:selected="${variant?.size == 'XL'}">XL</option>
+                    </select>
                 </div>
             </div>
 
@@ -154,7 +137,7 @@
                 <label for="active" class="form-check-label">Active</label>
             </div>
 
-            <!-- Actions (giữ nguyên thứ tự nút) -->
+            <!-- Actions -->
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"
                         th:text="${variant != null and variant.id != null} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</button>
@@ -162,6 +145,91 @@
             </div>
         </form>
     </div>
+
+    <!-- JS: COLOR = HEX & SKU auto-generate -->
+    <script th:inline="javascript">
+        (function () {
+            const picker = document.getElementById('colorPicker');
+            const colorInput = document.getElementById('color');
+            const barcodeInput = document.getElementById('barcode');
+            const sizeInput = document.getElementById('size');
+            const skuInput = document.getElementById('sku');
+            const btnGen = document.getElementById('btnGenSku');
+
+            // Lấy productId từ Thymeleaf để trộn vào SKU
+            const productId = /*[[${product.id}]]*/ 0;
+
+            // Bảng màu tiếng Việt
+            const colorNames = {
+                '#000000': 'Đen',
+                '#ffffff': 'Trắng',
+                '#ff0000': 'Đỏ',
+                '#00ff00': 'Xanh lá',
+                '#0000ff': 'Xanh dương',
+                '#ffff00': 'Vàng',
+                '#ffa500': 'Cam',
+                '#800080': 'Tím',
+                '#808080': 'Xám',
+                '#008000': 'Lục',
+                '#a52a2a': 'Nâu',
+                '#00ffff': 'Xanh ngọc',
+                '#ff69b4': 'Hồng'
+            };
+
+            // Cập nhật hiển thị khi chọn màu
+            function onColorPick(hex) {
+                const lowerHex = hex.toLowerCase();
+                const colorName = colorNames[lowerHex] || 'Không xác định';
+                colorInput.value = colorName;    // tên màu
+                barcodeInput.value = lowerHex;   // mã HEX
+                skuInput.value = genSku();       // tạo lại SKU
+            }
+
+            // Hàm tạo SKU: XM-{PID}-{HEX}-{SIZE}-{RND}
+            function genSku() {
+                const hex = (barcodeInput.value || '#000000').replace('#', '').toUpperCase();
+                const size = (sizeInput.value || 'NA').toUpperCase();
+                const rnd = Math.random().toString(36).slice(2, 5).toUpperCase();
+                const pid = (productId || 0).toString();
+                return `XM-${pid}-${hex}-${size}-${rnd}`;
+            }
+
+            // Auto-fill SKU khi trống
+            function ensureSku() {
+                if (!skuInput.value || skuInput.value.trim() === '') {
+                    skuInput.value = genSku();
+                }
+            }
+
+            // Sự kiện
+            if (picker) {
+                picker.addEventListener('input', e => onColorPick(e.target.value));
+            }
+
+            if (sizeInput) {
+                sizeInput.addEventListener('change', () => {
+                    skuInput.value = genSku();
+                });
+            }
+
+            if (btnGen) {
+                btnGen.addEventListener('click', () => {
+                    skuInput.value = genSku();
+                });
+            }
+
+            // Khi load form sửa, nếu có sẵn barcode (mã hex) thì hiển thị lại tên màu
+            document.addEventListener('DOMContentLoaded', () => {
+                const hex = (barcodeInput.value || picker.value || '#000000').toLowerCase();
+                const colorName = colorNames[hex] || 'Không xác định';
+                picker.value = hex;
+                colorInput.value = colorName;
+                barcodeInput.value = hex;
+                ensureSku();
+            });
+        })();
+    </script>
+
 </section>
 </body>
 </html>

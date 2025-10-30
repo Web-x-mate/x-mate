@@ -11,6 +11,8 @@ import xmate.com.entity.catalog.ProductVariant;
 import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.service.catalog.ProductVariantService;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -82,4 +84,12 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             );
         };
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProductVariant> findByProductId(Long productId) {
+        return repo.findByProductIdOrderByIdAsc(productId);
+    }
+
+
 }
