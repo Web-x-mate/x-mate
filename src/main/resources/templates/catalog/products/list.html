@@ -1,159 +1,560 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/main}">
-<head>
-    <meta charset="UTF-8">
+<html
+  lang="vi"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/main}"
+>
+  <head>
+    <meta charset="UTF-8" />
     <title>Danh sách sản phẩm</title>
     <style>
-        :root{
-            --bg:#f8fafc; --surface:#ffffff; --text:#0f172a; --muted:#64748b; --bd:#e2e8f0; --ring:#93c5fd;
-            --primary:#2563eb; --primary-hover:#1d4ed8;
-            --success:#22c55e; --warning:#fbbf24; --danger:#ef4444; --danger-hover:#dc2626;
-            --neutral:#6b7280; --neutral-hover:#4b5563;
-            --media:#3b82f6; --media-hover:#2563eb;
-        }
+      :root {
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --bd: #e2e8f0;
+        --ring: #93c5fd;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --success: #22c55e;
+        --warning: #fbbf24;
+        --danger: #ef4444;
+        --danger-hover: #dc2626;
+        --neutral: #6b7280;
+        --neutral-hover: #4b5563;
+        --media: #3b82f6;
+        --media-hover: #2563eb;
+      }
 
-        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
-        .wrap{max-width:1100px;margin:0 auto;padding:32px 0;}
-        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 18px;}
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+        color: var(--text);
+        background: var(--bg);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+      .page-title {
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: var(--text);
+        text-align: center;
+        margin: 0 0 18px;
+      }
 
-        /* Toolbar */
-        .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-        .search-form{display:flex;align-items:center;gap:8px;}
-        .form-control{
-            width:260px;max-width:60vw;padding:.65rem .9rem;border:1px solid var(--bd);border-radius:.75rem;
-            background:var(--surface);font-size:.95rem;color:var(--text);transition:.18s ease;
-        }
-        .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
+      /* Toolbar */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+      .search-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-control {
+        width: 260px;
+        max-width: 60vw;
+        padding: 0.65rem 0.9rem;
+        border: 1px solid var(--bd);
+        border-radius: 0.75rem;
+        background: var(--surface);
+        font-size: 0.95rem;
+        color: var(--text);
+        transition: 0.18s ease;
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--ring);
+      }
 
-        /* Buttons */
-        .btn{
-            display:inline-flex;align-items:center;justify-content:center;height:36px;min-width:90px;
-            border-radius:.55rem;border:1px solid transparent;font-weight:700;font-size:.85rem;line-height:1;
-            transition:.18s;padding:0 .9rem;cursor:pointer;
-        }
-        .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-hover);}
-        .btn-success{background:var(--success);color:#fff;}
-        .btn-warning{background:var(--warning);color:#111827;}
-        .btn-danger{background:var(--danger);color:#fff;} .btn-danger:hover{background:var(--danger-hover);}
-        .btn-neutral{background:var(--neutral);color:#fff;} .btn-neutral:hover{background:var(--neutral-hover);}
-        .btn-media{background:var(--media);color:#fff;} .btn-media:hover{background:var(--media-hover);}
-        .btn-sm{height:34px;min-width:90px;font-size:.82rem;}
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 36px;
+        min-width: 90px;
+        border-radius: 0.55rem;
+        border: 1px solid transparent;
+        font-weight: 500;
+        font-size: 0.85rem;
+        line-height: 1;
+        transition: 0.18s;
+        padding: 0 0.9rem;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-success {
+        background: var(--success);
+        color: #fff;
+      }
+      .btn-warning {
+        background: var(--warning);
+        color: #111827;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: var(--danger-hover);
+      }
+      .btn-neutral {
+        background: var(--neutral);
+        color: #fff;
+      }
+      .btn-neutral:hover {
+        background: var(--neutral-hover);
+      }
+      .btn-media {
+        background: var(--media);
+        color: #fff;
+      }
+      .btn-media:hover {
+        background: var(--media-hover);
+      }
+      .btn-sm {
+        height: 34px;
+        min-width: 90px;
+        font-size: 0.82rem;
+      }
 
-        /* Table */
-        .table-card{
-            background:var(--surface);border:1px solid var(--bd);border-radius:1rem;
-            box-shadow:0 2px 4px rgba(15,23,42,.06); overflow:hidden; /* giữ bo góc, không cắt phân trang */
-        }
-        .table-responsive{
-            overflow-x:auto; /* chỉ cuộn ngang khi cần */
-            /* bỏ max-height và overflow dọc để phân trang hiển thị bình thường */
-            border-radius:1rem 1rem 0 0;
-        }
-        table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;}
-        thead th{
-            position:sticky;top:0;z-index:1;background:#eef2f7;color:#0f172a;border-bottom:1px solid var(--bd);
-            text-transform:uppercase;font-weight:800;font-size:.8rem;letter-spacing:.02em;
-            padding:.75rem .9rem;white-space:nowrap;text-align:center;
-        }
-        tbody td{padding:.9rem .9rem;border-bottom:1px solid var(--bd);background:#fff;text-align:center;vertical-align:middle;}
-        tbody tr:hover td{background:#f8fafc;}
-        thead th:first-child{border-top-left-radius:16px;} thead th:last-child{border-top-right-radius:16px;}
-        tbody tr:last-child td:first-child{border-bottom-left-radius:0;} tbody tr:last-child td:last-child{border-bottom-right-radius:0;}
+      /* Table */
+      .table-card {
+        background: var(--surface);
+        border: 1px solid var(--bd);
+        border-radius: 1rem;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+        overflow: hidden; /* giữ bo góc, không cắt phân trang */
+      }
+      .table-responsive {
+        overflow-x: auto; /* chỉ cuộn ngang khi cần */
+        /* bỏ max-height và overflow dọc để phân trang hiển thị bình thường */
+        border-radius: 1rem 1rem 0 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.95rem;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #eef2f7;
+        color: #0f172a;
+        border-bottom: 1px solid var(--bd);
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.02em;
+        padding: 0.75rem 0.9rem;
+        white-space: nowrap;
+        text-align: center;
+      }
+      tbody td {
+        padding: 0.9rem 0.9rem;
+        border-bottom: 1px solid var(--bd);
+        background: #fff;
+        text-align: center;
+        vertical-align: middle;
+      }
+      tbody tr:hover td {
+        background: #f8fafc;
+      }
+      thead th:first-child {
+        border-top-left-radius: 16px;
+      }
+      thead th:last-child {
+        border-top-right-radius: 16px;
+      }
+      tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 0;
+      }
+      tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 0;
+      }
 
-        /* Badges */
-        .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:.6rem;padding:.35rem .6rem;font-weight:800;font-size:.72rem;color:#fff;}
-        .bg-success{background:var(--success);} .bg-secondary{background:#94a3b8;color:#0f172a;}
+      /* Badges */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.6rem;
+        padding: 0.35rem 0.6rem;
+        font-weight: 600;
+        font-size: 0.72rem;
+        color: #fff;
+      }
+      .bg-success {
+        background: var(--success);
+      }
+      .bg-secondary {
+        background: #94a3b8;
+        color: #0f172a;
+      }
 
-        /* Actions */
-        .actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:nowrap;}
-        tbody tr:nth-child(even) td{background:#fcfdff;}
-        .table-centered th,.table-centered td{text-align:center!important;vertical-align:middle!important;}
+      /* Actions */
+      .actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
+      }
+      tbody tr:nth-child(even) td {
+        background: #fcfdff;
+      }
+      .table-centered th,
+      .table-centered td {
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
 
-        /* Pagination — pills */
-        .pagination{ display:flex; gap:.5rem; align-items:center; margin-top:16px; }
-        .page-item{ list-style:none; }
-        .page-link{
-            display:inline-flex; align-items:center; justify-content:center;
-            min-width:40px; height:36px; padding:0 .75rem;
-            border-radius:10px; border:1px solid #e2e8f0;
-            background:#fff; color:#0f172a; font-weight:700; text-decoration:none;
-            transition:background .15s, border-color .15s, color .15s;
-        }
-        .page-item.active .page-link{ background:#16a34a; color:#fff; border-color:#16a34a; }
-        .page-item.disabled .page-link{ background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none; }
-        .page-link:hover{ background:#f8fafc; }
+      /* Pagination — pills */
+      .pagination {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 16px;
+      }
+      .page-item {
+        list-style: none;
+      }
+      .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 36px;
+        padding: 0 0.75rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #0f172a;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+      }
+      .page-item.active .page-link {
+        background: #16a34a;
+        color: #fff;
+        border-color: #16a34a;
+      }
+      .page-item.disabled .page-link {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        pointer-events: none;
+      }
+      .page-link:hover {
+        background: #f8fafc;
+      }
+      /* --- Outline buttons + hover invert --- */
+      .btn {
+        outline: none;
+      }
+      .btn:focus {
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+
+      /* Edit (warning) */
+      .btn-warning {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid var(--warning);
+      }
+      .btn-warning:hover,
+      .btn-warning:focus {
+        background: var(--warning);
+        color: #fff;
+        border-color: var(--warning);
+      }
+
+      /* Delete (danger) */
+      .btn-danger {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid var(--danger);
+      }
+      .btn-danger:hover,
+      .btn-danger:focus {
+        background: var(--danger);
+        color: #fff;
+        border-color: var(--danger);
+      }
+
+      /* Variants (neutral) */
+      .btn-neutral {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid var(--neutral);
+      }
+      .btn-neutral:hover,
+      .btn-neutral:focus {
+        background: var(--neutral);
+        color: #fff;
+        border-color: var(--neutral);
+      }
+
+      /* Media (media) */
+      .btn-media {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid var(--media);
+      }
+      .btn-media:hover,
+      .btn-media:focus {
+        background: var(--media);
+        color: #fff;
+        border-color: var(--media);
+      }
+
+      /* Giữ CTA "Thêm sản phẩm" dạng filled như cũ */
+      .btn-success {
+        background: var(--success);
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #199a48;
+      }
+
+      /* Pagination: giữ active như hiện tại, non-active outline, hover lật màu */
+      .page-link {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid var(--bd);
+      }
+      .page-link:hover,
+      .page-link:focus {
+        background:#cbd5e1;
+        color: #000000ff;
+        border-color:#cbd5e1;
+      }
+      .page-item.active .page-link {
+        background: #16a34a;
+        color: #fff;
+        border-color: #16a34a;
+      }
+      /* Soft status badges */
+      .badge {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+        font-weight: 600; /* ≤ 600 */
+        line-height: 1.1;
+        padding: 0.35rem 0.7rem;
+        border-radius: 12px;
+        border: 1px solid transparent; /* mỗi biến thể tự set viền */
+      }
+
+      /* ACTIVE */
+      .bg-success {
+        background: #dcfce7; /* xanh nhạt */
+        color: #166534; /* chữ xanh đậm */
+        border-color: #bbf7d0;
+      }
+
+      /* INACTIVE / SECONDARY */
+      .bg-secondary {
+        background: #e2e8f0; /* xám nhạt */
+        color: #0f172a; /* chữ đen */
+        border-color: #cbd5e1;
+      }
+      /* ==== Pagination: outline → hover primary, active success ==== */
+.catalog-categories .pagination .page-link{
+  background: var(--cat-surface);
+  color: var(--cat-text);
+  border: 1px solid var(--cat-border);
+  transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+
+.catalog-categories .pagination .page-link:hover,
+.catalog-categories .pagination .page-link:focus{
+  background: var(--cat-primary);
+  color: #fff;
+  border-color: var(--cat-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--cat-ring);
+}
+
+/* Active/current page */
+.catalog-categories .pagination .page-item.active .page-link,
+.catalog-categories .pagination .page-link[aria-current="page"],
+.catalog-categories .pagination .page-link.current{
+  background: var(--cat-success);   /* hoặc giữ xanh đậm: #117D39 */
+  color: #fff;
+  border-color: var(--cat-success);
+  box-shadow: none;
+}
+
+/* Disabled giữ trung tính */
+.catalog-categories .pagination .page-item.disabled .page-link{
+  background:#f1f5f9; color:#9ca3af; border-color:var(--cat-border);
+  pointer-events:none;
+}
+
+/* Pager (nếu dùng block .pager ở dưới) — cho hiệu ứng tương tự */
+.catalog-categories .pager a{
+  background: var(--cat-surface);
+  color: var(--cat-text);
+  border: 1px solid var(--cat-border);
+  transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+.catalog-categories .pager a:hover,
+.catalog-categories .pager a:focus{
+  background: var(--cat-primary);
+  color:#fff;
+  border-color: var(--cat-primary);
+  box-shadow: 0 0 0 3px var(--cat-ring);
+}
+.catalog-categories .pager .active,
+.catalog-categories .pager .is-active{
+  background: var(--cat-success);
+  color:#fff;
+  border-color: var(--cat-success);
+}
+
     </style>
-</head>
-<body>
-<section layout:fragment="content">
-
-    <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">
+  </head>
+  <body>
+    <section layout:fragment="content">
+      <div
+        class="alert alert-warning"
+        sec:authorize="!hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')"
+      >
         Bạn không có quyền xem sản phẩm.
-    </div>
+      </div>
 
-    <div sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')" class="wrap">
-        <h1 class="page-title mb-3 fw-bold" style="text-align:center;">Danh sách sản phẩm</h1>
+      <div
+        sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')"
+        class="wrap"
+      >
+        <h1 class="page-title mb-3 fw-bold" style="text-align: center">
+          Danh sách sản phẩm
+        </h1>
 
         <div class="toolbar">
-            <form method="get" th:action="@{/admin/catalog/products}" class="search-form">
-                <input type="text" name="q" th:value="${q}" placeholder="Tìm sản phẩm..." class="form-control">
-                <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-            </form>
+          <form
+            method="get"
+            th:action="@{/admin/catalog/products}"
+            class="search-form"
+          >
+            <input
+              type="text"
+              name="q"
+              th:value="${q}"
+              placeholder="Tìm sản phẩm..."
+              class="form-control"
+            />
+            <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+          </form>
 
-            <a th:href="@{/admin/catalog/products/new}" class="btn btn-success"
-               sec:authorize="hasAnyAuthority('PRODUCT_CREATE','ROLE_ADMIN')">Thêm sản phẩm
-            </a>
+          <a
+            th:href="@{/admin/catalog/products/new}"
+            class="btn btn-success"
+            sec:authorize="hasAnyAuthority('PRODUCT_CREATE','ROLE_ADMIN')"
+            >Thêm sản phẩm
+          </a>
         </div>
 
         <div class="table-card">
-            <div class="table-responsive">
-                <table class="table align-middle w-100 table-centered">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>TÊN SẢN PHẨM</th>
-                        <th>DANH MỤC</th>
-                        <th>TRẠNG THÁI</th>
-                        <th>GIỚI TÍNH</th>
-                        <th>THAO TÁC</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${page != null ? page.content : {}}">
-                        <td th:text="${p.id}">2100</td>
-                        <td><span class="truncate" th:text="${p.name}">Demo Product</span></td>
-                        <td><span class="truncate" th:text="${p.category != null ? p.category.name : '—'}">—</span></td>
-                        <td><span th:class="${p.status?.name() == 'ACTIVE'} ? 'badge bg-success' : 'badge bg-secondary'" th:text="${p.status}">ACTIVE</span></td>
-                        <td th:text="${p.gender}">UNISEX</td>
-                        <td>
-                            <div class="actions">
-                                <a th:href="@{|/admin/catalog/products/${p.id}/edit|}" class="btn btn-sm btn-warning">Sửa</a>
-                                <a th:href="@{|/admin/catalog/products/${p.id}/delete|}" onclick="return confirm('Xóa sản phẩm này?');" class="btn btn-sm btn-danger">Xóa</a>
-                                <a th:href="@{|/admin/catalog/products/${p.id}/variants|}" class="btn btn-sm btn-neutral">Biến thể</a>
-                                <a th:href="@{|/admin/catalog/products/${p.id}/media|}" class="btn btn-sm btn-media">Hình ảnh</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                        <td colspan="6" style="padding:18px;color:var(--muted);">Không có dữ liệu</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+          <div class="table-responsive">
+            <table class="table align-middle w-100 table-centered">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>TÊN SẢN PHẨM</th>
+                  <th>DANH MỤC</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>GIỚI TÍNH</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="p : ${page != null ? page.content : {}}">
+                  <td th:text="${p.id}">2100</td>
+                  <td>
+                    <span class="truncate" th:text="${p.name}"
+                      >Demo Product</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="truncate"
+                      th:text="${p.category != null ? p.category.name : '—'}"
+                      >—</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      th:class="${p.status?.name() == 'ACTIVE'} ? 'badge bg-success' : 'badge bg-secondary'"
+                      th:text="${p.status}"
+                      >ACTIVE</span
+                    >
+                  </td>
+                  <td th:text="${p.gender}">UNISEX</td>
+                  <td>
+                    <div class="actions">
+                      <a
+                        th:href="@{|/admin/catalog/products/${p.id}/edit|}"
+                        class="btn btn-sm btn-warning"
+                        >Sửa</a
+                      >
+                      <a
+                        th:href="@{|/admin/catalog/products/${p.id}/delete|}"
+                        onclick="return confirm('Xóa sản phẩm này?');"
+                        class="btn btn-sm btn-danger"
+                        >Xóa</a
+                      >
+                      <a
+                        th:href="@{|/admin/catalog/products/${p.id}/variants|}"
+                        class="btn btn-sm btn-neutral"
+                        >Biến thể</a
+                      >
+                      <a
+                        th:href="@{|/admin/catalog/products/${p.id}/media|}"
+                        class="btn btn-sm btn-media"
+                        >Hình ảnh</a
+                      >
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${page == null || #lists.isEmpty(page.content)}">
+                  <td colspan="6" style="padding: 18px; color: var(--muted)">
+                    Không có dữ liệu
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- PHÂN TRANG: pill, giữ q -->
-        <div th:replace="~{layout/components/_pagination :: body(
+        <div
+          th:replace="~{layout/components/_pagination :: body(
                 page=${page},
                 baseUrl='/admin/catalog/products',
                 q=${q}
-        )}"></div>
-
-    </div>
-</section>
-</body>
+        )}"
+        ></div>
+      </div>
+    </section>
+  </body>
 </html>

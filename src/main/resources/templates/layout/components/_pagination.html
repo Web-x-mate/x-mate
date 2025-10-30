@@ -17,7 +17,7 @@
 
         .pagination .page-link {
             font-weight: normal;
-            color: #0d6efd;
+            color: #828a96ff;
             border: 1px solid #dee2e6;
             background-color: #fff;
             padding: 6px 12px;
@@ -27,7 +27,7 @@
         }
 
         .pagination .page-link:hover {
-            background-color: #e9ecef;
+            background-color: #bbc9bbff;
             text-decoration: none;
         }
 
@@ -41,7 +41,7 @@
         .pagination .page-item.active .page-link {
             font-weight: normal;
             background-color: #f8f9fa;       /* Màu nền nhạt nhẹ */
-            color: #0d6efd;
+            color: #117D39;
             border-color: #dee2e6;
         }
     </style>
@@ -84,22 +84,32 @@
             </li>
 
             <!-- Numbers -->
-            <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-                th:class="'page-item ' + (${i} == ${page.number} ? 'active' : '')">
-                <a class="page-link"
-                   th:text="${i + 1}"
-                   th:href="@{${baseUrl}(
-                      page=${i},
-                      size=${size != null ? size : page.size},
-                      q=${q},
-                      status=${status},
-                      payment=${payment},
-                      type=${type},
-                      valueType=${valueType},
-                      sort=${sort},
-                      direction=${direction}
-                    )}">1</a>
-            </li>
+            <th:block th:with="
+                    window=${7},
+                    total=${page.totalPages},
+                    current=${page.number},
+                    half=${T(java.lang.Math).floorDiv(window,2)},
+                    start=${T(java.lang.Math).max(0, current - half)},
+                    end=${T(java.lang.Math).min(total - 1, start + window - 1)},
+                    start=${T(java.lang.Math).max(0, end - window + 1)}
+                ">
+                <li th:each="i : ${#numbers.sequence(start, end)}"
+                    th:class="'page-item ' + (${i} == ${page.number} ? 'active' : '')">
+                    <a class="page-link"
+                       th:text="${i + 1}"
+                       th:href="@{${baseUrl}(
+                          page=${i},
+                          size=${size != null ? size : page.size},
+                          q=${q},
+                          status=${status},
+                          payment=${payment},
+                          type=${type},
+                          valueType=${valueType},
+                          sort=${sort},
+                          direction=${direction}
+                        )}">1</a>
+                </li>
+            </th:block>
 
             <!-- Next -->
             <li th:class="'page-item ' + (${page.last} ? 'disabled' : '')">
