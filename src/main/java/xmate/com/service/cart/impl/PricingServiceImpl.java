@@ -44,7 +44,7 @@ public class PricingServiceImpl implements PricingService {
         }
 
         BigDecimal shipping = (subtotal.compareTo(BigDecimal.valueOf(500_000)) >= 0)
-                ? BigDecimal.ZERO : BigDecimal.valueOf(30_000);
+                ? BigDecimal.ZERO : BigDecimal.valueOf(2000);
         BigDecimal total = subtotal.subtract(discount).add(shipping);
         if (total.signum() < 0) total = BigDecimal.ZERO;
 
