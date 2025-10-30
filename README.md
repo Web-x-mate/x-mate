@@ -75,7 +75,7 @@ Dự án được xây dựng theo kiến trúc phân lớp (Layered Architectur
 
 *   **JDK:** Phiên bản 21 hoặc mới hơn.
 *   **Maven:** Phiên bản 3.8 hoặc mới hơn.
-*   **Cơ sở dữ liệu:** SQL Server 20.
+*   **Cơ sở dữ liệu:** My SQL 8.0.
 
 ## **Hướng dẫn cài đặt và khởi chạy**
 
