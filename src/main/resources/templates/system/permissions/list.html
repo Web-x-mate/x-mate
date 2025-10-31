@@ -17,7 +17,7 @@
 
     <!-- Khi CÓ quyền VIEW -->
     <div sec:authorize="hasAnyAuthority('PERM_MGMT_VIEW','ROLE_ADMIN')">
-        <h1>Permissions</h1>
+        <h1>Danh sách phân quyền</h1>
 
         <div class="d-flex justify-content-between mb-3">
             <form method="get" class="d-flex">
@@ -34,7 +34,7 @@
         <div class="table-responsive">
             <table class="table table-striped align-middle">
                 <thead class="table-light">
-                <tr><th>ID</th><th>Key</th><th style="width:200px;">Actions</th></tr>
+                <tr><th>ID</th><th>Quyền</th><th style="width:200px;">Actions</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="p : ${page?.content}">
@@ -44,13 +44,13 @@
                         <!-- Edit -->
                         <a th:href="@{|/admin/system/permissions/${p.id}/edit|}"
                            class="btn btn-sm btn-warning"
-                           sec:authorize="hasAnyAuthority('PERM_MGMT_EDIT','ROLE_ADMIN')">Edit</a>
+                           sec:authorize="hasAnyAuthority('PERM_MGMT_EDIT','ROLE_ADMIN')">Sửa</a>
 
                         <!-- Delete -->
                         <a th:href="@{|/admin/system/permissions/${p.id}/delete|}"
                            onclick="return confirm('Xóa permission này?');"
                            class="btn btn-sm btn-danger"
-                           sec:authorize="hasAnyAuthority('PERM_MGMT_DELETE','ROLE_ADMIN')">Delete</a>
+                           sec:authorize="hasAnyAuthority('PERM_MGMT_DELETE','ROLE_ADMIN')">Xóa</a>
                     </td>
                 </tr>
                 <tr th:if="${page == null || #lists.isEmpty(page.content)}">

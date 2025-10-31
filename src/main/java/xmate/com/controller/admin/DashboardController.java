@@ -27,17 +27,26 @@ public class DashboardController {
 
         LocalDate today = LocalDate.now();
         if (to == null) to = today;
-        if (from == null) from = to.minusDays(13);
-        if (!"D".equalsIgnoreCase(gran) && !"W".equalsIgnoreCase(gran) && !"M".equalsIgnoreCase(gran)) {
-            gran = "D";
-        }
+        // Mặc định 30 ngày để biểu đồ có đủ dữ liệu nhưng không quá dày
+        if (from == null) from = to.minusDays(29);
 
-        String json = dashboardService.buildKpisAndSalesJson(from, to, gran);
+        // Chuẩn hoá gran cho UI (D/W/M) và cho repository (DAY/MONTH/YEAR)
+        String uiGran = (gran == null ? "D" : gran.trim().toUpperCase());
+        if (!("D".equals(uiGran) || "W".equals(uiGran) || "M".equals(uiGran))) uiGran = "D";
+
+        // Repo hiện hỗ trợ DAY/MONTH/YEAR. Với W(week) ta dùng DAY rồi frontend sẽ gộp tuần để hiển thị.
+        String repoGran = switch (uiGran) {
+            case "M" -> "MONTH";
+            case "W" -> "DAY";   // tuần sẽ nhóm ở phía client
+            default -> "DAY";      // D
+        };
+
+        String json = dashboardService.buildKpisAndSalesJson(from, to, repoGran);
 
         model.addAttribute("title", "Dashboard");
         model.addAttribute("from", from);
         model.addAttribute("to", to);
-        model.addAttribute("gran", gran);
+        model.addAttribute("gran", uiGran);
         model.addAttribute("json", json);
         return "dashboard/index";
     }

@@ -123,7 +123,7 @@
             <div class="d-flex align-items-center gap-2">
                 <a th:href="@{|/admin/catalog/products/${product.id}/media/new|}"
                    class="btn btn-success"
-                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_CREATE','ROLE_ADMIN')">+ Thêm Media</a>
+                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_CREATE','ROLE_ADMIN')">Thêm Media</a>
             </div>
         </div>
 
@@ -141,12 +141,12 @@
                     </colgroup>
                     <thead class="table-light">
                     <tr>
-                        <th>Preview</th>
-                        <th>Type</th>
+                        <th>Xem trước</th>
+                        <th>Loại</th>
                         <th class="col-left">URL</th>
-                        <th>Primary</th>
-                        <th>Sort</th>
-                        <th class="col-right">Actions</th>
+                        <th>Độ ưu tiên</th>
+                        <th>Sắp xếp</th>
+                        <th class="col-right">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -163,7 +163,7 @@
                         </td>
                         <td>
               <span th:class="${m.primary} ? 'badge bg-success' : 'badge bg-secondary'"
-                    th:text="${m.primary} ? 'Primary' : '—'">Primary</span>
+                    th:text="${m.primary} ? 'Primary' : '—'">Độ ưu tiên</span>
                         </td>
                         <td th:text="${m.sortOrder}">0</td>
                         <td>
@@ -173,19 +173,19 @@
                                       th:action="@{|/admin/catalog/products/${product.id}/media/${m.id}/make-primary|}"
                                       method="post"
                                       sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_PRIMARY','ROLE_ADMIN')">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">Make Primary</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Tạo ưu tiên</button>
                                 </form>
 
                                 <!-- Edit -->
                                 <a th:href="@{|/admin/catalog/products/${product.id}/media/edit/${m.id}|}"
                                    class="btn btn-sm btn-warning"
-                                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_EDIT','ROLE_ADMIN')">Edit</a>
+                                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_EDIT','ROLE_ADMIN')">Sửa</a>
 
                                 <!-- Delete -->
                                 <a th:href="@{|/admin/catalog/products/${product.id}/media/delete/${m.id}|}"
                                    onclick="return confirm('Xóa media này?');"
                                    class="btn btn-sm btn-danger"
-                                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_DELETE','ROLE_ADMIN')">Delete</a>
+                                   sec:authorize="hasAnyAuthority('PRODUCT_MEDIA_DELETE','ROLE_ADMIN')">Xóa</a>
                             </div>
                         </td>
                     </tr>

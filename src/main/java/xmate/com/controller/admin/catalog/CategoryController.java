@@ -23,12 +23,18 @@ public class CategoryController {
     @GetMapping
     public String index(@RequestParam(defaultValue = "") String q,
                         @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "8") int size,
+                        @RequestParam(defaultValue = "id") String sort,
+                        @RequestParam(defaultValue = "desc") String direction,
                         Model model) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Sort sortSpec = Sort.by(Sort.Direction.fromString(direction), sort);
+        Pageable pageable = PageRequest.of(page, size, sortSpec);
         Page<Category> p = categoryService.search(q, pageable);
         model.addAttribute("page", p);
         model.addAttribute("q", q);
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
+        model.addAttribute("size", size);
         return "catalog/categories/list"; // -> templates/catalog/categories/list.html
     }
 

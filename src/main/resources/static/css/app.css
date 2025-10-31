@@ -14,7 +14,7 @@
 }
 
 /* ===== Base ===== */
-*{ box-sizing:border-box; font-family: "Nunito" !important;}
+*{ box-sizing:border-box; font-family: "Nunito" ;}
 html, body{ height:100%; }
 body{
     margin:0;

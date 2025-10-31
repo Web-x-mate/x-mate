@@ -8,6 +8,7 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link rel="stylesheet" th:href="@{/css/chat-fab.css}"/>
   <link rel="stylesheet" th:href="@{/css/chatbot.css}"/>
   <th:block layout:include="~{layout/fragments :: headExtras}"/>
 </head>
@@ -24,5 +25,21 @@
 <th:block layout:include="~{layout/fragments :: bodyExtras}"/>
 <div th:replace="~{widget/chatbot :: widget}"></div>
 <!--<script th:src="@{/js/chatbot.js}"></script>-->
+
+<!-- Floating link to Admin Inbox -->
+<a id="adminChatFab" class="chat-link-fab" th:href="@{/admin/inbox}" title="Admin Inbox"
+   xmlns:sec="http://www.thymeleaf.org/extras/spring-security" sec:authorize="hasAuthority('ROLE_ADMIN')">
+  <span style="font-weight:700">💬</span>
+  <span class="label">Inbox</span>
+</a>
+
+<script>
+  // Hide FAB on admin chat screens to avoid overlap
+  (function(){
+    try { if (location.pathname.startsWith('/admin/chat') || location.pathname === '/admin/inbox') {
+      var el = document.getElementById('adminChatFab'); if (el) el.style.display = 'none';
+    }} catch(e) {}
+  })();
+</script>
 </body>
 </html>

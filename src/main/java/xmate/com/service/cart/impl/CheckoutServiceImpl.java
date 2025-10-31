@@ -27,11 +27,14 @@ import xmate.com.entity.sales.OrderItem;
 import xmate.com.repo.catalog.ProductVariantRepository;
 import xmate.com.repo.customer.AddressRepository;
 import xmate.com.repo.customer.CustomerRepository;
+import xmate.com.repo.discount.DiscountRepository;
+import xmate.com.repo.discount.DiscountUsageRepository;
 import xmate.com.repo.sales.OrderItemRepository;
 import xmate.com.repo.sales.OrderRepository;
 import xmate.com.service.cart.CartService;
 import xmate.com.service.cart.CheckoutService;
 import xmate.com.service.cart.PricingService;
+import xmate.com.service.discount.DiscountService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,6 +54,9 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final CartService cartService;
     private final PricingService pricingService;
     private final ObjectMapper objectMapper;
+    private final DiscountRepository discountRepository;
+    private final DiscountUsageRepository discountUsageRepository;
+    private final DiscountService discountService;
 
     /** Lấy customer hiện tại hoặc ném 401 để FE xử lý đăng nhập */
     private Customer currentCustomerOr401() {
@@ -135,6 +141,18 @@ public class CheckoutServiceImpl implements CheckoutService {
             return orderItem;
         }).collect(Collectors.toList());
         orderItemRepository.saveAll(orderItems);
+        // --- Sau khi lưu orderItems ---
+        if (req.couponCode() != null && !req.couponCode().isBlank() && pricing.discount() > 0) {
+            Long discountId = discountRepository.findIdByCode(req.couponCode().trim())
+                    .orElse(null);
+
+            if (discountId != null) {
+                // Giảm số lượng + ghi usage trong cùng transaction
+                discountService.recordUsage(discountId, savedOrder.getId(), user.getId());
+            }
+        }
+
+
 
         // 7) Payment
         Payment payment = new Payment();

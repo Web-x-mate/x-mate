@@ -16,8 +16,8 @@
             --muted:#64748b;
             --bd:#e2e8f0;
             --ring:#93c5fd;
-            --primary:#2563eb;
-            --primary-hover:#1d4ed8;
+            --primary:#F1F5F9;
+            --primary-hover:#F1F5F9;
             --success:#16a34a;            /* xanh lá mới */
             --success-hover:#15803d;
         }
@@ -81,6 +81,87 @@
         .btn-primary:hover{background:var(--primary-hover);}
         .btn-success{background:var(--success);color:#fff;}      /* ✅ màu mới */
         .btn-success:hover{background:var(--success-hover);}
+        /* ===== Pagination (pill) ===== */
+.pagination{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  margin-top:16px;
+  padding:0;
+  list-style:none;
+}
+.page-item{ display:flex; }
+
+.page-link{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:36px; height:36px; padding:0 12px;
+  border-radius:10px; border:1px solid var(--bd);
+  background:#fff; color:var(--text);
+  font-weight:600; font-size:13px; text-decoration:none;
+  transition:background .15s, border-color .15s, color .15s;
+}
+
+.page-link:hover,
+.page-link:focus{
+  background:var(--primary); color:#000; border-color:var(--primary);
+  outline:none; box-shadow:0 0 0 3px var(--ring);
+}
+
+.page-item.active .page-link{
+  background:var(--success); color:#fff; border-color:var(--success);
+  box-shadow:none;
+}
+
+.page-item.disabled .page-link{
+  background:#f1f5f9; color:#94a3b8; border-color:var(--bd);
+  pointer-events:none;
+}
+
+/* Mobile tweak */
+@media (max-width:768px){
+  .pagination{ gap:6px; }
+  .page-link{ min-width:34px; height:34px; padding:0 10px; font-size:12px; }
+}
+.page-link:hover, .page-link:focus{
+  background:var(--success); color:#fff; border-color:var(--success);
+  box-shadow:0 0 0 3px var(--ring);
+}
+/* Pagination — outline → hover primary, active success */
+.pagination{
+  --page-hover-bg: var(--primary);
+  --page-active-bg: var(--success);
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;
+  margin-top:16px; padding:0; list-style:none;
+}
+.page-item{ display:flex; }
+
+.page-link{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:36px; height:36px; padding:0 12px;
+  border-radius:10px; border:1px solid var(--bd);
+  background:#fff; color:var(--text);
+  font-weight:600; font-size:13px; text-decoration:none;
+  transition:background .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+.page-link:hover, .page-link:focus{
+  background:var(--page-hover-bg); color:#000; border-color:var(#F8F9FA);
+}
+.page-item.active .page-link,
+.page-link[aria-current="page"]{
+  background:var(--page-active-bg); color:#fff; border-color:var(--page-active-bg);
+  box-shadow:none;
+}
+.page-item.disabled .page-link{
+  background:#f1f5f9; color:#94a3b8; border-color:var(--bd); pointer-events:none;
+}
+
+@media (max-width:768px){
+  .pagination{ gap:6px; }
+  .page-link{ min-width:34px; height:34px; padding:0 10px; font-size:12px; }
+}
+
     </style>
 
 </head>
@@ -144,7 +225,12 @@
             </div>
         </div>
 
-        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/inventory', q=${q})}"></div>
+        <th:block th:if="${page != null and page.totalPages > 1}">
+  <div th:replace="~{layout/components/_pagination :: body(
+        page=${page}, baseUrl='/admin/inventory', q=${q}
+  )}"></div>
+</th:block>
+
     </div>
 </section>
 </body>

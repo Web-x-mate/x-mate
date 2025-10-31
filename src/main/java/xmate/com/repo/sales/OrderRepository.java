@@ -91,6 +91,16 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
         """, nativeQuery = true)
     List<LabelValueI> funnel(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    // ====== Dashboard: Payment status breakdown ======
+    @Query(value = """
+        SELECT o.payment_status AS label, COUNT(*) AS value
+        FROM orders o
+        WHERE DATE(o.created_at) BETWEEN :from AND :to
+        GROUP BY o.payment_status
+        ORDER BY o.payment_status
+        """, nativeQuery = true)
+    List<LabelValueI> paymentStatusBetween(@Param("from") LocalDate from,
+                                           @Param("to") LocalDate to);
     // ====== Dashboard: Recent orders ======
     @Query(value = """
         SELECT 

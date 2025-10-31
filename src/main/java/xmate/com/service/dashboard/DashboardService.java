@@ -118,6 +118,22 @@ public class DashboardService {
         put(root, "orderFunnel.labels", fLabels);
         put(root, "orderFunnel.values", fValues);
 
+        // Payment status breakdown (PAID, PENDING, ...)
+        try {
+            List<LabelValueI> pays = orderRepo.paymentStatusBetween(from, to);
+            List<String> pLabels = new ArrayList<>();
+            List<Integer> pValues = new ArrayList<>();
+            for (LabelValueI r : pays) {
+                pLabels.add(r.getLabel());
+                pValues.add(r.getValue() == null ? 0 : r.getValue());
+            }
+            put(root, "payment.labels", pLabels);
+            put(root, "payment.values", pValues);
+        } catch (Exception ignore) {
+            put(root, "payment.labels", List.of());
+            put(root, "payment.values", List.of());
+        }
+
         // 3) Top sản phẩm/biến thể theo số lượng (tuỳ bạn đã có query trong orderItemRepo)
         int TOP = 10;
         var top = orderItemRepo.topVariantsByQty(from, to, TOP); // giả định đã có
@@ -129,6 +145,30 @@ public class DashboardService {
         }
         put(root, "topVariants.labels", tLabels);
         put(root, "topVariants.values", tValues);
+
+        // Best sellers (products aggregated across variants, top 5 with thumbnail)
+        try {
+            var topProducts = orderItemRepo.topProductsByQty(from, to);
+            topProducts.sort((a,b) -> Integer.compare(
+                    java.util.Optional.ofNullable(b.getQty()).orElse(0),
+                    java.util.Optional.ofNullable(a.getQty()).orElse(0)));
+            List<Map<String, Object>> best = new ArrayList<>();
+            int max = Math.min(3, topProducts.size());
+            for (int i = 0; i < max; i++) {
+                var r = topProducts.get(i);
+                String thumb = mediaRepo.findAllByProduct_IdOrderBySortOrderAsc(r.getProductId())
+                        .stream().findFirst().map(m -> m.getUrl()).orElse("");
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("productId", r.getProductId());
+                m.put("name", r.getProductName());
+                m.put("qty", java.util.Optional.ofNullable(r.getQty()).orElse(0));
+                m.put("thumbnail", thumb);
+                best.add(m);
+            }
+            put(root, "bestSellers", best);
+        } catch (Exception ignore) {
+            put(root, "bestSellers", List.of());
+        }
 
         // ===== Live tables =====
         // Recent orders

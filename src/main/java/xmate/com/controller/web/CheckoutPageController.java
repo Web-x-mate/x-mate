@@ -49,7 +49,8 @@ public class CheckoutPageController {
                 });
             }
 
-            model.addAttribute("addresses", addressService.listForCurrentUser());
+            var addressList = addressService.listForCurrentUser();
+            model.addAttribute("addresses", addressList);
 
             CartDto currentCart = cartService.getCartForCurrentUser();
             String appliedCouponCode = currentCart.appliedCoupon();
@@ -68,6 +69,9 @@ public class CheckoutPageController {
             model.addAttribute("appliedCouponCode", appliedCouponCode);
             model.addAttribute("cartItems", currentCart.items());
             model.addAttribute("availableCoupons", availableCoupons);
+            if (!addressList.isEmpty()) {
+                model.addAttribute("selectedAddress", addressList.get(0));
+            }
 
             model.addAttribute("pageTitle", "X-Mate | Thanh toán");
             model.addAttribute("primaryCategories", catalogViewService.buildPrimaryNav());

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -52,6 +53,21 @@
 
   <!-- Chatbot widget -->
   <div th:replace="~{widget/chatbot :: widget}"></div>
+
+  <!-- Floating chat button to contact Admin (only when logged in) -->
+  <a id="chatLinkFab" class="chat-link-fab" th:href="@{/chat}" title="Chat với Admin" sec:authorize="isAuthenticated()">
+    <i class="fa-solid fa-comments"></i>
+    <span class="label">Chat</span>
+  </a>
+
+  <script>
+    // Hide the FAB when already on chat pages
+    (function(){
+      try { if (location.pathname === '/chat' || location.pathname.startsWith('/chat/')) {
+        var el = document.getElementById('chatLinkFab'); if (el) el.style.display = 'none';
+      }} catch(e) {}
+    })();
+  </script>
 
 </body>
 </html>

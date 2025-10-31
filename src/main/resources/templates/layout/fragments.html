@@ -56,12 +56,12 @@
 <!-- HEADER / TOPBAR -->
 <th:block layout:fragment="header">
     <div class="topbar">
-        <img th:src="@{/images/logo.svg}" alt="logo" class="logo"/>
+        <img th:src="@{/images/favicon.png}" alt="logo" class="logo"/>
         <span class="brand" th:text="${brand} ?: 'Xmate Admin'">Xmate Admin</span>
         <div class="topbar-right">
             <a th:href="@{/settings/profile}">Profile</a>
             <form th:action="@{/auth/logout}" method="post" style="display:inline;">
-                <button type="submit" class="logout-btn">Logout</button>
+                <button type="submit" class="logout-btn">Đăng xuất</button>
             </form>
         </div>
     </div>
@@ -80,11 +80,11 @@
         <!-- Sales -->
         <details class="mgroup" data-key="m_sales"
                  sec:authorize="hasAnyAuthority('ORDER_VIEW','DISCOUNT_VIEW','ROLE_ADMIN')">
-            <summary>Sales</summary>
+            <summary>Bán hàng</summary>
             <a th:href="@{/admin/sales/orders}"
-               sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">Orders</a>
+               sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">Đơn hàng</a>
             <a th:href="@{/admin/discounts}"
-               sec:authorize="hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">Discounts</a>
+               sec:authorize="hasAnyAuthority('DISCOUNT_VIEW','ROLE_ADMIN')">Mã giảm giá</a>
         </details>
 
         <!-- Catalog -->
@@ -92,51 +92,51 @@
                  sec:authorize="hasAnyAuthority('CATEGORY_VIEW','PRODUCT_VIEW','ROLE_ADMIN')">
             <summary>Catalog</summary>
             <a th:href="@{/admin/catalog/categories}"
-               sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">Categories</a>
+               sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">Danh mục</a>
             <a th:href="@{/admin/catalog/products}"
-               sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">Products</a>
+               sec:authorize="hasAnyAuthority('PRODUCT_VIEW','ROLE_ADMIN')">Sản phẩm</a>
         </details>
 
         <!-- Inventory -->
         <details class="mgroup" data-key="m_inventory"
                  sec:authorize="hasAnyAuthority('INVENTORY_VIEW','ROLE_ADMIN')">
-            <summary>Inventory</summary>
+            <summary>Kho hàng</summary>
             <a th:href="@{/admin/inventory}"
-               sec:authorize="hasAnyAuthority('INVENTORY_VIEW','ROLE_ADMIN')">Stock</a>
+               sec:authorize="hasAnyAuthority('INVENTORY_VIEW','ROLE_ADMIN')">Tồn kho</a>
         </details>
 
         <!-- Customers -->
         <details class="mgroup" data-key="m_customers"
                  sec:authorize="hasAnyAuthority('CUSTOMER_VIEW','MEMBERSHIP_TIER_VIEW','ROLE_ADMIN')">
-            <summary>Customers</summary>
+            <summary>Khách hàng</summary>
             <a th:href="@{/admin/customers}"
-               sec:authorize="hasAnyAuthority('CUSTOMER_VIEW','ROLE_ADMIN')">Customers</a>
-            <a th:href="@{/admin/membership-tiers}"
-               sec:authorize="hasAnyAuthority('MEMBERSHIP_TIER_VIEW','ROLE_ADMIN')">Membership Tier</a>
+               sec:authorize="hasAnyAuthority('CUSTOMER_VIEW','ROLE_ADMIN')">Khách hàng</a>
+<!--            <a th:href="@{/admin/membership-tiers}"-->
+<!--               sec:authorize="hasAnyAuthority('MEMBERSHIP_TIER_VIEW','ROLE_ADMIN')">Membership Tier</a>-->
         </details>
 
         <!-- Procurement -->
-        <details class="mgroup" data-key="m_procurement"
-                 sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','PO_VIEW','ROLE_ADMIN')">
-            <summary>Procurement</summary>
-            <a th:href="@{/admin/procurement/suppliers}"
-               sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','ROLE_ADMIN')">Suppliers</a>
-            <a th:href="@{/admin/procurement/po}"
-               sec:authorize="hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">Purchase Orders</a>
-        </details>
+<!--        <details class="mgroup" data-key="m_procurement"-->
+<!--                 sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','PO_VIEW','ROLE_ADMIN')">-->
+<!--            <summary>Procurement</summary>-->
+<!--            <a th:href="@{/admin/procurement/suppliers}"-->
+<!--               sec:authorize="hasAnyAuthority('SUPPLIER_VIEW','ROLE_ADMIN')">Suppliers</a>-->
+<!--            <a th:href="@{/admin/procurement/po}"-->
+<!--               sec:authorize="hasAnyAuthority('PO_VIEW','ROLE_ADMIN')">Purchase Orders</a>-->
+<!--        </details>-->
 
         <!-- System -->
         <details class="mgroup" data-key="m_system"
                  sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_VIEW','PERMISSION_VIEW','ACTIVITY_LOG_VIEW','ROLE_ADMIN')">
-            <summary>System</summary>
+            <summary>Quản lý</summary>
             <a th:href="@{/admin/system/users}"
-               sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_ADMIN')">Users</a>
+               sec:authorize="hasAnyAuthority('USER_VIEW','ROLE_ADMIN')">Nhân viên</a>
             <a th:href="@{/admin/system/roles}"
-               sec:authorize="hasAnyAuthority('ROLE_VIEW','ROLE_ADMIN')">Roles</a>
+               sec:authorize="hasAnyAuthority('ROLE_VIEW','ROLE_ADMIN')">Vai trò</a>
             <a th:href="@{/admin/system/permissions}"
-               sec:authorize="hasAnyAuthority('PERMISSION_VIEW','ROLE_ADMIN')">Permissions</a>
-            <a th:href="@{/admin/system/activity-logs}"
-               sec:authorize="hasAnyAuthority('ACTIVITY_LOG_VIEW','ROLE_ADMIN')">Activity Logs</a>
+               sec:authorize="hasAnyAuthority('PERMISSION_VIEW','ROLE_ADMIN')">Phân quyền</a>
+<!--            <a th:href="@{/admin/system/activity-logs}"-->
+<!--               sec:authorize="hasAnyAuthority('ACTIVITY_LOG_VIEW','ROLE_ADMIN')">Activity Logs</a>-->
         </details>
 
 <!--        &lt;!&ndash; Tools &ndash;&gt;-->

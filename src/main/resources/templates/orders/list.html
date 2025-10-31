@@ -1,4 +1,4 @@
-<!-- src/main/resources/templates/sales/orders/list.html (ví dụ đường dẫn) -->
+﻿<!-- src/main/resources/templates/sales/orders/list.html -->
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -9,133 +9,513 @@
     <meta charset="UTF-8">
     <title>Danh sách đơn hàng</title>
     <style>
-        .table thead th { text-align: center; }
-        .table tbody td { text-align: center; }
-
-        .btn-create {
-            font-weight: 900;
-            font-size: 1.125rem;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border: none; color: white;
-            box-shadow: 0 2px 6px rgba(16, 185, 129, .4);
-            transition: transform .15s, box-shadow .15s;
-            padding: .63rem 1.26rem; border-radius: .675rem;
-        }
-        .btn-create:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, .45); }
-
-        .badge {
-            display: inline-flex; align-items: center; gap: .315rem;
-            font-weight: 600; border-radius: .45rem;
-            padding: .225rem .45rem; font-size: .765rem;
-        }
-        .bg-light{background:#f1f5f9;color:#0f172a}
-        .bg-secondary{background:#e2e8f0;color:#0f172a}
-        .bg-primary{background:#0ea5e9;color:#fff}
-        .bg-success{background:#22c55e;color:#fff}
-        .bg-danger{background:#ef4444;color:#fff}
-        .bg-info{background:#38bdf8;color:#0f172a}
-        .bg-warning{background:#fbbf24;color:#0f172a}
-        .text-dark{color:#0f172a}
-        .me-1{margin-right:.225rem}
-
-        .btn-lg{
-            font-size:.9rem; font-weight:700;
-            padding:.72rem 1.26rem; border-radius:.675rem;
+        :root {
+            --app-primary: #2563eb;
+            --app-primary-soft: rgba(37, 99, 235, 0.1);
+            --app-success: #16a34a;
+            --app-success-soft: rgba(22, 163, 74, 0.12);
+            --app-warning: #f97316;
+            --app-warning-soft: rgba(249, 115, 22, 0.16);
+            --app-danger: #ef4444;
+            --app-danger-soft: rgba(239, 68, 68, 0.14);
+            --app-neutral: #475467;
+            --app-neutral-soft: rgba(71, 84, 103, 0.12);
+            --app-surface: #ffffff;
+            --app-border: #e2e8f0;
+            --app-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+            --app-shadow-soft: 0 10px 26px rgba(15, 23, 42, 0.06);
+            --status-blue-bg: #e0e8ff;
+            --status-blue-text: #2f54eb;
+            --status-green-bg: #d9f5e7;
+            --status-green-text: #15803d;
+            --status-orange-bg: #ffe8d6;
+            --status-orange-text: #f97316;
+            --status-red-bg: #ffe0e0;
+            --status-red-text: #dc2626;
+            --status-gray-bg: #e8ecf3;
+            --status-gray-text: #475569;
         }
 
-        /* Nút hành động */
-        .btn-action{
-            font-weight:600; border-radius:7.2px;
-            padding:.36rem .81rem; font-size:.81rem;
-            transition:all .15s ease;
+        body {
+            background: var(--app-surface);
+            color: #0f172a;
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
         }
-        .btn-view{ background:#e2e8f0; color:#0f172a; border:none; }
-        .btn-view:hover{ background:#cbd5e1; }
-        .btn-edit{ background:#fbbf24; color:#0f172a; border:none; }
-        .btn-edit:hover{ background:#f59e0b; }
-        .btn-delete{ background:#ef4444; color:#fff; border:none; }
-        .btn-delete:hover{ background:#dc2626; }
 
-        /* Lưới filter 6 cột (nhẹ -10%) */
-        .filter-grid{
-            display:grid; grid-template-columns:repeat(6,1fr);
-            gap:.675rem; align-items:stretch; margin-bottom:.9rem;
+        .orders-page,
+        .orders-page * {
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
         }
-        .filter-grid .cell > *{
-            height:43px; width:100%; border-radius:9px; font-size:.855rem;
-            display:flex; align-items:center; justify-content:center;
-        }
-        .filter-grid .btn{ font-weight:700; }
-        @media (max-width: 992px){ .filter-grid{ grid-template-columns:repeat(3,1fr);} }
-        @media (max-width: 576px){ .filter-grid{ grid-template-columns:repeat(2,1fr);} }
 
-        /* Pagination — pills (giống ảnh) */
-        .pagination{ display:flex; gap:.5rem; align-items:center; }
-        .page-item{ list-style:none; }
-        .page-link{
-            display:inline-flex; align-items:center; justify-content:center;
-            min-width:40px; height:36px; padding:0 .75rem;
-            border-radius:10px; border:1px solid #e2e8f0;
-            background:#fff; color:#0f172a; font-weight:700; text-decoration:none;
-            transition:background .15s, border-color .15s, color .15s;
+        .orders-page {
+            padding: 1.75rem 1.25rem;
+            background: var(--app-surface);
         }
-        .page-item.active .page-link{ background:#16a34a; color:#fff; border-color:#16a34a; }
-        .page-item.disabled .page-link{
-            background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none;
+
+        .orders-page .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
         }
-        .page-link:hover{ background:#f8fafc; }
-        .page-title{
-            font-size: 1.75rem;  /* chỉnh con số này để ra đúng cỡ */
-            font-weight: 800;
-            line-height: 1.5;
-            text-align: center;
-            margin: 0 0 18px;
+
+        .orders-page .filter-grid {
+            display: grid;
+            width: 100%;
+            max-width: 100%;
+            grid-template-columns: minmax(40px, 4fr) minmax(210px, 1.5fr) minmax(210px, 1.5fr) auto;
+            column-gap: 0.6rem;
+            row-gap: 0.85rem;
+            padding: 1.1rem 1.2rem;
+            border-radius: 1rem;
+            background: var(--app-surface);
+            border: 1px solid var(--app-border);
+            box-shadow: var(--app-shadow-soft);
+            margin-bottom: 1.4rem;
+            align-items: center;
+        }
+
+        .orders-page .filter-grid .cell {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .orders-page .filter-grid .cell-status {
+            margin-right: 0.6rem;
+        }
+
+        .orders-page .filter-grid .cell-payment {
+            margin-left: 0.6rem;
+        }
+
+        .orders-page .filter-grid .actions {
+            justify-self: end;
+        }
+
+        .orders-page .filter-grid .action-buttons {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: flex-end;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .orders-page .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .orders-page .filter-grid .cell-status,
+            .orders-page .filter-grid .cell-payment {
+                margin: 0;
+            }
+
+            .orders-page .filter-grid .actions {
+                grid-column: span 1;
+                justify-self: stretch;
+            }
+
+            .orders-page .filter-grid .action-buttons {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+
+        .orders-page .filter-grid input,
+        .orders-page .filter-grid select {
+            width: 100%;
+            height: 2.6rem;
+            border-radius: 1rem;
+            border: 1px solid #d0d5dd;
+            background: #f8fafc;
+            color: #0f172a;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            padding: 0 0.9rem;
+        }
+
+        .orders-page .filter-grid input::placeholder {
+            color: #94a3b8;
+        }
+
+        .orders-page .filter-grid input:focus,
+        .orders-page .filter-grid select:focus {
+            outline: none;
+            border-color: var(--app-primary);
+            box-shadow: 0 0 0 4px var(--app-primary-soft);
+            background: var(--app-surface);
+        }
+
+        .orders-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            height: 2.6rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            border: none;
+            padding: 0 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .orders-page .btn-primary,
+        .orders-page .btn-create {
+            background: var(--app-primary);
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+        }
+
+        .orders-page .btn-primary:hover,
+        .orders-page .btn-create:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 40px rgba(37, 99, 235, 0.35);
+        }
+
+        .orders-page .btn-secondary {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 1px solid var(--app-border);
+        }
+
+        .orders-page .btn-secondary:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(148, 163, 184, 0.25);
+        }
+
+        .orders-page .table-responsive {
+            background: var(--app-surface);
+            border-radius: 1rem;
+            border: 1px solid var(--app-border);
+            box-shadow: var(--app-shadow);
+            padding: 1.1rem 1.25rem;
+            overflow: hidden;
+        }
+
+        .orders-page .order-table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+            table-layout: auto;
+            font-family: inherit;
+        }
+
+        .orders-page .order-table th {
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .orders-page .order-table .customer-cell {
+            white-space: normal;
+        }
+
+        .orders-page .order-table .order-code {
+            white-space: nowrap;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .orders-page .order-table thead th {
+            background: #f3f6fb;
+            color: #1f2937;
+            font-size: 0.83rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--app-border);
+            padding: 0.75rem 1rem;
+        }
+
+        .orders-page .order-table tbody tr {
+            background: #ffffff;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .orders-page .order-table tbody tr:hover {
+            background: #f6f8fc;
+        }
+
+        .orders-page .order-table tbody td {
+            border-top: none;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.92rem;
+            color: #334155;
+            font-family: inherit;
+        }
+
+        .orders-page .order-table .status-cell {
+            padding-right: 1.2rem;
+        }
+
+        .orders-page .order-table .payment-cell {
+            padding-left: 1.2rem;
+        }
+
+        .orders-page .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            padding: 0.28rem 0.65rem;
+            border-radius: 999px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .orders-page .status-info {
+            background: var(--status-blue-bg);
+            color: var(--status-blue-text);
+        }
+
+        .orders-page .status-success {
+            background: var(--status-green-bg);
+            color: var(--status-green-text);
+        }
+
+        .orders-page .status-warning {
+            background: var(--status-orange-bg);
+            color: var(--status-orange-text);
+        }
+
+        .orders-page .status-danger {
+            background: var(--status-red-bg);
+            color: var(--status-red-text);
+        }
+
+        .orders-page .status-neutral {
+            background: var(--status-gray-bg);
+            color: var(--status-gray-text);
+        }
+
+        .orders-page .btn-action {
+            background: #f8fafc;
+            border: 1px solid transparent;
+            color: #2563eb;
+            padding: 0.5rem 0.9rem;
+            border-radius: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .orders-page .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        .orders-page .btn-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+        }
+
+        .orders-page .btn-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+        }
+
+        .orders-page .order-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+        }
+
+        .orders-page .btn-edit {
+            color: #2563eb;
+            border-color: rgba(37, 99, 235, 0.25);
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .orders-page .btn-edit:hover {
+            color: #1d4ed8;
+            background: rgba(37, 99, 235, 0.12);
+            border-color: rgba(29, 78, 216, 0.35);
+        }
+
+        .orders-page .btn-delete {
+            color: #b04242;
+            border-color: rgba(176, 66, 66, 0.3);
+            background: rgba(176, 66, 66, 0.08);
+        }
+
+        .orders-page .btn-delete:hover {
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+            border-color: rgba(220, 38, 38, 0.35);
+        }
+
+        .orders-page .btn-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .orders-page .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .orders-page .table-empty {
+            padding: 2rem 0;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .orders-page .pagination {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            margin: 1.25rem 0 0;
+            justify-content: center;
+        }
+
+        .orders-page .pagination .page-item {
+            display: flex;
+        }
+
+        .orders-page .pagination .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #0f172a;
+            background: #ffffff;
+            border: 1px solid var(--app-border);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .orders-page .pagination .page-link:hover {
+            background: #eef2f7;
+            border-color: #d7dde6;
+            text-decoration: none;
+        }
+
+        .orders-page .pagination .page-link:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+        }
+
+        .orders-page .pagination .page-item.active .page-link,
+        .orders-page .pagination .page-link[aria-current="page"] {
+            background: var(--app-primary);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .orders-page .pagination .page-item.disabled .page-link {
+            color: #9ca3af;
+            pointer-events: none;
+            background: #f1f5f9;
+            border-color: var(--app-border);
+        }
+
+        .orders-page .pager {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1.25rem;
+        }
+
+        .orders-page .pager a,
+        .orders-page .pager span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            border: 1px solid var(--app-border);
+            border-radius: 10px;
+        }
+
+        .orders-page .pager a {
+            background: #ffffff;
+            color: #0f172a;
+            text-decoration: none;
+        }
+
+        .orders-page .pager a:hover {
+            background: #eef2f7;
+            border-color: #d7dde6;
+        }
+
+        .orders-page .pager .active,
+        .orders-page .pager .is-active {
+            background: var(--app-primary);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .orders-page .pager .disabled,
+        .orders-page .pager a[aria-disabled="true"] {
+            background: #f1f5f9;
+            color: #9ca3af;
+            pointer-events: none;
+            border-color: var(--app-border);
         }
     </style>
 </head>
 <body>
-<section layout:fragment="content">
+<section layout:fragment="content" class="orders-page">
     <div sec:authorize="hasAnyAuthority('ORDER_VIEW','ROLE_ADMIN')">
 
         <h1 class="page-title">Danh sách đơn hàng</h1>
 
-        <!-- Bộ lọc -->
+        <!-- Bo loc -->
         <form method="get" class="filter-grid">
             <div class="cell">
-                <input class="form-control" name="q" th:value="${q}" placeholder=" Mã đơn hoặc tên khách hàng...">
+                <input class="form-control" name="q" th:value="${q}" placeholder="Mã đơn hoặc tên khách hàng...">
             </div>
-            <div class="cell">
+            <div class="cell cell-status">
                 <select class="form-select" name="status">
                     <option value="">Trạng thái</option>
                     <option th:each="s: ${orderStatuses}" th:value="${s}" th:text="${s}"
                             th:selected="${s.name() == status}"></option>
                 </select>
             </div>
-            <div class="cell">
+            <div class="cell cell-payment">
                 <select class="form-select" name="payment">
                     <option value="">Thanh toán</option>
                     <option th:each="s: ${paymentStatuses}" th:value="${s}" th:text="${s}"
                             th:selected="${s.name() == payment}"></option>
                 </select>
             </div>
-            <div class="cell">
-                <button class="btn btn-primary w-100" type="submit">Tìm kiếm</button>
-            </div>
-            <div class="cell">
-                <a class="btn btn-secondary w-100" th:href="@{/admin/sales/orders}">Đặt lại</a>
-            </div>
-            <div class="cell" sec:authorize="hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')">
-                <a th:href="@{/admin/sales/orders/new}" class="btn btn-create w-100">Tạo đơn</a>
+            <div class="cell actions">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                    <a class="btn btn-secondary" th:href="@{/admin/sales/orders}">Đặt lại</a>
+                    <a th:href="@{/admin/sales/orders/new}" class="btn btn-create"
+                       sec:authorize="hasAnyAuthority('ORDER_CREATE','ROLE_ADMIN')">Tạo đơn</a>
+                </div>
             </div>
         </form>
 
-        <!-- Bảng -->
+        <!-- Bang -->
         <div class="table-responsive">
-            <table class="table table-hover align-middle w-100">
+            <table class="table order-table align-middle w-100">
                 <thead class="table-light">
                 <tr>
                     <th>ID</th>
-                    <th>Mã đơn</th>
+                    <th>Mã đơn </th>
                     <th>Khách hàng</th>
                     <th>Trạng thái</th>
                     <th>Thanh toán</th>
@@ -146,65 +526,87 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="o : ${ (page != null and page.content != null) ? page.content : T(java.util.Collections).emptyList() }">
+                <tr th:each="o : ${(page != null and page.content != null) ? page.content : T(java.util.Collections).emptyList()}">
                     <td th:text="${o.id}">1</td>
-                    <td th:text="${o.code}">ORD-001</td>
-                    <td th:text="${o.customer != null ? o.customer.fullname : '—'}">—</td>
+                    <td class="order-code" th:text="${o.code}">ORD-001</td>
+                    <td class="customer-cell" th:text="${o.customer != null ? o.customer.fullname : '-'}">-</td>
 
                     <!-- ORDER STATUS -->
-                    <td th:switch="${o.status != null ? o.status.name() : ''}">
-                        <span class="badge bg-warning text-dark" th:case="'PENDING_PAYMENT'">💳 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-primary"            th:case="'PLACED'">🧾 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-info text-dark"     th:case="'CONFIRMED'">✅ <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-info text-dark"     th:case="'PACKED'">📦 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-info text-dark"     th:case="'SHIPPING'">🚚 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-success"            th:case="'DELIVERED'">🎉 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-secondary"          th:case="'CANCELLED'">❌ <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-danger"             th:case="'FAILED'">🔥 <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-warning text-dark"  th:case="'PENDING'">⏳ <span th:text="${o.status}"></span></span>
-                        <span class="badge bg-light text-dark"    th:case="*">⚪ —</span>
+                    <td class="status-cell" th:switch="${o.status != null ? o.status.name() : ''}">
+                        <span class="status-badge status-warning" th:case="'PENDING_PAYMENT'" th:text="${o.status}"></span>
+                        <span class="status-badge status-info" th:case="'PLACED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-info" th:case="'CONFIRMED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-info" th:case="'PACKED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-info" th:case="'SHIPPING'" th:text="${o.status}"></span>
+                        <span class="status-badge status-success" th:case="'DELIVERED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-neutral" th:case="'CANCELLED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-danger" th:case="'FAILED'" th:text="${o.status}"></span>
+                        <span class="status-badge status-warning" th:case="'PENDING'" th:text="${o.status}"></span>
+                        <span class="status-badge status-neutral" th:case="*" th:text="${o.status != null ? o.status : 'Unknown'}"></span>
                     </td>
 
                     <!-- PAYMENT STATUS -->
-                    <td th:switch="${o.paymentStatus != null ? o.paymentStatus.name() : ''}">
-                        <span class="badge bg-success"            th:case="'PAID'">💰 PAID</span>
-                        <span class="badge bg-secondary"          th:case="'REFUNDED'">↩️ REFUNDED</span>
-                        <span class="badge bg-danger"             th:case="'FAILED'">❌ FAILED</span>
-                        <span class="badge bg-warning text-dark"  th:case="*">⚠️ UNPAID</span>
+                    <td class="payment-cell" th:switch="${o.paymentStatus != null ? o.paymentStatus.name() : ''}">
+                        <span class="status-badge status-success" th:case="'PAID'" th:text="${o.paymentStatus}"></span>
+                        <span class="status-badge status-neutral" th:case="'REFUNDED'" th:text="${o.paymentStatus}"></span>
+                        <span class="status-badge status-danger" th:case="'FAILED'" th:text="${o.paymentStatus}"></span>
+                        <span class="status-badge status-warning" th:case="*" th:text="${o.paymentStatus != null ? o.paymentStatus : 'UNPAID'}"></span>
                     </td>
 
                     <!-- SHIPPING STATUS -->
                     <td>
-                        <span class="badge bg-info text-dark" th:if="${o.shippingStatus == 'SHIPPED'}">🚀 SHIPPED</span>
-                        <span class="badge bg-success" th:if="${o.shippingStatus == 'DELIVERED'}">✅ DELIVERED</span>
-                        <span class="badge bg-secondary" th:if="${o.shippingStatus == 'RETURNED'}">↩️ RETURNED</span>
-                        <span class="badge bg-light text-dark"
-                              th:if="${o.shippingStatus == null || o.shippingStatus == 'NOT_SHIPPED'}">📦 NOT_SHIPPED</span>
+                        <span class="status-badge status-info" th:if="${o.shippingStatus == 'SHIPPED'}" th:text="${o.shippingStatus}"></span>
+                        <span class="status-badge status-success" th:if="${o.shippingStatus == 'DELIVERED'}" th:text="${o.shippingStatus}"></span>
+                        <span class="status-badge status-neutral" th:if="${o.shippingStatus == 'RETURNED'}" th:text="${o.shippingStatus}"></span>
+                        <span class="status-badge status-neutral"
+                              th:if="${o.shippingStatus == null || o.shippingStatus == 'NOT_SHIPPED'}"
+                              th:text="${o.shippingStatus != null ? o.shippingStatus : 'NOT_SHIPPED'}"></span>
                     </td>
 
                     <td class="text-end" th:text="${#numbers.formatDecimal(o.total, 0, 'COMMA', 0, 'POINT')}">0</td>
                     <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">15/10/2025 15:30</td>
 
                     <td>
-                        <div class="d-flex gap-2">
-                            <a th:href="@{|/admin/sales/orders/${o.id}|}" class="btn btn-action btn-view">Xem</a>
+                        <div class="order-actions">
+<!--                            <a th:href="@{|/admin/sales/orders/${o.id}|}" class="btn btn-action btn-view">Xem</a>-->
                             <a th:href="@{|/admin/sales/orders/${o.id}/edit|}" class="btn btn-action btn-edit"
-                               sec:authorize="hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')">Sửa</a>
+                               sec:authorize="hasAnyAuthority('ORDER_EDIT','ROLE_ADMIN')">
+                                <span class="btn-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
+                                            <path d="M2 12c0 4.714 0 7.071 1.464 8.535C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465C22 19.072 22 16.714 22 12v-1.5M13.5 2H12C7.286 2 4.929 2 3.464 3.464c-.973.974-1.3 2.343-1.409 4.536"/>
+                                            <path d="m16.652 3.455l.649-.649A2.753 2.753 0 0 1 21.194 6.7l-.65.649m-3.892-3.893s.081 1.379 1.298 2.595c1.216 1.217 2.595 1.298 2.595 1.298m-3.893-3.893L10.687 9.42c-.404.404-.606.606-.78.829q-.308.395-.524.848c-.121.255-.211.526-.392 1.068L8.412 13.9m12.133-6.552l-2.983 2.982m-2.982 2.983c-.404.404-.606.606-.829.78a4.6 4.6 0 0 1-.848.524c-.255.121-.526.211-1.068.392l-1.735.579m0 0l-1.123.374a.742.742 0 0 1-.939-.94l.374-1.122m1.688 1.688L8.412 13.9"/>
+                                        </g>
+                                    </svg>
+                                </span>
+                                <span class="btn-text">Sửa</span>
+                            </a>
                             <a th:href="@{|/admin/sales/orders/${o.id}/delete|}" class="btn btn-action btn-delete"
                                sec:authorize="hasAnyAuthority('ORDER_DELETE','ROLE_ADMIN')"
-                               onclick="return confirm('Xóa đơn hàng này?')">Xóa</a>
+                               onclick="return confirm('Xoa don hang nay?')">
+                                <span class="btn-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <g fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" d="M20.5 6h-17"/>
+                                            <path d="M6.5 6h.11a2 2 0 0 0 1.83-1.32l.034-.103l.097-.291c.083-.249.125-.373.18-.479a1.5 1.5 0 0 1 1.094-.788C9.962 3 10.093 3 10.355 3h3.29c.262 0 .393 0 .51.019a1.5 1.5 0 0 1 1.094.788c.055.106.097.23.18.479l.097.291A2 2 0 0 0 17.5 6"/>
+                                            <path stroke-linecap="round" d="M18.374 15.4c-.177 2.654-.266 3.981-1.131 4.79s-2.195.81-4.856.81h-.774c-2.66 0-3.99 0-4.856-.81c-.865-.809-.953-2.136-1.13-4.79l-.46-6.9m13.666 0l-.2 3"/>
+                                        </g>
+                                    </svg>
+                                </span>
+                                <span class="btn-text">Xóa</span>
+                            </a>
                         </div>
                     </td>
                 </tr>
 
                 <tr th:if="${page == null or #lists.isEmpty(page.content)}">
-                    <td colspan="9" class="text-center text-muted py-4">Không có dữ liệu</td>
+                    <td colspan="9" class="text-center text-muted py-4 table-empty">Khong co du lieu</td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- PHÂN TRANG: pill, giữ q -->
+        <!-- Phan trang -->
         <div th:replace="~{layout/components/_pagination :: body(
                 page=${page},
                 baseUrl='/admin/sales/orders',

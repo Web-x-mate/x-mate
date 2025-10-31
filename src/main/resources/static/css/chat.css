@@ -88,6 +88,15 @@ body{
     padding: 14px 18px; font-weight: 700; letter-spacing:.2px;
     display:flex; justify-content:space-between; align-items:center;
 }
+.chat-header .left{ display:flex; align-items:center; gap:12px; }
+.chat-header .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:10px; text-decoration:none;
+    color:#e5e7eb; background: rgba(255,255,255,.08);
+    font-weight:600; border:1px solid rgba(255,255,255,.12);
+}
+.chat-header .back-link:hover{ background: rgba(255,255,255,.14); }
+.chat-header .back-link .arrow{ font-size:16px; line-height:1; }
 .chat-header .peer{ color:#cfd4da; font-weight:600; }
 
 /* Nội dung tin nhắn */

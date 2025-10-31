@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
@@ -8,197 +7,92 @@
 <head>
     <meta charset="UTF-8">
     <title>Danh sách danh mục</title>
-    <style>
-        :root{
-            --bg:#f8fafc;
-            --surface:#ffffff;
-            --text:#0f172a;
-            --muted:#64748b;
-            --bd:#e2e8f0;
-            --ring:#93c5fd;
-            --primary:#2563eb;
-            --primary-hover:#1d4ed8;
-            --success:#22c55e;
-            --warning:#fbbf24;
-            --danger:#ef4444;
-            --danger-hover:#dc2626;
-            --chip:#0ea5e9;
-        }
-
-        body{font-family:"Inter",system-ui,sans-serif;color:var(--text);background:var(--bg);}
-        .wrap{max-width:1100px;margin:0 auto;padding:32px 0;}
-        .page-title{font-size:1.9rem;font-weight:800;color:var(--text);text-align:center;margin:0 0 18px;}
-
-        /* Toolbar */
-        .toolbar{
-            display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;
-        }
-        .search-form{display:flex;align-items:center;gap:8px;}
-        .form-control{
-            width:260px;max-width:60vw;padding:.65rem .9rem;border:1px solid var(--bd);border-radius:.75rem;
-            background:var(--surface);font-size:.95rem;color:var(--text);transition:.18s ease;
-        }
-        .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--ring);}
-        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;cursor:pointer;
-            border-radius:.75rem;border:1px solid transparent;font-weight:700;font-size:.88rem;line-height:1;padding:.55rem .9rem;transition:.18s;}
-        .btn-primary{background:var(--primary);color:#fff;}
-        .btn-primary:hover{background:var(--primary-hover);}
-        .btn-success{background:var(--success);color:#fff;}
-        .btn-warning{background:var(--warning);color:#111827;}
-        .btn-danger{background:var(--danger);color:#fff;}
-        .btn-danger:hover{background:var(--danger-hover);}
-        .btn-sm{padding:.35rem .55rem;border-radius:.5rem;font-size:.78rem;}
-
-        /* Card table */
-        .table-card{
-            background:var(--surface);border:1px solid var(--bd);border-radius:1rem;box-shadow:0 2px 4px rgba(15,23,42,.06);
-        }
-        .table-responsive{max-height:65vh;overflow:auto;border-radius:1rem;}
-        table{width:100%;border-collapse:separate;border-spacing:0;}
-        /* Định dạng cho tên cột */
-        /* Font và căn giữa tiêu đề cột */
-        thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: #f1f5f9;
-            color: #0f172a;
-            border-bottom: 1px solid var(--bd);
-            font-size: .85rem;
-            letter-spacing: .02em;
-            text-transform: uppercase;
-            font-weight: 700;
-            padding: .75rem .9rem;
-            white-space: nowrap;
-            text-align: center;
-            font-family: "Segoe UI", Roboto, sans-serif;
-        }
-
-        /* Font và căn giữa giá trị bảng */
-        tbody td {
-            padding: .75rem .9rem;
-            border-bottom: 1px solid var(--bd);
-            background: #fff;
-            text-align: center;
-            vertical-align: middle;
-            font-family: "Segoe UI", Roboto, sans-serif;
-            font-size: .9rem;
-        }
-
-
-        tbody tr:hover td{background:#f8fafc;}
-
-        /* Align per column */
-        .col-center{text-align:center;}
-        .col-left{text-align:left;}
-        .col-right{text-align:right;}
-
-        /* Status badge */
-        .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:.6rem;padding:.35rem .6rem;font-weight:800;font-size:.72rem;color:#fff;}
-        .bg-success{background:var(--success);}
-        .bg-secondary{background:#94a3b8;color:#0f172a;}
-
-        /* Text truncate */
-        .truncate{max-width:360px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;}
-        .truncate-200{max-width:200px;}
-
-        /* Actions cell */
-        .actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
-        /* Zebra feel without hard stripes */
-        tbody tr:nth-child(even) td{background:#fcfdff;}
-        @media (max-width:720px){
-            .form-control{width:100%;}
-            .truncate,.truncate-200{max-width:56vw;}
-        }
-        /* Font cơ bản + căn giữa toàn bộ bảng */
-        .table-centered thead th,
-        .table-centered tbody td {
-            text-align: center;
-            vertical-align: middle;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-        }
-
-        /* Nếu còn class cũ col-left/right/center thì vô hiệu hóa luôn */
-        .table-centered .col-left,
-        .table-centered .col-right,
-        .table-centered .col-center {
-            text-align: center !important;
-        }
-
-        /* Giữ nút hành động đẹp khi căn giữa */
-        .table-centered .actions {
-            justify-content: center;
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/catalog/categories/list.css}">
 </head>
 <body>
-<section layout:fragment="content">
+<section layout:fragment="content" class="catalog-categories">
 
     <div class="alert alert-warning" sec:authorize="!hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')">
         Bạn không có quyền xem danh mục.
     </div>
 
-    <div sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')" class="wrap">
+    <div sec:authorize="hasAnyAuthority('CATEGORY_VIEW','ROLE_ADMIN')"
+         class="wrap"
+         th:with="currentDir=${param.direction != null ? param.direction[0] : 'desc'},
+                  currentSort=${param.sort != null ? param.sort[0] : 'id'}">
         <h1 class="page-title">Danh sách danh mục</h1>
 
         <div class="toolbar">
             <form method="get" th:action="@{/admin/catalog/categories}" class="search-form">
+                <input type="hidden" name="sort" th:value="${currentSort}">
+                <input type="hidden" name="direction" th:value="${currentDir}">
+                <input type="hidden" name="size" th:value="${page != null ? page.size : size}">
                 <input type="text" name="q" th:value="${q}" placeholder="Tìm danh mục..." class="form-control" aria-label="Search categories">
                 <button type="submit" class="btn btn-primary">Tìm kiếm</button>
             </form>
 
-            <a th:href="@{/admin/catalog/categories/new}"
-               class="btn btn-success"
-               sec:authorize="hasAnyAuthority('CATEGORY_CREATE','ROLE_ADMIN')">
-                Thêm danh mục
-            </a>
+            <div class="toolbar-actions">
+                <a class="btn btn-outline btn-outline-primary btn-sm"
+                   th:href="@{/admin/catalog/categories(
+                        page=0,
+                        q=${q},
+                        sort=${'id'},
+                        direction=${currentDir == 'asc' ? 'desc' : 'asc'},
+                        size=${page != null ? page.size : size}
+                   )}"
+                   th:utext="${currentDir == 'asc'} ? 'ID &#8595;' : 'ID &#8593;'"
+                   title="Thay doi thu tu ID">
+                    ID &#8593;
+                </a>
+
+                <a th:href="@{/admin/catalog/categories/new}"
+                   class="btn btn-success"
+                   sec:authorize="hasAnyAuthority('CATEGORY_CREATE','ROLE_ADMIN')">
+                    Thêm danh mục
+                </a>
+            </div>
         </div>
 
         <div class="table-card">
             <div class="table-responsive">
                 <table class="table align-middle table-centered">
-
-                <colgroup>
-                        <col style="width:60px;">
-                        <col style="width:80px;">
-                        <col>
-                        <col style="width:26%;">
+                    <colgroup>
+                        <col style="width:100px;">
+                        <col style="width:28%;">
+                        <col style="width:28%;">
                         <col style="width:22%;">
                         <col style="width:120px;">
-                        <col style="width:190px;">
+                        <col style="width:200px;">
                     </colgroup>
                     <thead>
                     <tr>
-                        <th class="col-center">STT</th>
                         <th class="col-center">ID</th>
                         <th class="col-left">Tên danh mục</th>
                         <th class="col-left">URL chuẩn hóa</th>
-                        <th class="col-left">Danh mục cha</th>
+                        <th class="col-left">Danh muc cha</th>
                         <th class="col-center">Trạng thái</th>
                         <th class="col-right">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="c,iter : ${page != null ? page.content : categories}">
-                        <td class="col-center" th:text="${iter.index + 1}">1</td>
+                    <tr th:each="c, iter : ${page != null ? page.content : categories}">
                         <td class="col-center" th:text="${c.id}">1</td>
                         <td class="col-left">
-                            <span class="truncate" th:title="${c.name}" th:text="${c.name}">Men</span>
+                            <span class="truncate" th:title="${c.name}" th:text="${c.name}">Danh mục A</span>
                         </td>
                         <td class="col-left">
-                            <span class="truncate truncate-200" th:title="${c.slug}" th:text="${c.slug}">men</span>
+                            <span class="truncate truncate-200" th:title="${c.slug}" th:text="${c.slug}">danh-muc-a</span>
                         </td>
                         <td class="col-left">
               <span class="truncate truncate-200"
                     th:title="${c.parent != null ? c.parent.name : '-'}"
-                    th:text="${c.parent != null ? c.parent.name : '—'}">—</span>
+                    th:text="${c.parent != null ? c.parent.name : '-'}">-</span>
                         </td>
                         <td class="col-center">
               <span th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'"
                     th:class="${c.active} ? 'badge bg-success' : 'badge bg-secondary'">ACTIVE</span>
                         </td>
-                        <td>
+                        <td class="col-right">
                             <div class="actions">
                                 <a th:href="@{|/admin/catalog/categories/${c.id}/edit|}"
                                    class="btn btn-sm btn-warning"
@@ -213,14 +107,14 @@
                     </tr>
 
                     <tr th:if="${page == null || #lists.isEmpty(page.content)}">
-                        <td colspan="7" class="col-center" style="padding:18px;color:var(--muted);">Không có dữ liệu</td>
+                        <td colspan="6" class="col-center empty-row">Không có dữ liệu</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/catalog/categories', q=${q})}"></div>
+        <div th:replace="~{layout/components/_pagination :: body(page=${page}, baseUrl='/admin/catalog/categories', q=${q}, sort=${currentSort}, direction=${currentDir}, size=${page != null ? page.size : size})}"></div>
     </div>
 </section>
 </body>
